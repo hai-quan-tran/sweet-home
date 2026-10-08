@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Sửa phụ thu — Sweet Home</title>
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+.app{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--line:#94a3b8;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--primary:#2563eb;--primary-h:#1d4ed8;--soft:#eff6ff;--ptext:#1d4ed8;--onp:#fff;--b-bg:#dbeafe;--b-fg:#1e40af;--i-bg:#dcfce7;--i-fg:#166534;--o-bg:#f1f5f9;--o-fg:#475569;--c-bg:#fee2e2;--c-fg:#991b1b;--p-bg:#ede9fe;--p-fg:#5b21b6;--w-bg:#ffedd5;--w-fg:#9a3412;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side{background:var(--card);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 6px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:var(--onp);display:grid;place-items:center;flex:none}
+.bn{font-weight:700;font-size:16px;letter-spacing:-.01em}.bs{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a,.nav-out{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500}
+.nav a:hover,.nav-out:hover{background:var(--subtle);color:var(--text)}
+.nav a.active{background:var(--soft);color:var(--ptext);font-weight:600}
+.cnt{margin-left:auto;font-size:12px;font-weight:600;background:var(--primary);color:var(--onp);border-radius:999px;padding:0 8px;line-height:20px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:16px}
+.me{display:flex;align-items:center;gap:12px;padding:6px 8px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--subtle);color:var(--text);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.mn{font-weight:600}.ms{font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:68px;display:flex;align-items:center;gap:12px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;height:44px;width:min(380px,100%);padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted)}
+.search input{border:0;outline:0;background:transparent;font:inherit;color:var(--text);flex:1;min-width:0}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.ibtn:hover{background:var(--subtle);color:var(--text)}
+.dot{position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#ea580c;border:2px solid var(--card)}
+.menu-btn{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-p{background:var(--primary);color:var(--onp)}.btn-p:hover{background:var(--primary-h);color:var(--onp)}
+.btn-s{background:var(--card);border-color:var(--border);color:var(--text)}.btn-s:hover{background:var(--subtle);color:var(--text)}
+.btn-t{background:transparent;color:var(--ptext)}.btn-t:hover{background:var(--soft);color:var(--ptext)}
+.content{width:100%;max-width:1440px;padding:28px 32px 48px;display:flex;flex-direction:column;gap:24px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:0}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;min-height:60px;border-bottom:1px solid var(--border)}
+.ch h2{margin:0;font-size:16px;font-weight:600}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:20px;white-space:nowrap}
+.t-b{background:var(--b-bg);color:var(--b-fg)}.t-i{background:var(--i-bg);color:var(--i-fg)}.t-o{background:var(--o-bg);color:var(--o-fg)}.t-p{background:var(--p-bg);color:var(--p-fg)}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+.mode{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted)}.mode .ic{width:14px;height:14px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border)}
+.tabs a{min-height:48px;display:flex;align-items:center;gap:8px;padding:0 16px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.active{color:var(--ptext);border-color:var(--primary);font-weight:600}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.rc{overflow:hidden;display:flex;flex-direction:column}
+.photo{height:132px;background:var(--subtle);border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:12px}
+.rc-b{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.rc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rc-h b{font-size:17px;display:block}
+.prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pr{background:var(--subtle);border-radius:8px;padding:8px 10px;line-height:1.35}
+.pr span{font-size:12px;color:var(--muted);display:block}
+.pr b{font-size:14px;font-variant-numeric:tabular-nums}
+.pr small{display:block;font-size:11px;color:var(--muted)}
+.rc-f{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding:4px 8px 4px 18px;margin-top:auto}
+.sw{display:inline-flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:500}
+.sw input{appearance:none;width:40px;height:24px;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;flex:none}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.sw input:checked{background:var(--primary)}
+.sw input:checked::after{left:19px}
+.price-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+.tbl-w{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:640px}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 16px;background:var(--subtle);line-height:1.35}
+.tbl th small{display:block;font-weight:500}
+.tbl td{padding:12px 16px;border-top:1px solid var(--border);vertical-align:middle}
+.tbl td b{display:block;font-weight:600}
+.tbl td small{color:var(--muted);font-size:12px}
+.tbl .r{text-align:right}
+.tbl td.r{font-variant-numeric:tabular-nums;font-weight:600}
+.fees{list-style:none;margin:0;padding:0}
+.fee{display:flex;align-items:center;gap:12px;padding:12px 20px}
+.fee+.fee{border-top:1px solid var(--border)}
+.fee div{flex:1;min-width:0}
+.fee b{display:block;font-weight:600}
+.fee small{color:var(--muted);font-size:12px}
+.fee .v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.foot-note{padding:12px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+@media (max-width:1100px){.app{grid-template-columns:76px minmax(0,1fr)}.side .lbl,.bs,.bn,.cnt{display:none}.brand,.me{justify-content:center;padding:0}.nav a,.nav-out{justify-content:center;padding:0}.top,.content{padding-left:24px;padding-right:24px}.rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.price-row{grid-template-columns:1fr}}
+@media (max-width:720px){.app{grid-template-columns:1fr}.side{display:none}.menu-btn{display:grid}.top,.content{padding-left:16px;padding-right:16px}.btn-label{display:none}.rgrid{grid-template-columns:1fr}}
+</style>
+<style>
+.app{position:relative}
+.scrim{position:absolute;inset:0;background:rgba(15,23,42,.5);display:flex;justify-content:center;align-items:flex-start;padding:88px 24px}
+.dlg{width:min(880px,100%);background:var(--card);border-radius:14px;box-shadow:0 24px 48px rgba(15,23,42,.28);display:flex;flex-direction:column}
+.dlg-h{display:flex;align-items:flex-start;gap:12px;padding:20px 20px 16px 24px;border-bottom:1px solid var(--border)}
+.dlg-h h2{margin:0;font-size:19px;letter-spacing:-.01em}
+.dlg-h p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.dlg-h .ibtn{margin-left:auto}
+.dlg-b{padding:20px 24px;display:flex;flex-direction:column;gap:20px}
+.dlg-f{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 24px;border-top:1px solid var(--border);background:var(--bg);border-radius:0 0 14px 14px;flex-wrap:wrap}
+.dlg-f .del{margin-right:auto;color:var(--c-fg)}.dlg-f .del:hover{background:var(--c-bg);color:var(--c-fg)}
+.sub-h{margin:0 0 -8px;font-size:14px;font-weight:600}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.flab{font-size:13px;font-weight:600}
+.req{color:var(--c-fg)}
+.inp{height:44px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
+.iw{position:relative;display:flex}
+.iw select.inp{appearance:none;padding-right:40px;cursor:pointer}
+.iw>.ic{position:absolute;right:12px;top:12px;pointer-events:none;color:var(--muted)}
+.hint{margin:0;font-size:12px;color:var(--muted)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.money{position:relative}
+.money .inp{padding-right:30px;text-align:right;font-variant-numeric:tabular-nums}
+.money>span{position:absolute;right:12px;top:11px;color:var(--muted);font-weight:600}
+.money.chg .inp{border-color:var(--primary);background:var(--soft);font-weight:600}
+.was{display:block;margin-top:2px;font-size:11px;color:var(--muted);text-align:right}
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:right;font-size:12px;font-weight:600;color:var(--muted);padding:0 6px 8px;line-height:1.3}
+.ptbl th:first-child{text-align:left;padding-left:0}
+.ptbl th small{display:block;font-weight:500}
+.ptbl td{padding:6px;vertical-align:top}
+.ptbl td:first-child{padding-left:0;width:22%}
+.ptbl td:last-child{width:52px;padding-right:0}
+.ptbl tbody tr+tr td{border-top:1px solid var(--border)}
+.cls b{display:block;font-weight:600;line-height:1.3;padding-top:4px}
+.cls small{color:var(--muted);font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;align-self:flex-start}
+.seg label{position:relative;display:flex;align-items:center;min-height:42px;padding:0 16px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg label+label{border-left:1px solid var(--border)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label.on{background:var(--soft);color:var(--ptext);font-weight:600}
+.opts{display:flex;flex-wrap:wrap;gap:8px;border:0;margin:0;padding:0}
+.opts legend{font-size:13px;font-weight:600;padding:0;margin-bottom:6px}
+.opt{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border:1px solid var(--border);border-radius:999px;cursor:pointer;font-weight:500}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt.on{border-color:var(--primary);background:var(--soft);color:var(--ptext);font-weight:600}
+.opt .ic{width:16px;height:16px;stroke-width:2.4}
+.ranges{display:flex;flex-direction:column;gap:8px}
+.rg{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 44px;gap:8px;align-items:center}
+.cbs{display:flex;gap:8px;flex-wrap:wrap}
+.cb{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer}
+.cb input{width:18px;height:18px;margin:0;accent-color:var(--primary)}
+.example{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:8px;background:var(--subtle);font-size:13px}
+.example .ic{color:var(--muted)}
+.row-v{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.row-v>.field:last-child{width:160px}
+.seg label{white-space:nowrap}
+.unit-l{width:160px}.unit-l .inp{padding-right:52px}
+[hidden]{display:none !important}
+.days .cb{min-width:72px;justify-content:center}.days .cb.on{border-color:var(--primary);background:var(--soft);color:var(--ptext);font-weight:600}
+@media (max-width:720px){.ptbl{min-width:640px}.dlg-b{overflow-x:auto}.g3,.g2,.row-v{grid-template-columns:1fr}.rg{grid-template-columns:1fr 1fr}.seg{flex-wrap:wrap}}
+</style>
+
+<div class="app">
+<aside class="side">
+<div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><div><div class="bn">Sweet Home</div><div class="bs">Quản lý cho thuê</div></div></div>
+<nav class="nav" aria-label="Điều hướng chính">
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="lbl">Tổng quan</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lbl">Lịch đặt phòng</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6"/></svg><span class="lbl">Đơn thuê</span><span class="cnt">5</span></a>
+<a href="#" class="active" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg><span class="lbl">Phòng &amp; bảng giá</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Nhân viên</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2l1 1"/></svg><span class="lbl">Lịch làm</span></a>
+</nav>
+<div class="side-foot">
+<div class="me"><span class="av">AD</span><div class="lbl"><div class="mn">Quản trị viên</div><div class="ms">admin</div></div></div>
+<a href="#" class="nav-out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Đăng xuất</span></a>
+</div>
+</aside>
+<div class="main">
+<header class="top">
+<button class="ibtn menu-btn" type="button" aria-label="Mở menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+<div class="top-r">
+<button class="ibtn" type="button" data-theme-toggle aria-label="Chuyển sang giao diện tối"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+<button class="ibtn" type="button" aria-label="Thông báo, 1 mới"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+<a class="btn btn-p" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="btn-label">Tạo đơn thuê</span></a>
+</div>
+</header>
+<main class="content">
+<div class="ph">
+<div><h1>Phòng &amp; bảng giá</h1><p>6 phòng · 3 hạng phòng · giá áp dụng cho đơn tạo mới</p></div>
+<a class="btn btn-s" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Thêm phòng</a>
+</div>
+
+<nav class="tabs" aria-label="Mục"><a href="#" class="active" aria-current="page">Phòng</a><a href="#">Bảng giá</a><a href="#">Phụ thu</a></nav>
+
+<section class="rgrid" aria-label="Danh sách phòng">
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 101</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>101 · Mộc</b><span class="muted">Tiêu chuẩn · tầng 1 · 2 khách</span></div><span class="tag t-o">Trống</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Mặc định: khách tự check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>150k</b><small>+50k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>350k</b></div><div class="pr"><span>Theo ngày</span><b>500k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 102</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>102 · Nắng</b><span class="muted">Tiêu chuẩn · tầng 1 · 2 khách</span></div><span class="tag t-i">Đang ở</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Mặc định: nhân viên check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>150k</b><small>+50k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>350k</b></div><div class="pr"><span>Theo ngày</span><b>500k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 201</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>201 · Biển</b><span class="muted">Ban công · tầng 2 · 2 khách</span></div><span class="tag t-i">Đang ở</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Mặc định: nhân viên check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>180k</b><small>+60k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>420k</b></div><div class="pr"><span>Theo ngày</span><b>650k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 202</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>202 · Gió</b><span class="muted">Ban công · tầng 2 · 2 khách</span></div><span class="tag t-i">Đang ở</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Mặc định: nhân viên check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>180k</b><small>+60k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>420k</b></div><div class="pr"><span>Theo ngày</span><b>650k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 301</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>301 · Rêu</b><span class="muted">Gác mái · tầng 3 · 2 khách</span></div><span class="tag t-o">Trống</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Mặc định: khách tự check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>130k</b><small>+40k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>300k</b></div><div class="pr"><span>Theo ngày</span><b>450k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+<article class="card rc">
+<div class="photo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Ảnh phòng 302</div>
+<div class="rc-b">
+<div class="rc-h"><div><b>302 · Trăng</b><span class="muted">Gác mái · tầng 3 · 2 khách</span></div><span class="tag t-p">Chờ xác nhận trả</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Mặc định: khách tự check-in</span>
+<div class="prices"><div class="pr"><span>2 giờ đầu</span><b>130k</b><small>+40k/giờ</small></div><div class="pr"><span>Qua đêm</span><b>300k</b></div><div class="pr"><span>Theo ngày</span><b>450k</b></div></div>
+</div>
+<div class="rc-f"><label class="sw"><input type="checkbox" role="switch" checked="checked">Nhận đặt phòng</label><a class="btn btn-t" href="#">Sửa</a></div>
+</article>
+</section>
+
+<div class="price-row">
+<section class="card">
+<div class="ch"><h2>Bảng giá theo hạng phòng</h2><a class="btn btn-t" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>Sửa bảng giá</a></div>
+<div class="tbl-w">
+<table class="tbl">
+<thead><tr><th scope="col">Hạng phòng</th><th scope="col" class="r">2 giờ đầu</th><th scope="col" class="r">Mỗi giờ thêm</th><th scope="col" class="r">Qua đêm<small>21:00 → 12:00</small></th><th scope="col" class="r">Theo ngày<small>14:00 → 12:00</small></th></tr></thead>
+<tbody>
+<tr><td><b>Tiêu chuẩn</b><small>101, 102</small></td><td class="r">150.000đ</td><td class="r">50.000đ</td><td class="r">350.000đ</td><td class="r">500.000đ</td></tr>
+<tr><td><b>Ban công</b><small>201, 202</small></td><td class="r">180.000đ</td><td class="r">60.000đ</td><td class="r">420.000đ</td><td class="r">650.000đ</td></tr>
+<tr><td><b>Gác mái</b><small>301, 302</small></td><td class="r">130.000đ</td><td class="r">40.000đ</td><td class="r">300.000đ</td><td class="r">450.000đ</td></tr>
+</tbody>
+</table>
+</div>
+<div class="foot-note">Đổi giá chỉ áp dụng cho đơn tạo sau thời điểm lưu. Đơn đã có giữ nguyên giá lúc đặt.</div>
+</section>
+<section class="card">
+<div class="ch"><h2>Phụ thu</h2><a class="btn btn-t" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Thêm</a></div>
+<ul class="fees">
+<li class="fee"><div><b>Quá giờ trả phòng</b><small>Sau 15 phút ân hạn · làm tròn lên theo giờ</small></div><span class="v">Giá mỗi giờ thêm</span></li>
+<li class="fee"><div><b>Thêm khách</b><small>Vượt số khách tối đa của phòng</small></div><span class="v">50.000đ/người</span></li>
+<li class="fee"><div><b>Cuối tuần</b><small>Thứ Sáu, Thứ Bảy</small></div><span class="v">+10%</span></li>
+<li class="fee"><div><b>Ngày lễ, Tết</b><small>Tết Dương lịch, Tết Nguyên đán</small></div><span class="v">+30%</span></li>
+</ul>
+</section>
+</div>
+</main>
+</div>
+<div class="scrim">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+<div class="dlg-h">
+<div><h2 id="dlg-t">Sửa phụ thu</h2><p>Phụ thu tự động được cộng vào đơn khi đơn thoả điều kiện.</p></div>
+<button class="ibtn" type="button" aria-label="Đóng"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+</div>
+<form id="f-pt" class="dlg-b" action="#" method="post">
+<div class="field"><label for="fname">Tên phụ thu <span class="req">*</span></label><input id="fname" class="inp" value="Ngày lễ, Tết"></div>
+
+<fieldset class="opts">
+<legend>Áp dụng khi</legend>
+<label class="opt"><input type="radio" name="when" value="qua-gio">Quá giờ trả phòng</label>
+<label class="opt"><input type="radio" name="when" value="khach">Vượt số khách tối đa</label>
+<label class="opt"><input type="radio" name="when" value="thu">Ngày trong tuần</label>
+<label class="opt on"><input type="radio" name="when" value="khoang" checked="checked"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Khoảng ngày</label>
+<label class="opt"><input type="radio" name="when" value="tay">Thêm tay vào đơn</label>
+</fieldset>
+
+<div class="field" data-when="qua-gio" hidden>
+<label for="grace">Phút ân hạn</label>
+<div class="money unit-l"><input id="grace" class="inp" value="15" inputmode="numeric"><span>phút</span></div>
+<span class="hint">Trả muộn trong thời gian ân hạn thì không tính. Quá ân hạn thì tính từ giờ trả phòng (không trừ phút ân hạn), làm tròn lên theo giờ: trễ 30 phút tính 1 giờ, trễ 1 giờ 20 phút tính 2 giờ.</span>
+</div>
+
+<div class="example" data-when="qua-gio" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg><span><b>Mức thu theo giá "Mỗi giờ thêm" của hạng phòng</b><br>Tiêu chuẩn 50.000đ · Ban công 60.000đ · Gác mái 40.000đ / giờ. Đổi ở Sửa bảng giá.</span></div>
+
+<p class="hint" data-when="khach" hidden>Tính cho mỗi khách vượt số khách tối đa của phòng. Số khách tối đa cài ở từng phòng.</p>
+
+<div class="field" data-when="thu" hidden>
+<span class="flab">Các ngày áp dụng</span>
+<div class="cbs days"><label class="cb"><input type="checkbox" name="day">T2</label><label class="cb"><input type="checkbox" name="day">T3</label><label class="cb"><input type="checkbox" name="day">T4</label><label class="cb"><input type="checkbox" name="day">T5</label><label class="cb on"><input type="checkbox" name="day" checked="checked">T6</label><label class="cb on"><input type="checkbox" name="day" checked="checked">T7</label><label class="cb"><input type="checkbox" name="day">CN</label></div>
+<span class="hint">Tính cho từng ngày khách ở rơi vào các ngày đã chọn. Đơn theo giờ và qua đêm tính theo ngày nhận phòng.</span>
+</div>
+
+<div class="field" data-when="khoang">
+<span class="flab">Các khoảng ngày</span>
+<div class="ranges">
+<div class="rg"><input class="inp" value="Tết Dương lịch" aria-label="Tên dịp 1"><input class="inp num" value="01/01/2027" aria-label="Từ ngày, dịp 1"><input class="inp num" value="01/01/2027" aria-label="Đến ngày, dịp 1"><button class="ibtn" type="button" aria-label="Xoá dịp Tết Dương lịch"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+<div class="rg"><input class="inp" value="Tết Nguyên đán" aria-label="Tên dịp 2"><input class="inp num" value="05/02/2027" aria-label="Từ ngày, dịp 2"><input class="inp num" value="10/02/2027" aria-label="Đến ngày, dịp 2"><button class="ibtn" type="button" aria-label="Xoá dịp Tết Nguyên đán"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></div>
+</div>
+<a class="btn btn-t" href="#" style="align-self: flex-start"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Thêm khoảng ngày</a>
+<span class="hint">Tính cho từng ngày khách ở nằm trong khoảng. Đơn theo giờ và qua đêm tính theo ngày nhận phòng.</span>
+</div>
+
+<p class="hint" data-when="thu khoang" hidden>Một ngày vừa thuộc "Ngày trong tuần" vừa thuộc "Khoảng ngày" (ví dụ Tết rơi vào thứ Bảy) thì chỉ lấy mức cao hơn. Phụ thu quá giờ, thêm khách, thêm tay luôn được cộng thêm.</p>
+
+<p class="hint" data-when="tay" hidden>Không tự cộng vào đơn. Khi tạo hoặc sửa đơn, nhân viên chọn phụ thu này để thêm vào.</p>
+
+<div class="row-v" data-hide="qua-gio">
+<div class="field"><span class="flab" id="kind-l">Cách thu</span><div class="seg" role="radiogroup" aria-labelledby="kind-l"><label class="on"><input type="radio" name="kind" value="%" checked="checked">+ % tiền phòng</label><label><input type="radio" name="kind" value="đ">Số tiền / giờ</label><label><input type="radio" name="kind" value="đ">Số tiền / người</label><label><input type="radio" name="kind" value="đ">Số tiền / đơn</label></div></div>
+<div class="field"><label for="val">Mức</label><div class="money"><input id="val" class="inp" value="30" inputmode="numeric"><span id="unit">%</span></div></div>
+</div>
+
+<div class="field">
+<span class="flab">Áp dụng cho hạng phòng</span>
+<div class="cbs"><label class="cb"><input type="checkbox" checked="checked">Tiêu chuẩn</label><label class="cb"><input type="checkbox" checked="checked">Ban công</label><label class="cb"><input type="checkbox" checked="checked">Gác mái</label></div>
+</div>
+
+<div class="example"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span id="ex"></span></div>
+</form>
+<div class="dlg-f">
+<button class="btn btn-t del" type="button">Xoá phụ thu</button>
+<button class="btn btn-s" type="button">Huỷ</button>
+<button class="btn btn-p" type="submit" form="f-pt">Lưu phụ thu</button>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+/* Đổi nội dung dialog theo điều kiện "Áp dụng khi" và cách thu. Mở thẳng một trường hợp bằng #qua-gio, #khach, #thu, #khoang, #tay. */
+(function () {
+  var CASES = {
+    'qua-gio': { name: 'Quá giờ trả phòng', kind: 1, val: '50.000', ex: 'Ví dụ: P102 (Tiêu chuẩn) hẹn trả 13:30, khách trả 14:50 → trễ 1 giờ 20 phút → làm tròn 2 giờ × 50.000đ = <b>100.000đ</b>' },
+    'khach': { name: 'Thêm khách', kind: 2, val: '50.000', ex: 'Ví dụ: P101 tối đa 2 khách, đơn có 3 khách → 1 người × 50.000đ = <b>50.000đ</b>' },
+    'thu': { name: 'Cuối tuần', kind: 0, val: '10', ex: 'Ví dụ: P101 qua đêm, nhận phòng Thứ Sáu 09/10/2026 → 350.000đ + 10% = <b>385.000đ</b>' },
+    'khoang': { name: 'Ngày lễ, Tết', kind: 0, val: '30', ex: 'Ví dụ: P201 theo ngày 03/02 → 07/02/2027: ngày 05 (T6) và 06 (T7) vừa Tết +30% vừa cuối tuần +10% → lấy 30%: 650.000đ × 2 ngày × 30% = <b>390.000đ</b>' },
+    'tay': { name: 'Hút thuốc trong phòng', kind: 3, val: '200.000', ex: 'Ví dụ: nhân viên thêm vào đơn SH-1029 lúc trả phòng → cộng <b>200.000đ</b>' }
+  };
+  var check = document.querySelector('.opt.on svg');
+  var whens = document.querySelectorAll('input[name=when]');
+  var kinds = document.querySelectorAll('input[name=kind]');
+
+  /** Đánh dấu ô đang chọn trong một nhóm radio. */
+  function mark(inputs) {
+    inputs.forEach(function (i) { i.parentNode.classList.toggle('on', i.checked); });
+  }
+
+  /** Chọn cách thu và đổi đơn vị của ô Mức (% hoặc đ). */
+  function setKind(n) {
+    kinds[n].checked = true;
+    mark(kinds);
+    document.getElementById('unit').textContent = kinds[n].value;
+  }
+
+  /** Hiện phần cài đặt của điều kiện được chọn và điền dữ liệu mẫu. */
+  function setWhen(key) {
+    var c = CASES[key];
+    whens.forEach(function (i) { i.checked = i.value === key; });
+    mark(whens);
+    var on = document.querySelector('.opt.on input');
+    on.parentNode.insertBefore(check, on.nextSibling);
+    document.querySelectorAll('[data-when]').forEach(function (el) { el.hidden = el.dataset.when.split(' ').indexOf(key) < 0; });
+    document.querySelectorAll('[data-hide]').forEach(function (el) { el.hidden = el.dataset.hide === key; });
+    document.getElementById('fname').value = c.name;
+    document.getElementById('val').value = c.val;
+    document.getElementById('ex').innerHTML = c.ex;
+    setKind(c.kind);
+  }
+
+  whens.forEach(function (i) { i.addEventListener('change', function () { setWhen(i.value); }); });
+  kinds.forEach(function (i, n) { i.addEventListener('change', function () { setKind(n); }); });
+  document.querySelectorAll('input[name=day]').forEach(function (i) {
+    i.addEventListener('change', function () { i.parentNode.classList.toggle('on', i.checked); });
+  });
+  /** Mở trường hợp theo phần # của URL, mặc định là khoảng ngày. */
+  function fromHash() { setWhen(CASES[location.hash.slice(1)] ? location.hash.slice(1) : 'khoang'); }
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+</body>
+</html>

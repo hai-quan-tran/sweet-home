@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sweet Home — Xem trước thiết kế</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;font-size:14px;background:#f1f5f9;color:#0f172a;display:grid;grid-template-columns:260px minmax(0,1fr);height:100vh}
+aside{background:#fff;border-right:1px solid #e2e8f0;padding:20px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+aside>*{flex:none}
+h1{margin:0 6px;font-size:17px}
+h2{margin:0 6px;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{padding:8px 10px;border-radius:8px;color:#0f172a;text-decoration:none}
+nav a:hover{background:#f1f5f9}
+nav a.on{background:#eff6ff;color:#1d4ed8;font-weight:600}
+.seg{display:flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+.seg button{flex:1;min-height:36px;border:0;background:#fff;font:inherit;cursor:pointer;color:#64748b}
+.seg button+button{border-left:1px solid #e2e8f0}
+.seg button[aria-pressed=true]{background:#eff6ff;color:#1d4ed8;font-weight:600}
+#device{display:grid;grid-template-columns:1fr 1fr}#device button:nth-child(n+3){border-top:1px solid #e2e8f0}#device button:nth-child(3){border-left:0}
+main{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.bar{display:flex;justify-content:space-between;align-items:center;color:#64748b}
+.bar a{color:#1d4ed8}
+.frame{flex:none;overflow:hidden;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+iframe{border:0;display:block;transform-origin:0 0}
+</style>
+</head>
+<body>
+<aside>
+<h1>Sweet Home — Thiết kế</h1>
+<h2>Giao diện</h2>
+<div class="seg" id="theme"><button type="button" data-v="light" aria-pressed="true">Sáng</button><button type="button" data-v="dark" aria-pressed="false">Tối</button></div>
+<h2>Khung xem</h2>
+<div class="seg" id="device"><button type="button" data-v="1440x900" aria-pressed="true">Desktop</button><button type="button" data-v="1280x800" aria-pressed="false">Laptop</button><button type="button" data-v="768x1024" aria-pressed="false">iPad dọc</button><button type="button" data-v="1024x768" aria-pressed="false">iPad ngang</button></div>
+<h2>Màn hình</h2>
+<nav id="pages">
+<a href="Login.html">Đăng nhập</a>
+<a href="Main.html" class="on">Tổng quan</a>
+<a href="Lich.html">Lịch đặt phòng</a>
+<a href="DonThue.html">Đơn thuê</a>
+<a href="TaoDon.html">Tạo đơn thuê</a>
+<a href="Phong.html">Phòng &amp; bảng giá</a>
+<a href="ThemPhong.html">Thêm phòng</a>
+<a href="NhanVien.html">Nhân viên</a>
+<a href="ThemNhanVien.html">Thêm nhân viên</a>
+<a href="LichLam.html">Lịch làm</a>
+</nav>
+<h2>Dialog</h2>
+<nav>
+<a href="BangGia.html">Sửa bảng giá</a>
+<a href="PhuThu.html#qua-gio">Phụ thu: quá giờ trả phòng</a>
+<a href="PhuThu.html#khach">Phụ thu: vượt số khách</a>
+<a href="PhuThu.html#thu">Phụ thu: ngày trong tuần</a>
+<a href="PhuThu.html#khoang">Phụ thu: khoảng ngày</a>
+<a href="PhuThu.html#tay">Phụ thu: thêm tay vào đơn</a>
+<a href="GiaHan.html">Gia hạn bước 1: chọn thời gian</a>
+<a href="ChuyenPhong.html">Gia hạn bước 2: chuyển phòng</a>
+<a href="GiaHanKhongPhong.html">Gia hạn: không có phòng phù hợp</a>
+</nav>
+</aside>
+<main>
+<div class="bar"><span id="size"></span><a id="open" href="Main.html" target="_blank">Mở trang riêng ↗</a></div>
+<div class="frame" id="frame"><iframe id="view" title="Xem trước màn hình"></iframe></div>
+</main>
+<script>
+/* Xem trước các màn trong khung desktop hoặc iPad 9.7" (768×1024), kèm chọn giao diện sáng/tối. */
+(function () {
+  var state = { page: 'Main.html', theme: 'light', device: '1440x900' };
+  var view = document.getElementById('view');
+
+  /** Ghép tham số theme vào link màn hình, giữ nguyên phần #. */
+  function url() {
+    var parts = state.page.split('#');
+    return parts[0] + '?theme=' + state.theme + (parts[1] ? '#' + parts[1] : '');
+  }
+
+  /** Nạp lại khung xem: đúng kích thước thiết bị, thu nhỏ cho vừa vùng xem nếu cần. */
+  function render() {
+    var wh = state.device.split('x'), w = +wh[0], h = +wh[1];
+    var scale = Math.min(1, (document.querySelector('main').clientWidth - 34) / w);
+    view.style.width = w + 'px';
+    view.style.height = h + 'px';
+    view.style.transform = 'scale(' + scale + ')';
+    document.getElementById('frame').style.width = w * scale + 'px';
+    document.getElementById('frame').style.height = h * scale + 'px';
+    var name = { '1440x900': 'Desktop', '1280x800': 'Laptop', '768x1024': 'iPad 9.7" dọc', '1024x768': 'iPad 9.7" ngang' }[state.device];
+    document.getElementById('size').textContent = name + ' · ' + w + ' × ' + h + (scale < 1 ? ' · thu nhỏ ' + Math.round(scale * 100) + '%' : '');
+    document.getElementById('open').href = url();
+    if (view.getAttribute('src') !== url()) view.src = url();
+  }
+
+  /** Gắn nhóm nút chọn một giá trị vào một khoá của state. */
+  function bindSeg(id, key) {
+    var btns = document.querySelectorAll('#' + id + ' button');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        state[key] = b.dataset.v;
+        render();
+      });
+    });
+  }
+
+  bindSeg('theme', 'theme');
+  bindSeg('device', 'device');
+  document.querySelectorAll('aside nav a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelectorAll('aside nav a').forEach(function (x) { x.classList.toggle('on', x === a); });
+      state.page = a.getAttribute('href');
+      render();
+    });
+  });
+  window.addEventListener('resize', render);
+  render();
+})();
+</script>
+</body>
+</html>

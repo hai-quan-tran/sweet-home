@@ -1,0 +1,13 @@
+/* Dark mode dùng chung cho mọi màn thiết kế. Nạp sau style của từng màn. */
+.app.dark{--bg:#09090b;--card:#18181b;--border:#27272a;--line:#52525b;--text:#fafafa;--muted:#a1a1aa;--subtle:#27272a;--primary:#60a5fa;--primary-h:#93c5fd;--soft:rgba(96,165,250,.14);--ptext:#93c5fd;--onp:#09090b;--b-bg:rgba(96,165,250,.16);--b-fg:#93c5fd;--i-bg:rgba(74,222,128,.14);--i-fg:#86efac;--o-bg:#27272a;--o-fg:#d4d4d8;--c-bg:rgba(248,113,113,.14);--c-fg:#fca5a5;--p-bg:rgba(167,139,250,.16);--p-fg:#c4b5fd;--w-bg:rgba(251,146,60,.16);--w-fg:#fdba74;--w-line:#f97316;--s2:#1e40af;--s3:#f97316;color-scheme:dark}
+.login.dark{--bg:#09090b;--card:#18181b;--border:#27272a;--line:#52525b;--text:#fafafa;--muted:#a1a1aa;--primary:#60a5fa;--primary-h:#93c5fd;color-scheme:dark}
+:where(.dark) a{color:var(--ptext,var(--primary))}
+:where(.dark) a:hover{color:var(--primary-h)}
+.dark .scrim{background:rgba(0,0,0,.65)}
+.dark .dlg{border:1px solid var(--border);box-shadow:0 24px 48px rgba(0,0,0,.5)}
+.dark .inp:focus,.dark .inp-w:focus-within{box-shadow:0 0 0 3px rgba(96,165,250,.3)}
+.dark .s1{background:rgba(96,165,250,.16);color:#93c5fd}.dark .s2{background:rgba(45,212,191,.14);color:#5eead4}.dark .s3{background:rgba(167,139,250,.16);color:#c4b5fd}.dark .s0{background:#27272a;color:#d4d4d8}
+.login.dark .hero{background:#172554}
+.login.dark .logo{color:#172554}
+.login.dark .btn{color:#09090b}
+.login.dark .err{background:rgba(248,113,113,.14);color:#fca5a5}

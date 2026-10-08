@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Đơn thuê — Sweet Home</title>
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+.app{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--line:#94a3b8;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--primary:#2563eb;--primary-h:#1d4ed8;--soft:#eff6ff;--ptext:#1d4ed8;--onp:#fff;--b-bg:#dbeafe;--b-fg:#1e40af;--i-bg:#dcfce7;--i-fg:#166534;--o-bg:#f1f5f9;--o-fg:#475569;--c-bg:#fee2e2;--c-fg:#991b1b;--p-bg:#ede9fe;--p-fg:#5b21b6;--w-bg:#ffedd5;--w-fg:#9a3412;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side{background:var(--card);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 6px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:var(--onp);display:grid;place-items:center;flex:none}
+.bn{font-weight:700;font-size:16px;letter-spacing:-.01em}.bs{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a,.nav-out{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500}
+.nav a:hover,.nav-out:hover{background:var(--subtle);color:var(--text)}
+.nav a.active{background:var(--soft);color:var(--ptext);font-weight:600}
+.cnt{margin-left:auto;font-size:12px;font-weight:600;background:var(--primary);color:var(--onp);border-radius:999px;padding:0 8px;line-height:20px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:16px}
+.me{display:flex;align-items:center;gap:12px;padding:6px 8px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--subtle);color:var(--text);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.mn{font-weight:600}.ms{font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:68px;display:flex;align-items:center;gap:12px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;height:44px;width:min(380px,100%);padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted)}
+.search input{border:0;outline:0;background:transparent;font:inherit;color:var(--text);flex:1;min-width:0}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.ibtn:hover{background:var(--subtle);color:var(--text)}
+.ibtn.bd{border-color:var(--border);background:var(--card)}
+.dot{position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#ea580c;border:2px solid var(--card)}
+.menu-btn{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-p{background:var(--primary);color:var(--onp)}.btn-p:hover{background:var(--primary-h);color:var(--onp)}
+.btn-s{background:var(--card);border-color:var(--border);color:var(--text)}.btn-s:hover{background:var(--subtle);color:var(--text)}
+.btn-t{background:transparent;color:var(--ptext)}.btn-t:hover{background:var(--soft);color:var(--ptext)}
+.content{width:100%;max-width:1440px;padding:28px 32px 48px;display:flex;flex-direction:column;gap:24px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:0}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:20px;white-space:nowrap}
+.t-b{background:var(--b-bg);color:var(--b-fg)}.t-i{background:var(--i-bg);color:var(--i-fg)}.t-o{background:var(--o-bg);color:var(--o-fg)}.t-c{background:var(--c-bg);color:var(--c-fg)}.t-w{background:var(--w-bg);color:var(--w-fg)}.t-p{background:var(--p-bg);color:var(--p-fg)}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+.mode{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted)}.mode .ic{width:14px;height:14px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
+.tabs{display:flex;gap:4px;padding:0 12px;border-bottom:1px solid var(--border);overflow-x:auto}
+.tabs a{min-height:48px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs a.active{color:var(--ptext);border-color:var(--primary);font-weight:600}
+.tabs .n{font-size:12px;background:var(--subtle);color:var(--muted);border-radius:999px;padding:0 8px;line-height:20px;font-weight:600}
+.tabs a.active .n{background:var(--b-bg);color:var(--b-fg)}
+.filters{display:flex;gap:12px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--border)}
+.filters .search{flex:1;min-width:220px;width:auto}
+div.sel{position:relative;display:flex}
+.sel select{appearance:none;height:44px;padding:0 38px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit;cursor:pointer}
+.sel .ic{position:absolute;right:10px;top:12px;pointer-events:none;color:var(--muted)}
+.tbl-w{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:620px}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 16px;background:var(--subtle);white-space:nowrap}
+.tbl td{padding:11px 16px;border-top:1px solid var(--border);vertical-align:middle;line-height:1.35}
+.tbl tr:hover td{background:var(--bg)}
+.tbl tr.sel td{background:var(--soft)}
+.tbl td b{font-weight:600;display:block}
+.tbl td small{font-size:12px;color:var(--muted)}
+.tbl .r{text-align:right}
+.tbl a.rl{color:var(--text);text-decoration:none}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
+.pages{display:flex;gap:4px}
+.pages .ibtn{font:inherit;font-weight:600;color:var(--text)}
+.pages .ibtn[aria-current="page"]{background:var(--soft);color:var(--ptext)}
+.dp-h{padding:20px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.dp-t{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dp-t h2{margin:0;font-size:20px;letter-spacing:-.01em}
+.sec{padding:16px 20px;border-bottom:1px solid var(--border)}
+.sec h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.kv span:first-child{color:var(--muted)}
+.kv.tot{border-top:1px dashed var(--border);margin-top:8px;padding-top:10px;font-weight:700;font-size:16px}
+.kv.due{font-weight:700;color:var(--w-fg)}
+.steps{list-style:none;margin:0;padding:0}
+.st{display:grid;grid-template-columns:24px 1fr;gap:12px;position:relative;padding-bottom:14px}
+.st::before{content:"";position:absolute;left:11px;top:26px;bottom:2px;width:2px;background:var(--border)}
+.st:last-child{padding-bottom:0}.st:last-child::before{display:none}
+.st .c{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:var(--onp)}
+.st .c .ic{width:14px;height:14px;stroke-width:2.5}
+.st.todo .c{background:var(--card);border:2px solid var(--line)}
+.st b{display:block;font-weight:600}.st small{color:var(--muted);font-size:12px}
+.code{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:8px;background:var(--subtle)}
+.code b{display:block;font-size:18px;letter-spacing:.08em}.code .muted{font-size:12px}
+.hint{margin:6px 0 12px;font-size:12px;color:var(--muted)}
+.st.now .c{border-color:var(--p-fg)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13px;font-weight:600}
+.inp{height:44px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.log li{display:grid;grid-template-columns:44px 1fr;gap:8px}.log li>span:first-child{color:var(--muted)}
+.dp-a{padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.dp-a .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.add{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--ptext);font-weight:600;text-decoration:none}
+.add .ic{width:16px;height:16px}
+@media (max-width:1366px){.split{grid-template-columns:minmax(0,1fr) 340px}}
+@media (max-width:1100px){.app{grid-template-columns:76px minmax(0,1fr)}.side .lbl,.bs,.bn,.cnt{display:none}.brand,.me{justify-content:center;padding:0}.nav a,.nav-out{justify-content:center;padding:0}.top,.content{padding-left:24px;padding-right:24px}.split{grid-template-columns:1fr}.tbl td{white-space:nowrap}}
+@media (max-width:720px){.app{grid-template-columns:1fr}.side{display:none}.menu-btn{display:grid}.top,.content{padding-left:16px;padding-right:16px}.btn-label{display:none}}
+</style>
+
+<div class="app">
+<aside class="side">
+<div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><div><div class="bn">Sweet Home</div><div class="bs">Quản lý cho thuê</div></div></div>
+<nav class="nav" aria-label="Điều hướng chính">
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="lbl">Tổng quan</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lbl">Lịch đặt phòng</span></a>
+<a href="#" class="active" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6"/></svg><span class="lbl">Đơn thuê</span><span class="cnt">5</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg><span class="lbl">Phòng &amp; bảng giá</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Nhân viên</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2l1 1"/></svg><span class="lbl">Lịch làm</span></a>
+</nav>
+<div class="side-foot">
+<div class="me"><span class="av">AD</span><div class="lbl"><div class="mn">Quản trị viên</div><div class="ms">admin</div></div></div>
+<a href="#" class="nav-out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Đăng xuất</span></a>
+</div>
+</aside>
+<div class="main">
+<header class="top">
+<button class="ibtn menu-btn" type="button" aria-label="Mở menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+<div class="top-r">
+<button class="ibtn" type="button" data-theme-toggle aria-label="Chuyển sang giao diện tối"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+<button class="ibtn" type="button" aria-label="Thông báo, 1 mới"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+<a class="btn btn-p" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="btn-label">Tạo đơn thuê</span></a>
+</div>
+</header>
+<main class="content">
+<div class="ph"><div><h1>Đơn thuê</h1><p>Tất cả đơn đã nhập, mới nhất ở trên cùng</p></div></div>
+
+<div class="split">
+<section class="card">
+<nav class="tabs" aria-label="Lọc theo trạng thái">
+<a href="#" class="active" aria-current="page">Tất cả<span class="n">128</span></a>
+<a href="#">Đã đặt<span class="n">5</span></a>
+<a href="#">Đang ở<span class="n">3</span></a>
+<a href="#">Chờ xác nhận<span class="n">1</span></a>
+<a href="#">Đã trả<span class="n">115</span></a>
+<a href="#">Đã huỷ<span class="n">4</span></a>
+</nav>
+<div class="filters">
+<label class="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="search" placeholder="Mã đơn, tên hoặc SĐT khách" aria-label="Tìm đơn"></label>
+<div class="sel"><select aria-label="Phòng"><option>Tất cả phòng</option><option>101 · Mộc</option><option>102 · Nắng</option><option>201 · Biển</option><option>202 · Gió</option><option>301 · Rêu</option><option>302 · Trăng</option></select><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<div class="sel"><select aria-label="Loại thuê"><option>Mọi loại thuê</option><option>Theo giờ</option><option>Qua đêm</option><option>Theo ngày</option></select><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+<div class="sel"><select aria-label="Khoảng ngày"><option>Tuần này</option><option>Hôm nay</option><option>Tháng này</option><option>Tuỳ chọn…</option></select><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+</div>
+<div class="tbl-w">
+<table class="tbl">
+<thead><tr><th scope="col">Khách · mã đơn</th><th scope="col">Phòng</th><th scope="col">Thời gian</th><th scope="col" class="r">Tổng tiền</th><th scope="col">Trạng thái</th></tr></thead>
+<tbody>
+<tr><td><a class="rl" href="#"><b>Phạm Quốc Bảo</b><small>SH-1036 · 0903 112 457</small></a></td><td><b>P101</b><small>Qua đêm · tự nhận</small></td><td class="num"><b>21:00 → 12:00</b><small>07/10 → 08/10</small></td><td class="r num">350.000đ</td><td><span class="tag t-b">Đã đặt</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Trịnh Lan</b><small>SH-1035 · 0938 220 914</small></a></td><td><b>P301</b><small>Theo giờ · tự nhận</small></td><td class="num"><b>19:00 → 22:00</b><small>07/10</small></td><td class="r num">170.000đ</td><td><span class="tag t-b">Đã đặt</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Đỗ Khánh Linh</b><small>SH-1034 · 0977 403 185</small></a></td><td><b>P102</b><small>Theo giờ · NV đón</small></td><td class="num"><b>15:00 → 18:00</b><small>07/10</small></td><td class="r num">200.000đ</td><td><span class="tag t-b">Đã đặt</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Ngô Phương</b><small>SH-1033 · 0965 781 002</small></a></td><td><b>P301</b><small>Theo giờ · tự nhận</small></td><td class="num"><b>14:00 → 17:00</b><small>07/10</small></td><td class="r num">170.000đ</td><td><span class="tag t-b">Đã đặt</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Lê Thu Hà</b><small>SH-1032 · 0914 556 730</small></a></td><td><b>P101</b><small>Theo giờ · tự nhận</small></td><td class="num"><b>13:00 → 16:00</b><small>07/10</small></td><td class="r num">200.000đ</td><td><span class="tag t-b">Đã đặt</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Nguyễn Minh Anh</b><small>SH-1031 · 0912 345 678</small></a></td><td><b>P102</b><small>Theo giờ · NV đón</small></td><td class="num"><b>09:30 → 13:30</b><small>07/10</small></td><td class="r num">250.000đ</td><td><span class="tag t-i">Đang ở</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Bùi Thanh Tâm</b><small>SH-1030 · 0983 667 219</small></a></td><td><b>P202</b><small>Theo giờ · NV đón</small></td><td class="num"><b>10:00 → 12:15</b><small>07/10</small></td><td class="r num">240.000đ</td><td><span class="tag t-w">Quá giờ</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Hoàng Yến</b><small>SH-1029 · 0909 448 316</small></a></td><td><b>P201</b><small>Theo ngày · NV đón</small></td><td class="num"><b>14:00 → 12:00</b><small>06/10 → 08/10</small></td><td class="r num">1.300.000đ</td><td><span class="tag t-i">Đang ở</span></td></tr>
+<tr class="sel" aria-selected="true"><td><a class="rl" href="#"><b>Mai Hương</b><small>SH-1028 · 0932 805 671</small></a></td><td><b>P302</b><small>Theo giờ · tự nhận</small></td><td class="num"><b>07:00 → 10:00</b><small>07/10</small></td><td class="r num">170.000đ</td><td><span class="tag t-p">Chờ xác nhận</span></td></tr>
+<tr><td><a class="rl" href="#"><b>Vũ Minh Đức</b><small>SH-1027 · 0388 410 925</small></a></td><td><b>P202</b><small>Qua đêm · NV đón</small></td><td class="num"><b>21:00 → 09:00</b><small>06/10 → 07/10</small></td><td class="r num">420.000đ</td><td><span class="tag t-o">Đã trả</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="pager">
+<span class="muted">Hiển thị 1–10 trên 128 đơn</span>
+<div class="pages">
+<button class="ibtn" type="button" aria-label="Trang trước"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+<button class="ibtn" type="button" aria-current="page">1</button>
+<button class="ibtn" type="button">2</button>
+<button class="ibtn" type="button">3</button>
+<button class="ibtn" type="button" aria-label="Trang sau"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+</div>
+</div>
+</section>
+
+<aside class="card" aria-label="Chi tiết đơn SH-1028">
+<div class="dp-h">
+<div class="dp-t"><h2>SH-1028</h2><span class="tag t-p">Chờ xác nhận trả</span></div>
+<span class="muted">Tạo lúc 21:40, 06/10 · bởi admin</span>
+</div>
+<div class="sec">
+<h3>Khách thuê</h3>
+<div class="kv"><span>Họ tên</span><b>Mai Hương</b></div>
+<div class="kv"><span>Số điện thoại</span><a class="num" href="tel:0932805671">0932 805 671</a></div>
+<div class="kv"><span>CCCD</span><span class="num">•••••••• 1187</span></div>
+<div class="kv"><span>Số khách · nguồn</span><span>1 người · Facebook</span></div>
+</div>
+<div class="sec">
+<h3>Phòng 302 · Trăng — theo giờ · khách tự check-in</h3>
+<div class="code">
+<div><span class="muted">Mã cửa của đơn</span><b class="num">•• •• ••</b></div>
+<button class="btn btn-s" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Hiện</button>
+</div>
+<p class="hint">Đã gửi khách lúc 21:45, 06/10 · nhớ đổi mã khoá sau khi xác nhận trả</p>
+<ol class="steps">
+<li class="st"><span class="c"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Đã đặt, thanh toán đủ</b><small>21:40, 06/10 · chuyển khoản</small></div></li>
+<li class="st"><span class="c"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Nhận phòng</b><small>07:00 · tự chuyển theo giờ</small></div></li>
+<li class="st todo now"><span class="c"></span><div><b>Trả phòng</b><small>10:00 · tự chuyển theo giờ, chờ xác nhận</small></div></li>
+</ol>
+</div>
+<div class="sec">
+<h3>Xác nhận trả phòng</h3>
+<div class="g2">
+<div class="field"><label for="ci">Giờ nhận thực tế</label><input id="ci" class="inp num" value="07:00"></div>
+<div class="field"><label for="co">Giờ trả thực tế</label><input id="co" class="inp num" value="10:00"></div>
+</div>
+<p class="hint">Sửa nếu khách báo giờ khác. Trả muộn quá 15 phút sẽ tự tính phụ thu theo giá mỗi giờ thêm, làm tròn lên theo giờ.</p>
+<div class="kv tot"><span style="color: var(--text)">Tổng</span><span class="num">170.000đ</span></div>
+<div class="kv"><span>Đã thanh toán</span><span class="num">−170.000đ</span></div>
+<div class="kv"><span>Còn phải thu</span><span class="num">0đ</span></div>
+<a class="add" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Thêm phụ thu</a>
+</div>
+<div class="sec">
+<h3>Nhật ký</h3>
+<ul class="log">
+<li><span class="num">10:00</span><span>Hệ thống chuyển sang <b>Chờ xác nhận trả</b></span></li>
+<li><span class="num">07:00</span><span>Hệ thống chuyển sang <b>Đang ở</b></span></li>
+<li><span class="num">21:45</span><span><b>admin</b> xem mã cửa, sao chép tin nhắn gửi khách</span></li>
+<li><span class="num">21:40</span><span><b>admin</b> tạo đơn</span></li>
+</ul>
+</div>
+<div class="dp-a">
+<a class="btn btn-p" href="#">Xác nhận đã trả phòng</a>
+<div class="row"><a class="btn btn-s" href="tel:0932805671">Gọi khách</a><a class="btn btn-s" href="#">Sửa đơn</a></div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+</body>
+</html>

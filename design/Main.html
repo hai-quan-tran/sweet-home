@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Tổng quan — Sweet Home</title>
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+.app{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--line:#94a3b8;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--primary:#2563eb;--primary-h:#1d4ed8;--soft:#eff6ff;--ptext:#1d4ed8;--onp:#fff;--b-bg:#dbeafe;--b-fg:#1e40af;--i-bg:#dcfce7;--i-fg:#166534;--o-bg:#f1f5f9;--o-fg:#475569;--c-bg:#fee2e2;--c-fg:#991b1b;--p-bg:#ede9fe;--p-fg:#5b21b6;--w-bg:#ffedd5;--w-fg:#9a3412;--w-line:#fb923c;--s2:#93c5fd;--s3:#fb923c;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side{background:var(--card);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 6px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:var(--onp);display:grid;place-items:center;flex:none}
+.bn{font-weight:700;font-size:16px;letter-spacing:-.01em}.bs{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a,.nav-out{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500}
+.nav a:hover,.nav-out:hover{background:var(--subtle);color:var(--text)}
+.nav a.active{background:var(--soft);color:var(--ptext);font-weight:600}
+.cnt{margin-left:auto;font-size:12px;font-weight:600;background:var(--primary);color:var(--onp);border-radius:999px;padding:0 8px;line-height:20px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:16px}
+.me{display:flex;align-items:center;gap:12px;padding:6px 8px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--subtle);color:var(--text);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.mn{font-weight:600}.ms{font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:68px;display:flex;align-items:center;gap:12px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;height:44px;width:min(380px,100%);padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted)}
+.search input{border:0;outline:0;background:transparent;font:inherit;color:var(--text);flex:1;min-width:0}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.ibtn:hover{background:var(--subtle);color:var(--text)}
+.dot{position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#ea580c;border:2px solid var(--card)}
+.menu-btn{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-p{background:var(--primary);color:var(--onp)}.btn-p:hover{background:var(--primary-h);color:var(--onp)}
+.btn-s{background:var(--card);border-color:var(--border);color:var(--text)}.btn-s:hover{background:var(--subtle);color:var(--text)}
+.btn-t{background:transparent;color:var(--ptext)}.btn-t:hover{background:var(--soft);color:var(--ptext)}
+.content{width:100%;max-width:1440px;padding:28px 32px 48px;display:flex;flex-direction:column;gap:24px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:0}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;min-height:60px;border-bottom:1px solid var(--border)}
+.ch h2{margin:0;font-size:16px;font-weight:600}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:20px;white-space:nowrap}
+.t-b{background:var(--b-bg);color:var(--b-fg)}.t-i{background:var(--i-bg);color:var(--i-fg)}.t-o{background:var(--o-bg);color:var(--o-fg)}.t-c{background:var(--c-bg);color:var(--c-fg)}.t-w{background:var(--w-bg);color:var(--w-fg)}.t-p{background:var(--p-bg);color:var(--p-fg)}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+.mode{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--muted)}.mode .ic{width:14px;height:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.kpi{padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.kpi-l{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:500}
+.kpi-v{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi-v small{font-size:16px;color:var(--muted);font-weight:500}
+.kpi-s{font-size:13px;color:var(--muted)}
+.row2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:24px;align-items:start}
+.rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:20px}
+.room{border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-height:136px}
+.room.warn{border-color:var(--w-line);box-shadow:inset 0 0 0 1px var(--w-line)}
+.room-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.room-n{font-weight:700;font-size:15px}
+.room-g{font-weight:600}
+.room-t{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.room-t .ic{width:16px;height:16px}
+.bar{height:6px;border-radius:999px;background:var(--subtle);overflow:hidden;margin-top:auto}.bar span{display:block;height:100%;background:var(--primary);border-radius:inherit}
+.bar.w span{background:var(--w-line)}
+.agenda{list-style:none;margin:0;padding:4px 0}
+.ag{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 20px}
+.ag+.ag{border-top:1px solid var(--border)}
+.ag-time{font-weight:700;font-variant-numeric:tabular-nums}
+.ag-k{font-size:12px;font-weight:600;color:var(--ptext)}.ag-k.out{color:var(--w-fg)}
+.ag-n{font-weight:600}
+.ag-m{font-size:13px;color:var(--muted)}
+.chart{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:16px;align-items:end;height:236px;padding:20px 24px 16px}
+.col{display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.col .b{width:100%;max-width:48px;border-radius:6px 6px 0 0;background:var(--b-bg)}
+.col.today .b{background:var(--primary)}
+.col .v{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.col .d{font-size:12px;color:var(--muted);text-align:center;line-height:1.3}
+.col.today .d,.col.today .v{color:var(--text);font-weight:600}
+.mix{display:flex;height:14px;border-radius:999px;overflow:hidden;gap:3px}
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.legend li{display:flex;align-items:center;gap:10px}
+.sw-c{width:12px;height:12px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.cb{padding:20px;display:flex;flex-direction:column;gap:20px}
+.occ{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border);padding-top:20px}
+.occ-h{display:flex;justify-content:space-between;font-weight:600}
+@media (max-width:1500px){.rooms{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1100px){.app{grid-template-columns:76px minmax(0,1fr)}.side .lbl,.bs,.bn,.cnt{display:none}.brand,.me{justify-content:center;padding:0}.nav a,.nav-out{justify-content:center;padding:0}.top,.content{padding-left:24px;padding-right:24px}.rooms{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){.row2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.app{grid-template-columns:1fr}.side{display:none}.menu-btn{display:grid}.top,.content{padding-left:16px;padding-right:16px}.btn-label{display:none}.rooms{grid-template-columns:1fr}.chart{gap:8px;padding:16px}}
+</style>
+
+<div class="app">
+<aside class="side">
+<div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><div><div class="bn">Sweet Home</div><div class="bs">Quản lý cho thuê</div></div></div>
+<nav class="nav" aria-label="Điều hướng chính">
+<a href="#" class="active" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="lbl">Tổng quan</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lbl">Lịch đặt phòng</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6"/></svg><span class="lbl">Đơn thuê</span><span class="cnt">5</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg><span class="lbl">Phòng &amp; bảng giá</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Nhân viên</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2l1 1"/></svg><span class="lbl">Lịch làm</span></a>
+</nav>
+<div class="side-foot">
+<div class="me"><span class="av">AD</span><div class="lbl"><div class="mn">Quản trị viên</div><div class="ms">admin</div></div></div>
+<a href="#" class="nav-out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Đăng xuất</span></a>
+</div>
+</aside>
+<div class="main">
+<header class="top">
+<button class="ibtn menu-btn" type="button" aria-label="Mở menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+<div class="top-r">
+<button class="ibtn" type="button" data-theme-toggle aria-label="Chuyển sang giao diện tối"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+<button class="ibtn" type="button" aria-label="Thông báo, 1 mới"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+<a class="btn btn-p" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="btn-label">Tạo đơn thuê</span></a>
+</div>
+</header>
+<main class="content">
+<div class="ph">
+<div><h1>Tổng quan</h1><p>Thứ Tư, 07/10/2026 · cập nhật lúc 12:40 · Ca sáng: Lê Thị Hồng</p></div>
+<a class="btn btn-s" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Xem lịch hôm nay</a>
+</div>
+
+<section class="kpis" aria-label="Chỉ số hôm nay">
+<div class="card kpi"><div class="kpi-l"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg>Phòng trống</div><div class="kpi-v">2<small> / 6</small></div><div class="kpi-s">101, 301 sẵn sàng · 302 chờ xác nhận trả</div></div>
+<div class="card kpi"><div class="kpi-l"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Đang có khách</div><div class="kpi-v">3</div><div class="kpi-s">1 phòng quá giờ trả</div></div>
+<div class="card kpi"><div class="kpi-l"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Lượt nhận phòng hôm nay</div><div class="kpi-v">8</div><div class="kpi-s">3 đã nhận · 5 sắp tới</div></div>
+<div class="card kpi"><div class="kpi-l"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>Doanh thu hôm nay</div><div class="kpi-v">1.850.000<small>đ</small></div><div class="kpi-s">Đã thu 1.350.000đ</div></div>
+</section>
+
+<div class="row2">
+<section class="card">
+<div class="ch"><h2>Tình trạng phòng</h2><a class="btn btn-t" href="#">Mở lịch<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a></div>
+<div class="rooms">
+<article class="room">
+<div class="room-h"><span class="room-n">101 · Mộc</span><span class="tag t-o">Trống</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Khách tự check-in</span>
+<div class="room-g muted">Chưa có khách</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Khách tiếp theo 13:00 · Lê Thu Hà</div>
+</article>
+<article class="room">
+<div class="room-h"><span class="room-n">102 · Nắng</span><span class="tag t-i">Đang ở</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Nhân viên check-in</span>
+<div class="room-g">Nguyễn Minh Anh</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>09:30 → 13:30 · còn 50 phút</div>
+<div class="bar" role="img" aria-label="Đã ở 79% thời gian"><span style="width: 79%"></span></div>
+</article>
+<article class="room">
+<div class="room-h"><span class="room-n">201 · Biển</span><span class="tag t-i">Đang ở</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Nhân viên check-in</span>
+<div class="room-g">Hoàng Yến</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Theo ngày · trả 12:00, 08/10</div>
+<div class="bar" role="img" aria-label="Đã ở 49% thời gian"><span style="width: 49%"></span></div>
+</article>
+<article class="room warn">
+<div class="room-h"><span class="room-n">202 · Gió</span><span class="tag t-w">Quá giờ 25 phút</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>Nhân viên check-in</span>
+<div class="room-g">Bùi Thanh Tâm</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>10:00 → 12:15 · đang tính phụ thu</div>
+<div class="bar w" role="img" aria-label="Đã quá giờ trả phòng"><span style="width: 100%"></span></div>
+</article>
+<article class="room">
+<div class="room-h"><span class="room-n">301 · Rêu</span><span class="tag t-o">Trống</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Khách tự check-in</span>
+<div class="room-g muted">Chưa có khách</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Khách tiếp theo 14:00 · Ngô Phương</div>
+</article>
+<article class="room">
+<div class="room-h"><span class="room-n">302 · Trăng</span><span class="tag t-p">Chờ xác nhận trả</span></div>
+<span class="mode"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg>Khách tự check-in</span>
+<div class="room-g">Mai Hương</div>
+<div class="room-t"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Tự chuyển lúc 10:00 · chờ quản lý xác nhận</div>
+</article>
+</div>
+</section>
+
+<section class="card">
+<div class="ch"><h2>Việc cần làm hôm nay</h2><span class="tag t-b">8 việc</span></div>
+<ol class="agenda">
+<li class="ag"><span class="ag-time" style="color: var(--p-fg)">10:00</span><div><div class="ag-k" style="color: var(--p-fg)">Xác nhận trả phòng</div><div class="ag-n">Mai Hương</div><div class="ag-m">P302 · khách tự trả</div></div><a class="btn btn-s" href="#">Xác nhận</a></li>
+<li class="ag"><span class="ag-time" style="color: var(--w-fg)">12:15</span><div><div class="ag-k out">Trả phòng · quá 25 phút</div><div class="ag-n">Bùi Thanh Tâm</div><div class="ag-m">P202 · NV Hồng</div></div><a class="btn btn-s" href="#">Trả phòng</a></li>
+<li class="ag"><span class="ag-time">13:00</span><div><div class="ag-k">Nhận phòng</div><div class="ag-n">Lê Thu Hà</div><div class="ag-m">P101 · tự nhận · đã gửi mã</div></div></li>
+<li class="ag"><span class="ag-time">13:30</span><div><div class="ag-k out">Trả phòng</div><div class="ag-n">Nguyễn Minh Anh</div><div class="ag-m">P102 · NV Hồng · thu 150.000đ</div></div></li>
+<li class="ag"><span class="ag-time">14:00</span><div><div class="ag-k">Nhận phòng</div><div class="ag-n">Ngô Phương</div><div class="ag-m" style="color: var(--w-fg)">P301 · tự nhận · chưa gửi mã</div></div><a class="btn btn-s" href="#">Gửi mã</a></li>
+<li class="ag"><span class="ag-time">15:00</span><div><div class="ag-k">Nhận phòng</div><div class="ag-n">Đỗ Khánh Linh</div><div class="ag-m">P102 · NV Tuấn</div></div></li>
+<li class="ag"><span class="ag-time">19:00</span><div><div class="ag-k">Nhận phòng</div><div class="ag-n">Trịnh Lan</div><div class="ag-m">P301 · tự nhận · đã gửi mã</div></div></li>
+<li class="ag"><span class="ag-time">21:00</span><div><div class="ag-k">Nhận phòng</div><div class="ag-n">Phạm Quốc Bảo</div><div class="ag-m">P101 · tự nhận · đã gửi mã</div></div></li>
+</ol>
+</section>
+</div>
+
+<div class="row2">
+<section class="card">
+<div class="ch"><h2>Doanh thu 7 ngày</h2><span class="muted">Tổng <b class="num" style="color: var(--text)">12.430.000đ</b></span></div>
+<div class="chart" role="img" aria-label="Doanh thu 7 ngày, cao nhất thứ Bảy 2,64 triệu, hôm nay 1,85 triệu">
+<div class="col"><span class="v">1,25tr</span><span class="b" style="height: 47%"></span><span class="d">T5<br>01/10</span></div>
+<div class="col"><span class="v">1,98tr</span><span class="b" style="height: 75%"></span><span class="d">T6<br>02/10</span></div>
+<div class="col"><span class="v">2,64tr</span><span class="b" style="height: 100%"></span><span class="d">T7<br>03/10</span></div>
+<div class="col"><span class="v">2,31tr</span><span class="b" style="height: 87%"></span><span class="d">CN<br>04/10</span></div>
+<div class="col"><span class="v">0,98tr</span><span class="b" style="height: 37%"></span><span class="d">T2<br>05/10</span></div>
+<div class="col"><span class="v">1,42tr</span><span class="b" style="height: 54%"></span><span class="d">T3<br>06/10</span></div>
+<div class="col today"><span class="v">1,85tr</span><span class="b" style="height: 70%"></span><span class="d">Hôm nay<br>07/10</span></div>
+</div>
+</section>
+<section class="card">
+<div class="ch"><h2>Đơn thuê tháng 10</h2><span class="muted num">65 đơn</span></div>
+<div class="cb">
+<div class="mix" role="img" aria-label="Theo giờ 63%, qua đêm 23%, theo ngày 14%"><span style="width: 63%; background: var(--primary)"></span><span style="width: 23%; background: var(--s2)"></span><span style="width: 14%; background: var(--s3)"></span></div>
+<ul class="legend">
+<li><span class="sw-c" style="background: var(--primary)"></span>Theo giờ<b>41 · 63%</b></li>
+<li><span class="sw-c" style="background: var(--s2)"></span>Qua đêm<b>15 · 23%</b></li>
+<li><span class="sw-c" style="background: var(--s3)"></span>Theo ngày<b>9 · 14%</b></li>
+</ul>
+<div class="occ">
+<div class="occ-h"><span>Công suất phòng</span><span class="num">68%</span></div>
+<div class="bar" role="img" aria-label="Công suất 68%"><span style="width: 68%"></span></div>
+<div class="kpi-s">Tính trên số giờ có khách / tổng giờ mở cửa</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</div>
+
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+</body>
+</html>
