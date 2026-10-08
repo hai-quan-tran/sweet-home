@@ -1,0 +1,36 @@
+@use 'primeicons/primeicons.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  line-height: 1.5;
+  color: var(--p-text-color);
+  background: var(--p-surface-50);
+}
+
+.app-dark body {
+  background: var(--p-surface-950);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-desc {
+  margin: 4px 0 0;
+  color: var(--p-text-muted-color);
+}

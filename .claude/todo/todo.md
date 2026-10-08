@@ -29,4 +29,6 @@
 ## Bước tiếp theo
 - [x] Chốt các câu hỏi trên
 - [x] Lên kế hoạch chia giai đoạn code: xem `code-plan.md`
-- [ ] Xác nhận kế hoạch và quyết định kỹ thuật, rồi bắt đầu GĐ 0
+- [x] Xác nhận kế hoạch và quyết định kỹ thuật
+- [x] GĐ 0: khung dự án
+- [ ] GĐ 1: đăng nhập & phân quyền

@@ -1,0 +1,24 @@
+# Cấu hình chung cho mọi môi trường. Thông tin kết nối nằm ở application-{dev,stage,prod}.yml
+spring:
+  application:
+    name: sweet-home
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  error:
+    include-stacktrace: never
+    include-message: never

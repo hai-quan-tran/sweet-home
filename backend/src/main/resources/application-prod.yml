@@ -1,0 +1,13 @@
+# Môi trường prod: mọi thông tin kết nối lấy từ biến môi trường
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    com.sweethome: WARN

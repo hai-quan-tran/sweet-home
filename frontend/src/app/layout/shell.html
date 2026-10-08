@@ -1,0 +1,32 @@
+<div class="shell">
+  <aside class="side">
+    <a class="brand" routerLink="/tong-quan">
+      <span class="logo"><i class="pi pi-home"></i></span>
+      <span class="brand-text"><b>Sweet Home</b><small>Quản lý cho thuê</small></span>
+    </a>
+    <nav class="nav" aria-label="Điều hướng chính">
+      @for (item of menu; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page" [attr.title]="item.label">
+          <i class="pi" [class]="item.icon"></i><span class="label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <p-button
+        [icon]="theme.dark() ? 'pi pi-sun' : 'pi pi-moon'"
+        [text]="true"
+        severity="secondary"
+        [ariaLabel]="theme.dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+        (onClick)="theme.toggle()"
+      />
+      <p-button icon="pi pi-bell" [text]="true" severity="secondary" ariaLabel="Thông báo" />
+      <a pButton routerLink="/don-thue/tao-moi"><i class="pi pi-plus" pButtonIcon></i><span pButtonLabel>Tạo đơn thuê</span></a>
+    </header>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

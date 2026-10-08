@@ -3,9 +3,9 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: chờ xác nhận kế hoạch và các quyết định kỹ thuật bên dưới.
+Trạng thái: GĐ 0 xong. Tiếp theo: GĐ 1.
 
-## Quyết định kỹ thuật (đề xuất, chờ xác nhận)
+## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
 - Backend: Java 25, Spring Boot 4, Maven, Spring Security + JWT, Spring Data JPA, Liquibase, MySQL 8.
 - JDK 25 cài song song JDK 17 (xem `architecture/dev-environment.md`); build bằng Maven Wrapper + toolchains trỏ tới JDK 25.
@@ -27,7 +27,7 @@ Trạng thái: chờ xác nhận kế hoạch và các quyết định kỹ thu�
 - Thông báo (chuông): quá giờ, chờ xác nhận trả, sắp nhận phòng chưa gửi mã, thiếu nhân viên trực; frontend hỏi lại mỗi 1 phút.
 
 ## Giai đoạn
-### GĐ 0: Khung dự án
+### GĐ 0: Khung dự án ✅
 - Backend: khung Spring Boot, cấu hình MySQL/Liquibase theo profile, xử lý lỗi chung, JaCoCo.
 - Frontend: khung Angular + PrimeNG Aura, layout chung (menu trái, thanh trên, nút dark mode), routing các màn (trống).
 - README: cách tạo DB trên MySQL local, biến môi trường, cách chạy backend/frontend.

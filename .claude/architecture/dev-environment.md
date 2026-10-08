@@ -3,7 +3,7 @@
 ## Java
 - JDK 25: `C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot` (Temurin, cài song song).
 - JDK 17 vẫn là mặc định trên PATH (dự án khác dùng). Không đổi PATH/JAVA_HOME.
-- Dự án dùng JDK 25 qua Maven toolchains (`~/.m2/toolchains.xml`) và cấu hình runtime của VS Code.
+- Dự án dùng JDK 25 qua Maven toolchains: `~/.m2/toolchains.xml` đã khai báo JDK 25.
 
 ## MySQL
 - MySQL 8.4.9 (bản LTS của MySQL 8): dịch vụ `MySQL84`, cổng **3307**, cài song song.
@@ -16,4 +16,6 @@
 - Kết nối bằng client: `mysql -h 127.0.0.1 -P 3307 -u sweet_home -p sweet_home`
 
 ## Công cụ khác
-- Node 22.22, npm 10.9 (đủ cho Angular 21). Maven 3.8.5 (dự án dùng Maven Wrapper).
+- Node 22.22. npm 10.9 bị lỗi `edgesOut` khi cài package → dùng `npx npm@11 install` (npm 11.21).
+- Maven 3.8.5 cài sẵn; dự án dùng Maven Wrapper (Maven 3.9.16).
+- Cổng 8080 đang bị một ứng dụng Java khác chiếm → backend Sweet Home chạy cổng 8090.

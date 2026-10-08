@@ -1,0 +1,14 @@
+# Môi trường dev trên máy local: ghi thẳng thông tin kết nối (MySQL 8.4, cổng 3307)
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3307/sweet_home?useUnicode=true&characterEncoding=utf8
+    username: sweet_home
+    password: Appw4MyaWFKf1rV57Vy
+
+# Cổng 8080 trên máy dev đang dùng cho dự án khác
+server:
+  port: 8090
+
+logging:
+  level:
+    com.sweethome: DEBUG
