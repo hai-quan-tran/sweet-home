@@ -26,4 +26,5 @@
 
 ## Bước tiếp theo
 - [x] Chốt các câu hỏi trên
-- [ ] Bắt đầu code (Angular + PrimeNG, Spring Boot, MySQL): chưa bắt đầu
+- [x] Lên kế hoạch chia giai đoạn code: xem `code-plan.md`
+- [ ] Xác nhận kế hoạch và quyết định kỹ thuật, rồi bắt đầu GĐ 0
