@@ -10,6 +10,8 @@
 - [x] Dialog phụ thu: đủ 5 trường hợp "Áp dụng khi" (bấm để đổi nội dung)
 - [x] Dialog gia hạn: trường hợp không có phòng cùng giá phù hợp
 - [x] Lưu file thiết kế vào repo: thư mục `design/` (không dùng canvas nữa)
+- [x] Màn Cài đặt: mẫu tin nhắn + thông tin homestay; nút sao chép tin nhắn ở chi tiết đơn
+- [x] Bảng thông báo khi bấm chuông
 
 ## Câu hỏi đã chốt
 - [x] Font Be Vietnam Pro; nút chính blue-600

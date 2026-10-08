@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Cài đặt — Sweet Home</title>
+</head>
+<body>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+.app{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--line:#94a3b8;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--primary:#2563eb;--primary-h:#1d4ed8;--soft:#eff6ff;--ptext:#1d4ed8;--onp:#fff;--b-bg:#dbeafe;--b-fg:#1e40af;--i-bg:#dcfce7;--i-fg:#166534;--o-bg:#f1f5f9;--o-fg:#475569;--c-bg:#fee2e2;--c-fg:#991b1b;--p-bg:#ede9fe;--p-fg:#5b21b6;--w-bg:#ffedd5;--w-fg:#9a3412;--w-line:#fb923c;font-family:'Be Vietnam Pro',system-ui,sans-serif;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.side{background:var(--card);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 6px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:var(--onp);display:grid;place-items:center;flex:none}
+.bn{font-weight:700;font-size:16px;letter-spacing:-.01em}.bs{font-size:12px;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a,.nav-out{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:500}
+.nav a:hover,.nav-out:hover{background:var(--subtle);color:var(--text)}
+.nav a.active{background:var(--soft);color:var(--ptext);font-weight:600}
+.cnt{margin-left:auto;font-size:12px;font-weight:600;background:var(--primary);color:var(--onp);border-radius:999px;padding:0 8px;line-height:20px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:16px}
+.me{display:flex;align-items:center;gap:12px;padding:6px 8px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--subtle);color:var(--text);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.mn{font-weight:600}.ms{font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:68px;display:flex;align-items:center;gap:12px;padding:0 32px;background:var(--card);border-bottom:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;height:44px;width:min(380px,100%);padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted)}
+.search input{border:0;outline:0;background:transparent;font:inherit;color:var(--text);flex:1;min-width:0}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.ibtn:hover{background:var(--subtle);color:var(--text)}
+.dot{position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#ea580c;border:2px solid var(--card)}
+.menu-btn{display:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-p{background:var(--primary);color:var(--onp)}.btn-p:hover{background:var(--primary-h);color:var(--onp)}
+.btn-s{background:var(--card);border-color:var(--border);color:var(--text)}.btn-s:hover{background:var(--subtle);color:var(--text)}
+.btn-t{background:transparent;color:var(--ptext)}.btn-t:hover{background:var(--soft);color:var(--ptext)}
+.content{width:100%;max-width:1440px;padding:28px 32px 48px;display:flex;flex-direction:column;gap:24px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:0}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;min-height:60px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ch h2{margin:0;font-size:16px;font-weight:600}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:20px;white-space:nowrap}
+.t-b{background:var(--b-bg);color:var(--b-fg)}.t-w{background:var(--w-bg);color:var(--w-fg)}.t-i{background:var(--i-bg);color:var(--i-fg)}.t-o{background:var(--o-bg);color:var(--o-fg)}.t-p{background:var(--p-bg);color:var(--p-fg)}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}
+.note{padding:12px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border)}
+.tabs a{min-height:48px;display:flex;align-items:center;padding:0 16px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.active{color:var(--ptext);border-color:var(--primary);font-weight:600}
+[hidden]{display:none !important}
+.tpl{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+.tpls{list-style:none;margin:0;padding:8px}
+.tpls a{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;border-radius:8px;color:var(--text);text-decoration:none}
+.tpls a:hover{background:var(--subtle);color:var(--text)}
+.tpls li.on a{background:var(--soft);box-shadow:inset 3px 0 0 var(--primary)}
+.tpls b{font-weight:600}.tpls small{font-size:12px;color:var(--muted)}
+.cb{padding:20px;display:flex;flex-direction:column;gap:20px}
+.cf{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
+.cf .del{margin-right:auto;color:var(--c-fg)}.cf .del:hover{background:var(--c-bg);color:var(--c-fg)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.flab{font-size:13px;font-weight:600}
+.req{color:var(--c-fg)}
+.inp{height:44px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit}
+.inp:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.2)}
+textarea.inp{height:350px;padding:10px 12px;resize:vertical;line-height:1.6}
+.hint{margin:0;font-size:12px;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:8px;border:0;margin:0;padding:0}
+.opts legend{font-size:13px;font-weight:600;padding:0;margin-bottom:6px}
+.opt{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--border);border-radius:999px;cursor:pointer;font-weight:500}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt.on{border-color:var(--primary);background:var(--soft);color:var(--ptext);font-weight:600}
+.vars{display:flex;flex-wrap:wrap;gap:6px}
+.vars button{min-height:36px;padding:0 12px;border:1px dashed var(--line);border-radius:999px;background:var(--card);color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+.vars button:hover{border-color:var(--primary);color:var(--ptext)}
+.vars button.sec{border-color:var(--w-line);color:var(--w-fg)}
+.preview{white-space:pre-wrap;padding:14px 16px;border-radius:8px;background:var(--subtle);font-size:13px;line-height:1.6}
+.mask{color:var(--muted)}
+.info{max-width:880px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
+.span2{grid-column:span 2}
+@media (max-width:1100px){.tpl{grid-template-columns:260px minmax(0,1fr)}}
+@media (max-width:860px){.tpl{grid-template-columns:1fr}}
+@media (max-width:1100px){.app{grid-template-columns:76px minmax(0,1fr)}.side .lbl,.bs,.bn,.cnt{display:none}.brand,.me{justify-content:center;padding:0}.nav a,.nav-out{justify-content:center;padding:0}.top,.content{padding-left:24px;padding-right:24px}}
+@media (max-width:720px){.app{grid-template-columns:1fr}.side{display:none}.menu-btn{display:grid}.top,.content{padding-left:16px;padding-right:16px}.btn-label{display:none}}
+</style>
+
+<div class="app">
+<aside class="side">
+<div class="brand"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><div><div class="bn">Sweet Home</div><div class="bs">Quản lý cho thuê</div></div></div>
+<nav class="nav" aria-label="Điều hướng chính">
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="lbl">Tổng quan</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lbl">Lịch đặt phòng</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6"/></svg><span class="lbl">Đơn thuê</span><span class="cnt">5</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg><span class="lbl">Phòng &amp; bảng giá</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="lbl">Nhân viên</span></a>
+<a href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2l1 1"/></svg><span class="lbl">Lịch làm</span></a>
+<a href="#" class="active" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span class="lbl">Cài đặt</span></a>
+</nav>
+<div class="side-foot">
+<div class="me"><span class="av">AD</span><div class="lbl"><div class="mn">Quản trị viên</div><div class="ms">admin</div></div></div>
+<a href="#" class="nav-out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Đăng xuất</span></a>
+</div>
+</aside>
+<div class="main">
+<header class="top">
+<button class="ibtn menu-btn" type="button" aria-label="Mở menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+<div class="top-r">
+<button class="ibtn" type="button" data-theme-toggle aria-label="Chuyển sang giao diện tối"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+<button class="ibtn" type="button" aria-label="Thông báo, 1 mới"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
+<a class="btn btn-p" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="btn-label">Tạo đơn thuê</span></a>
+</div>
+</header>
+<main class="content">
+<div class="ph">
+<div><h1>Cài đặt</h1><p>Mẫu tin nhắn gửi khách và thông tin homestay. Chỉ quản lý được sửa.</p></div>
+</div>
+
+<nav class="tabs" aria-label="Mục cài đặt"><a href="#mau-tin-nhan" data-tab="mau-tin-nhan" class="active" aria-current="page">Mẫu tin nhắn</a><a href="#thong-tin" data-tab="thong-tin">Thông tin homestay</a></nav>
+
+<div class="tpl" data-panel="mau-tin-nhan">
+<section class="card">
+<div class="ch"><h2>Mẫu tin nhắn</h2><a class="btn btn-t" href="#"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Thêm mẫu</a></div>
+<ul class="tpls">
+<li class="on"><a href="#"><b>Hướng dẫn tự nhận phòng</b><small>Tự chọn sẵn: khách tự check-in</small><span class="tag t-w">Có mã cửa</span></a></li>
+<li><a href="#"><b>Xác nhận đặt phòng</b><small>Tự chọn sẵn: nhân viên check-in</small></a></li>
+<li><a href="#"><b>Nhắc giờ trả phòng</b><small>Chọn tay</small></a></li>
+</ul>
+<div class="note">Mỗi hình thức check-in có một mẫu tự chọn sẵn khi tạo đơn. Vẫn đổi được mẫu khác trước khi sao chép.</div>
+</section>
+
+<section class="card">
+<div class="ch"><h2>Sửa mẫu</h2></div>
+<form id="f-tpl" class="cb" action="#" method="post">
+<div class="field"><label for="tname">Tên mẫu <span class="req">*</span></label><input id="tname" class="inp" value="Hướng dẫn tự nhận phòng"></div>
+<fieldset class="opts">
+<legend>Tự chọn sẵn cho đơn</legend>
+<label class="opt on"><input type="radio" name="mode" checked="checked">Khách tự check-in</label>
+<label class="opt"><input type="radio" name="mode">Nhân viên check-in</label>
+<label class="opt"><input type="radio" name="mode">Không, chọn tay</label>
+</fieldset>
+<div class="field">
+<label for="body">Nội dung <span class="req">*</span></label>
+<textarea id="body" class="inp">Chào {ten_khach}, {ten_homestay} xác nhận đơn {ma_don}:
+- Phòng {phong}, {loai_thue}
+- Nhận phòng: {gio_nhan}
+- Trả phòng: {gio_tra}
+- Còn phải thanh toán: {con_phai_thu}
+
+Địa chỉ: {dia_chi}
+Bản đồ: {ban_do}
+Mã cửa: {ma_cua}
+{huong_dan}
+
+Wifi: {wifi} / {mat_khau_wifi}
+Cần hỗ trợ gọi {hotline}. Chúc bạn nghỉ ngơi vui vẻ!</textarea>
+</div>
+<div class="field">
+<span class="flab">Chèn thông tin</span>
+<div class="vars">
+<button type="button" data-v="{ten_khach}">Tên khách</button><button type="button" data-v="{ma_don}">Mã đơn</button><button type="button" data-v="{phong}">Phòng</button><button type="button" data-v="{loai_thue}">Loại thuê</button><button type="button" data-v="{gio_nhan}">Giờ nhận</button><button type="button" data-v="{gio_tra}">Giờ trả</button><button type="button" data-v="{so_khach}">Số khách</button><button type="button" data-v="{tong_tien}">Tổng tiền</button><button type="button" data-v="{da_coc}">Đã cọc</button><button type="button" data-v="{con_phai_thu}">Còn phải thu</button><button type="button" data-v="{ma_cua}" class="sec">Mã cửa</button><button type="button" data-v="{huong_dan}">Hướng dẫn của phòng</button><button type="button" data-v="{ten_homestay}">Tên homestay</button><button type="button" data-v="{dia_chi}">Địa chỉ</button><button type="button" data-v="{ban_do}">Link bản đồ</button><button type="button" data-v="{hotline}">Hotline</button><button type="button" data-v="{wifi}">Tên wifi</button><button type="button" data-v="{mat_khau_wifi}">Mật khẩu wifi</button>
+</div>
+<span class="hint">Bấm để chèn vào vị trí con trỏ. "Hướng dẫn của phòng" lấy từ phần Nhận &amp; trả phòng của từng phòng. Mẫu có mã cửa: mỗi lần sao chép được ghi vào nhật ký.</span>
+</div>
+<div class="field">
+<span class="flab">Xem trước với đơn SH-1036</span>
+<div class="preview">Chào Phạm Quốc Bảo, Sweet Home xác nhận đơn SH-1036:
+- Phòng 101 · Mộc, qua đêm
+- Nhận phòng: 21:00, 07/10/2026
+- Trả phòng: 12:00, 08/10/2026
+- Còn phải thanh toán: 350.000đ
+
+Địa chỉ: 25 Trần Hưng Đạo, Phường Cầu Ông Lãnh, TP.HCM
+Bản đồ: https://maps.app.goo.gl/sweethome
+Mã cửa: <span class="mask">●●●●●● (hiện khi sao chép)</span>
+Đi thang bộ lên tầng 1, phòng đầu hành lang bên phải. Nhập mã cửa trên khoá số rồi nhấn #.
+
+Wifi: SweetHome_5G / sweethome2026
+Cần hỗ trợ gọi 0909 123 456. Chúc bạn nghỉ ngơi vui vẻ!</div>
+</div>
+</form>
+<div class="cf">
+<button class="btn btn-t del" type="button">Xoá mẫu</button>
+<button class="btn btn-s" type="button">Huỷ</button>
+<button class="btn btn-p" type="submit" form="f-tpl">Lưu mẫu</button>
+</div>
+</section>
+</div>
+
+<section class="card info" data-panel="thong-tin" hidden>
+<div class="ch"><h2>Thông tin homestay</h2></div>
+<form id="f-info" class="cb" action="#" method="post">
+<div class="g2">
+<div class="field"><label for="hname">Tên homestay <span class="req">*</span></label><input id="hname" class="inp" value="Sweet Home"></div>
+<div class="field"><label for="hotline">Hotline <span class="req">*</span></label><input id="hotline" class="inp num" value="0909 123 456" inputmode="tel"></div>
+<div class="field span2"><label for="addr">Địa chỉ <span class="req">*</span></label><input id="addr" class="inp" value="25 Trần Hưng Đạo, Phường Cầu Ông Lãnh, TP.HCM"></div>
+<div class="field span2"><label for="map">Link bản đồ</label><input id="map" class="inp" value="https://maps.app.goo.gl/sweethome" inputmode="url"></div>
+<div class="field"><label for="wifi">Tên wifi</label><input id="wifi" class="inp" value="SweetHome_5G"></div>
+<div class="field"><label for="wpass">Mật khẩu wifi</label><input id="wpass" class="inp" value="sweethome2026"></div>
+</div>
+<p class="hint">Các thông tin này được chèn vào tin nhắn gửi khách qua mẫu tin nhắn.</p>
+</form>
+<div class="cf">
+<button class="btn btn-s" type="button">Huỷ</button>
+<button class="btn btn-p" type="submit" form="f-info">Lưu thông tin</button>
+</div>
+</section>
+</main>
+</div>
+</div>
+
+<script>
+/* Chuyển tab cài đặt theo phần # (#mau-tin-nhan, #thong-tin) và chèn biến vào nội dung mẫu. */
+(function () {
+  /** Hiện tab theo phần # của URL, mặc định là Mẫu tin nhắn. */
+  function showTab() {
+    var key = location.hash.slice(1) === 'thong-tin' ? 'thong-tin' : 'mau-tin-nhan';
+    document.querySelectorAll('[data-tab]').forEach(function (a) {
+      var on = a.dataset.tab === key;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== key; });
+  }
+
+  /** Chèn biến vào vị trí con trỏ trong ô nội dung. */
+  function insertVar(v) {
+    var t = document.getElementById('body'), s = t.selectionStart, e = t.selectionEnd;
+    t.value = t.value.slice(0, s) + v + t.value.slice(e);
+    t.focus();
+    t.selectionStart = t.selectionEnd = s + v.length;
+  }
+
+  document.querySelectorAll('.vars button').forEach(function (b) {
+    b.addEventListener('click', function () { insertVar(b.dataset.v); });
+  });
+  window.addEventListener('hashchange', showTab);
+  showTab();
+})();
+</script>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<link rel="stylesheet" href="notify.css">
+<script src="notify.js"></script>
+</body>
+</html>

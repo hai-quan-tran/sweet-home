@@ -13,6 +13,7 @@
 | Nhân viên | Tài khoản, nhật ký thao tác, quyền của vai trò |
 | Thêm nhân viên | Thông tin cá nhân · Tài khoản đăng nhập · Vai trò (không có ca làm) |
 | Lịch làm | Lịch ca theo tuần, sửa ca, quản lý ca mẫu |
+| Cài đặt | Tab Mẫu tin nhắn (danh sách, sửa nội dung, chèn biến, xem trước) · tab Thông tin homestay (tên, địa chỉ, link bản đồ, hotline, wifi) |
 
 ## Dialog
 - **Sửa bảng giá**: mở từ màn Phòng.
@@ -28,6 +29,15 @@
 1. Bấm Gia hạn → dialog: chọn Thêm giờ / Thêm ngày, số lượng (bước 1 giờ hoặc 1 ngày).
 2. Nếu mức gia hạn trùng đơn sau → cùng dialog hiện thêm phần "Chuyển sang phòng cùng giá".
 3. Không có phòng phù hợp → không gia hạn được: nút Gia hạn bị khoá, dialog báo lý do và gợi ý "Đổi sang thêm giờ" nếu vẫn thêm giờ được (tối đa trước giờ nhận của đơn sau 1 tiếng).
+
+## Thông báo (nút chuông)
+- Bấm chuông trên thanh trên cùng → bảng xổ xuống; số trên chuông = số việc cần xử lý.
+- Mỗi thông báo: tiêu đề, khách/phòng, giờ, nút xử lý nhanh (Trả phòng, Gia hạn, Xác nhận trả phòng, Sao chép tin nhắn, Mở lịch làm).
+- Đóng bằng bấm ra ngoài hoặc phím Esc.
+
+## Tin nhắn gửi khách
+- Sao chép ở: Tạo đơn (nút "Lưu & sao chép tin nhắn"), chi tiết đơn ở màn Đơn thuê và Lịch.
+- Mẫu được chọn sẵn theo hình thức check-in của đơn, đổi tay được trước khi sao chép.
 
 ## Luồng đơn khách tự check-in
 Tạo đơn (nhập mã cửa riêng cho đơn) → đến giờ nhận tự chuyển "Đang ở" → đến giờ trả tự chuyển "Chờ xác nhận trả" → quản lý xác nhận, sửa giờ thực tế nếu cần.

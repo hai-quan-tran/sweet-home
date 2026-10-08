@@ -51,7 +51,10 @@ Trạng thái: chờ xác nhận kế hoạch và các quyết định kỹ thu�
 ### GĐ 4: Tạo đơn & danh sách đơn
 - Đơn: khách (tên, SĐT, CCCD, số khách, nguồn), phòng, loại thuê, giờ nhận/trả (tự tính), cọc, hình thức check-in, mã cửa, giá chốt lúc đặt.
 - Kiểm tra trùng lịch, báo phòng trống; tính tiền (giá + phụ thu).
+- Cài đặt: thông tin homestay, mẫu tin nhắn (biến, mẫu tự chọn sẵn theo hình thức check-in); ghép nội dung tin nhắn từ đơn,
+  sao chép mẫu có mã cửa thì ghi nhật ký.
 - Frontend: màn Tạo đơn (kèm tóm tắt, sao chép tin nhắn), màn Đơn thuê (tab trạng thái, tìm kiếm, lọc, chi tiết).
+- Frontend: màn Cài đặt (Nhân viên chỉ xem).
 
 ### GĐ 5: Vòng đời đơn
 - Trạng thái: Đã đặt → Đang ở → Quá giờ → Chờ xác nhận trả → Đã trả / Đã huỷ.

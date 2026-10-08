@@ -23,6 +23,22 @@
 - Ca đã xếp lưu bản sao giờ bắt đầu/kết thúc tại lúc xếp. Sửa hoặc xoá ca mẫu sau đó không làm đổi
   các ca đã xếp (kể cả ca của ngày tới); chỉ áp dụng cho ca xếp mới.
 
+## Tin nhắn gửi khách
+- Mẫu tin nhắn do Quản lý thêm/sửa/xoá; Nhân viên chỉ chọn mẫu và sao chép.
+- Nội dung mẫu dùng biến: {ten_khach} {ma_don} {phong} {loai_thue} {gio_nhan} {gio_tra} {so_khach} {tong_tien}
+  {da_coc} {con_phai_thu} {ma_cua} {huong_dan} (hướng dẫn của phòng) {ten_homestay} {dia_chi} {ban_do} {hotline}
+  {wifi} {mat_khau_wifi}. Thông tin homestay nhập ở Cài đặt.
+- Mỗi hình thức check-in (khách tự / nhân viên) có tối đa một mẫu tự chọn sẵn khi tạo đơn.
+- Xem trước che mã cửa. Sao chép mẫu có {ma_cua} được ghi nhật ký như xem mã cửa.
+- App chỉ tạo nội dung để sao chép, không tự gửi SMS/Zalo.
+
+## Thông báo
+- Thông báo là việc cần xử lý, tính từ trạng thái hiện tại; xử lý xong thì tự mất (không có đã đọc/chưa đọc).
+- 4 loại: phòng quá giờ trả · đơn chờ xác nhận trả · sắp nhận phòng mà chưa gửi mã cửa (trong 2 giờ tới) ·
+  đơn cần nhân viên đón nhưng không ai trực (chỉ Quản lý thấy).
+- Đơn được tính là "đã gửi mã" khi sao chép tin nhắn có {ma_cua} cho đơn đó.
+- Frontend tự cập nhật mỗi 1 phút.
+
 ## Giá & phụ thu
 - Giá theo hạng phòng: 2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày.
 - Phụ thu có 4 cách thu: + % tiền phòng · số tiền / giờ · số tiền / người · số tiền / đơn.

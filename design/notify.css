@@ -1,0 +1,21 @@
+/* Bảng thông báo mở từ nút chuông, dùng chung cho mọi màn. */
+.top-r{position:relative}
+.badge{position:absolute;top:4px;right:2px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#ea580c;color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center;border:2px solid var(--card)}
+.ibtn[aria-expanded=true]{background:var(--subtle);color:var(--text)}
+.ntf{position:absolute;top:calc(100% + 10px);right:0;z-index:20;width:min(420px,calc(100vw - 32px));max-height:min(620px,calc(100vh - 96px));display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 40px rgba(15,23,42,.18)}
+.dark .ntf{box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.ntf-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.ntf-h h2{margin:0;font-size:16px}
+.ntf-h .tag{margin-left:auto;background:var(--w-bg);color:var(--w-fg)}
+.ntf-l{list-style:none;margin:0;padding:4px 0;overflow-y:auto}
+.ntf-i{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;padding:12px 16px}
+.ntf-i+.ntf-i{border-top:1px solid var(--border)}
+.ntf-ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center}
+.ntf-ic .ic{width:18px;height:18px}
+.ntf-i.w .ntf-ic{background:var(--w-bg);color:var(--w-fg)}.ntf-i.p .ntf-ic{background:var(--p-bg);color:var(--p-fg)}.ntf-i.c .ntf-ic{background:var(--c-bg);color:var(--c-fg)}
+.ntf-t{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.ntf-t time{flex:none;font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.ntf-m{margin:2px 0 8px;font-size:13px;color:var(--muted)}
+.ntf-a{display:flex;gap:8px}
+.ntf-a .btn{min-height:36px;padding:0 12px;font-size:13px}
+.ntf-f{padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);background:var(--bg);border-radius:0 0 12px 12px}
