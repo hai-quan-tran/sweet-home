@@ -1,7 +1,7 @@
-# Môi trường dev trên máy local: ghi thẳng thông tin kết nối (MySQL 8.4, cổng 3307)
+# Môi trường dev trên máy local: ghi thẳng thông tin kết nối (MySQL 8.0, cổng 3306)
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3307/sweet_home?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://localhost:3306/sweet_home?useUnicode=true&characterEncoding=utf8
     username: sweet_home
     password: Appw4MyaWFKf1rV57Vy
 
