@@ -29,4 +29,36 @@
 |---|---|
 | Backend | 8090 (8080 trên máy dev đã bị dự án khác dùng) |
 | Frontend | 4200 |
-| MySQL 8.4 | 3307 |
+| MySQL | 3306 (máy hiện tại) / 3307 (máy công ty cũ) — xem `dev-environment.md` |
+
+## Đăng nhập & bảo mật (GĐ1, package `com.sweethome.auth`)
+- JWT access token (30 phút) + refresh token ngẫu nhiên băm SHA-256 lưu DB (`refresh_token`, có cờ
+  `remembered` để biết refresh lại bằng hạn 7 hay 30 ngày). Cả hai đặt trong cookie HttpOnly,
+  `Path=/api`, `Secure` theo `app.cookie.secure` (dev: false vì chạy HTTP), `SameSite=Lax`.
+- `SecurityConfig`: stateless, `JwtAuthenticationFilter` đọc cookie `access_token` dựng
+  `Authentication` với principal là record `JwtService.AuthenticatedPrincipal` (accountId, username, role).
+- CSRF kiểu double-submit cookie (`CookieCsrfTokenRepository`, `SpaCsrfTokenRequestHandler` theo
+  khuyến nghị Spring cho SPA — ép ghi cookie ngay cả ở GET). **Phải set `cookiePath("/")` cho CSRF
+  token repository** — mặc định Spring kế thừa context-path (`/api`), nhưng các route Angular sống
+  ở `/`, `/tong-quan`, ... nên JS không đọc được `document.cookie` nếu để mặc định, dẫn tới thiếu
+  header `X-XSRF-TOKEN` và mọi request POST/PUT/DELETE bị 403. (access_token/refresh_token thì
+  ngược lại, đúng ý đồ khi để `Path=/api` vì chỉ cần trình duyệt tự gửi kèm XHR, JS không cần đọc.)
+  `/auth/login`, `/auth/refresh`, `/auth/logout` bỏ qua kiểm tra CSRF (chưa có hoặc không cần cookie
+  lúc đó); các endpoint khác (kể cả `/auth/change-password`) bắt buộc.
+- Controller trả cookie bằng `response.addHeader(HttpHeaders.SET_COOKIE, ...)` qua
+  `HttpServletResponse` được inject thẳng — **không dùng `ResponseEntity.header(...)`**, vì
+  `HttpEntityMethodProcessor` ghi đè (put) toàn bộ giá trị "Set-Cookie" đã có, xoá mất cookie CSRF
+  mà `CsrfFilter` vừa đặt trước đó trong cùng filter chain.
+- Audit nền cho nhật ký: `common.audit.Auditable` (createdAt/By, updatedAt/By qua Spring Data JPA
+  Auditing) + `AuditorAwareImpl` lấy username từ `Authentication`. **Không dùng `auth.getName()`**
+  trực tiếp: vì principal là record (không phải `UserDetails`), `getName()` mặc định trả về
+  `toString()` của cả record (dài, từng gây lỗi `Data truncation` ở cột `updated_by` VARCHAR(50)) —
+  phải ép kiểu lấy `principal.username()`.
+- Frontend `core/auth.service.ts` giữ `currentUser` dạng signal (không lưu token).
+  `core/auth.interceptor.ts` tự gọi `/auth/refresh` khi gặp 401 rồi thử lại request gốc (dedupe
+  refresh đồng thời qua `shareReplay`). **Không tự điều hướng `/dang-nhap` trong interceptor** —
+  từng gây vòng lặp vô hạn vì chính route `/dang-nhap` cũng gọi `/auth/me` lúc vào (qua
+  `guestGuard`), 401 lại kích hoạt điều hướng lại chính nó. Việc chuyển hướng khi chưa đăng nhập
+  do các route guard (`core/auth.guard.ts`) đảm nhiệm, trả về `UrlTree`.
+- Tài khoản Quản lý mặc định (`admin` / `Admin@123`, bắt đổi mật khẩu lần đầu) được
+  `AuthDataSeeder` tạo tự động khi bảng `account` rỗng lúc khởi động — không cần chạy script tay.

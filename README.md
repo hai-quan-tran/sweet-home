@@ -48,4 +48,4 @@ cd frontend && npx ng test --watch=false
 
 ## Môi trường stage, prod
 Chạy với `--spring.profiles.active=stage` (hoặc `prod`) và đặt biến môi trường:
-`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SERVER_PORT` (mặc định 8080).
+`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SERVER_PORT` (mặc định 8080), `JWT_SECRET` (khoá ký JWT, base64 ≥ 32 byte).

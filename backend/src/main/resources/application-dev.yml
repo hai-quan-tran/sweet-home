@@ -9,6 +9,13 @@ spring:
 server:
   port: 8090
 
+app:
+  jwt:
+    secret: 7pC09BR/vUeAN6lEy6jo2lWZfR2AjWlmhfrUbNO3HN0=
+  cookie:
+    # Cookie Secure yêu cầu HTTPS; máy dev chạy HTTP nên tắt để trình duyệt/công cụ test chấp nhận cookie
+    secure: false
+
 logging:
   level:
     com.sweethome: DEBUG

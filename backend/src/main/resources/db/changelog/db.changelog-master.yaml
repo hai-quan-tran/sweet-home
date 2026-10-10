@@ -1,2 +1,4 @@
 # Danh sách changelog Liquibase, thêm file mới vào cuối theo thứ tự giai đoạn
-databaseChangeLog: []
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-auth.yaml

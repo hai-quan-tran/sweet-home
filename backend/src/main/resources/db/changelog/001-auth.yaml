@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-account
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: account
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: username, type: VARCHAR(50), constraints: { nullable: false, unique: true } }
+              - column: { name: password_hash, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: full_name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: role, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(20), defaultValue: ACTIVE, constraints: { nullable: false } }
+              - column: { name: must_change_password, type: BIT, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+  - changeSet:
+      id: 001-refresh-token
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: refresh_token
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: account_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: token_hash, type: VARCHAR(64), constraints: { nullable: false, unique: true } }
+              - column: { name: expires_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: revoked, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }
+              - column: { name: remembered, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: refresh_token
+            baseColumnNames: account_id
+            constraintName: fk_refresh_token_account
+            referencedTableName: account
+            referencedColumnNames: id
+            onDelete: CASCADE

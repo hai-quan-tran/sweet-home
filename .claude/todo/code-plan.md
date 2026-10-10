@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 0 xong. Tiếp theo: GĐ 1.
+Trạng thái: GĐ 1 xong. Tiếp theo: GĐ 2.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -32,11 +32,15 @@ Trạng thái: GĐ 0 xong. Tiếp theo: GĐ 1.
 - Frontend: khung Angular + PrimeNG Aura, layout chung (menu trái, thanh trên, nút dark mode), routing các màn (trống).
 - README: cách tạo DB trên MySQL local, biến môi trường, cách chạy backend/frontend.
 
-### GĐ 1: Đăng nhập & phân quyền
+### GĐ 1: Đăng nhập & phân quyền ✅
 - Bảng tài khoản (vai trò Quản lý / Nhân viên), tài khoản admin khởi tạo.
 - API đăng nhập, refresh, đăng xuất, đổi mật khẩu; bắt đổi mật khẩu lần đầu; quy tắc mật khẩu.
-- Phân quyền theo vai trò ở API; ghi người thực hiện cho mọi thao tác (nền cho nhật ký).
-- Frontend: màn Đăng nhập, đổi mật khẩu, guard, interceptor, ẩn menu/nút theo vai trò.
+- Phân quyền theo vai trò ở API (JWT trong cookie, `@EnableMethodSecurity` sẵn sàng cho các
+  phase sau dùng `@PreAuthorize`); ghi người thực hiện cho mọi thao tác (nền cho nhật ký qua
+  JPA Auditing). Chi tiết kỹ thuật và các lỗi đã gặp: xem `project-structure.md`.
+- Frontend: màn Đăng nhập, đổi mật khẩu, guard, interceptor; thanh trên hiện tên/vai trò + đăng xuất.
+  Đã kiểm tra bằng Playwright thủ công (đăng nhập → bắt đổi mật khẩu → Tổng quan → đăng xuất →
+  đăng nhập lại), không còn dùng trong dự án (chỉ kiểm tra một lần).
 
 ### GĐ 2: Phòng, hạng phòng, bảng giá
 - Hạng phòng + giá (2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày), khung giờ chung (số giờ tối thiểu, giờ qua đêm, giờ theo ngày).

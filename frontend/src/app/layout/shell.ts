@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { AuthService } from '../core/auth.service';
 import { ThemeService } from '../core/theme.service';
 import { MENU } from './menu';
 
@@ -15,5 +16,15 @@ import { MENU } from './menu';
 })
 export class Shell {
   protected readonly theme = inject(ThemeService);
+  protected readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly menu = MENU;
+
+  /** Vai trò hiển thị trên thanh trên. */
+  protected readonly ROLE_LABEL: Record<string, string> = { MANAGER: 'Quản lý', STAFF: 'Nhân viên' };
+
+  /** Đăng xuất rồi quay về màn đăng nhập. */
+  logout(): void {
+    this.auth.logout().subscribe(() => this.router.navigateByUrl('/dang-nhap'));
+  }
 }

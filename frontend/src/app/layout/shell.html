@@ -24,6 +24,13 @@
       />
       <p-button icon="pi pi-bell" [text]="true" severity="secondary" ariaLabel="Thông báo" />
       <a pButton routerLink="/don-thue/tao-moi"><i class="pi pi-plus" pButtonIcon></i><span pButtonLabel>Tạo đơn thuê</span></a>
+      @if (auth.currentUser(); as user) {
+        <span class="user">
+          <b>{{ user.fullName }}</b>
+          <small>{{ ROLE_LABEL[user.role] }}</small>
+        </span>
+      }
+      <p-button icon="pi pi-sign-out" [text]="true" severity="secondary" ariaLabel="Đăng xuất" (onClick)="logout()" />
     </header>
     <main class="content">
       <router-outlet />

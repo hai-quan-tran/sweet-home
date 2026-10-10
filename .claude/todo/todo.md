@@ -31,4 +31,5 @@
 - [x] Lên kế hoạch chia giai đoạn code: xem `code-plan.md`
 - [x] Xác nhận kế hoạch và quyết định kỹ thuật
 - [x] GĐ 0: khung dự án
-- [ ] GĐ 1: đăng nhập & phân quyền
+- [x] GĐ 1: đăng nhập & phân quyền
+- [ ] GĐ 2: phòng, hạng phòng, bảng giá

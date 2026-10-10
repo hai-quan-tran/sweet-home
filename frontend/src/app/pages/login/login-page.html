@@ -1,0 +1,77 @@
+<div class="login">
+  <section class="hero">
+    <div class="brand">
+      <span class="logo"><i class="pi pi-home"></i></span>
+      Sweet Home
+    </div>
+    <div>
+      <h1>Quản lý phòng theo giờ, theo ngày gọn trong một màn hình.</h1>
+      <p>Nhập đơn sau khi chốt với khách, theo dõi lịch phòng và thu tiền đúng giờ.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <button
+      class="theme-btn"
+      type="button"
+      [attr.aria-label]="theme.dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+      (click)="theme.toggle()"
+    >
+      <i class="pi" [class.pi-sun]="theme.dark()" [class.pi-moon]="!theme.dark()"></i>
+    </button>
+
+    <form class="box" [formGroup]="form" (ngSubmit)="submit()">
+      <div>
+        <h2>Đăng nhập</h2>
+        <p class="sub">Dành cho quản lý và nhân viên Sweet Home</p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="err" role="alert">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="field">
+        <label for="u">Tên đăng nhập</label>
+        <div class="inp-w">
+          <i class="pi pi-user"></i>
+          <input id="u" formControlName="username" autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="p">Mật khẩu</label>
+        <div class="inp-w">
+          <i class="pi pi-lock"></i>
+          <input
+            id="p"
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+          />
+          <button
+            class="eye"
+            type="button"
+            [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+            (click)="toggleShowPassword()"
+          >
+            <i class="pi" [class.pi-eye]="!showPassword()" [class.pi-eye-slash]="showPassword()"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="chk">
+          <input type="checkbox" formControlName="rememberDevice" />
+          Ghi nhớ trên thiết bị này
+        </label>
+      </div>
+
+      <button class="btn" type="submit" [disabled]="submitting()">
+        {{ submitting() ? 'Đang đăng nhập...' : 'Đăng nhập' }}
+      </button>
+    </form>
+  </section>
+</div>
