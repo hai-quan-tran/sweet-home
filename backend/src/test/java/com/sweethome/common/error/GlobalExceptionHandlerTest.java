@@ -59,6 +59,14 @@ class GlobalExceptionHandlerTest {
 				.andExpect(jsonPath("$.detail").value("Đã có lỗi xảy ra, vui lòng thử lại"));
 	}
 
+	/** Lỗi không có quyền (@PreAuthorize) trả 403, không rơi vào handler 500 chung. */
+	@Test
+	void accessDeniedReturns403() throws Exception {
+		mvc.perform(get("/denied"))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.detail").value("Không có quyền thực hiện"));
+	}
+
 	/** Body dùng cho test kiểm tra dữ liệu. */
 	record Body(@NotBlank(message = "Bắt buộc nhập") String name) {
 	}
@@ -82,6 +90,12 @@ class GlobalExceptionHandlerTest {
 		@GetMapping("/boom")
 		void boom() {
 			throw new IllegalStateException("chi tiết nội bộ");
+		}
+
+		/** Ném lỗi không có quyền. */
+		@GetMapping("/denied")
+		void denied() {
+			throw new org.springframework.security.access.AccessDeniedException("không có quyền");
 		}
 	}
 }

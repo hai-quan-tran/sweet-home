@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,6 +56,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ");
 		body.setProperty("errors", errors);
 		return ResponseEntity.badRequest().body(body);
+	}
+
+	/**
+	 * Không có quyền thực hiện (ví dụ Nhân viên gọi API chỉ dành cho Quản lý qua {@code @PreAuthorize}).
+	 * Phải khai báo riêng vì lỗi này phát sinh trong lúc Spring MVC gọi controller method (bên trong
+	 * {@code ExceptionHandlerExceptionResolver}), tới trước khi tới được {@code AccessDeniedHandler}
+	 * cấu hình ở SecurityConfig — nếu không bắt riêng sẽ rơi vào handler chung bên dưới và trả nhầm 500.
+	 *
+	 * @param ex lỗi không có quyền
+	 * @return ProblemDetail 403
+	 */
+	@ExceptionHandler(AccessDeniedException.class)
+	public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Không có quyền thực hiện");
 	}
 
 	/**

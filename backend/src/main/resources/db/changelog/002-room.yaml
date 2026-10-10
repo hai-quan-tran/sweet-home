@@ -1,0 +1,97 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-room-type
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: room_type
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: name, type: VARCHAR(100), constraints: { nullable: false, unique: true } }
+              - column: { name: two_hour_price, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: extra_hour_price, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: overnight_price, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: daily_price, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: active, type: BIT, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+  - changeSet:
+      id: 002-pricing-settings
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: pricing_settings
+            columns:
+              - column: { name: id, type: BIGINT, constraints: { primaryKey: true } }
+              - column: { name: min_hours, type: INT, constraints: { nullable: false } }
+              - column: { name: overnight_check_in, type: TIME, constraints: { nullable: false } }
+              - column: { name: overnight_check_out, type: TIME, constraints: { nullable: false } }
+              - column: { name: daily_check_in, type: TIME, constraints: { nullable: false } }
+              - column: { name: daily_check_out, type: TIME, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - insert:
+            tableName: pricing_settings
+            columns:
+              - column: { name: id, value: "1" }
+              - column: { name: min_hours, value: "2" }
+              - column: { name: overnight_check_in, value: "21:00:00" }
+              - column: { name: overnight_check_out, value: "12:00:00" }
+              - column: { name: daily_check_in, value: "14:00:00" }
+              - column: { name: daily_check_out, value: "12:00:00" }
+              - column: { name: created_at, valueDate: "now()" }
+  - changeSet:
+      id: 002-room
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: room
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: room_number, type: VARCHAR(20), constraints: { nullable: false, unique: true } }
+              - column: { name: name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: floor, type: INT }
+              - column: { name: room_type_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: max_guests, type: INT, constraints: { nullable: false } }
+              - column: { name: bed_config, type: VARCHAR(100) }
+              - column: { name: description, type: VARCHAR(500) }
+              - column: { name: pricing_mode, type: VARCHAR(20), defaultValue: ROOM_TYPE, constraints: { nullable: false } }
+              - column: { name: own_two_hour_price, type: BIGINT }
+              - column: { name: own_extra_hour_price, type: BIGINT }
+              - column: { name: own_overnight_price, type: BIGINT }
+              - column: { name: own_daily_price, type: BIGINT }
+              - column: { name: default_check_in_mode, type: VARCHAR(20), defaultValue: SELF, constraints: { nullable: false } }
+              - column: { name: check_in_guide, type: VARCHAR(1000) }
+              - column: { name: accepting_bookings, type: BIT, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - addForeignKeyConstraint:
+            baseTableName: room
+            baseColumnNames: room_type_id
+            constraintName: fk_room_room_type
+            referencedTableName: room_type
+            referencedColumnNames: id
+  - changeSet:
+      id: 002-room-photo
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: room_photo
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: room_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: file_path, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: sort_order, type: INT, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: room_photo
+            baseColumnNames: room_id
+            constraintName: fk_room_photo_room
+            referencedTableName: room
+            referencedColumnNames: id
+            onDelete: CASCADE

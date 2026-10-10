@@ -62,3 +62,43 @@
   do các route guard (`core/auth.guard.ts`) đảm nhiệm, trả về `UrlTree`.
 - Tài khoản Quản lý mặc định (`admin` / `Admin@123`, bắt đổi mật khẩu lần đầu) được
   `AuthDataSeeder` tạo tự động khi bảng `account` rỗng lúc khởi động — không cần chạy script tay.
+
+## Quy tắc audit (created/updated) cho các entity nghiệp vụ
+- Mọi entity nghiệp vụ do người dùng tạo/sửa đều kế thừa `common.audit.Auditable`
+  (createdAt, createdBy, updatedAt, updatedBy — tự ghi qua JPA Auditing). Áp dụng từ GĐ2 trở đi:
+  hạng phòng, phòng (GĐ2), phụ thu (GĐ3), đơn thuê, thông tin homestay, mẫu tin nhắn (GĐ4),
+  ca mẫu/ca xếp (GĐ8), v.v. Liquibase của mỗi bảng cần thêm 4 cột
+  `created_at, created_by, updated_at, updated_by` (xem `001-auth.yaml` làm mẫu).
+- Riêng đơn thuê: **chỉ dùng createdBy/updatedBy chung**, không thêm cột riêng cho từng mốc
+  (ai nhận phòng, ai thu tiền, ai trả phòng, ai huỷ...). Lịch sử chi tiết từng thao tác theo mốc
+  sẽ có đầy đủ ở GĐ7 (nhật ký thao tác, bảng riêng, có lọc) — đã xác nhận với người dùng, không
+  cần làm sớm hơn.
+
+## Phòng, hạng phòng, bảng giá (GĐ2, package `com.sweethome.room`)
+- `RoomType` (tên + 4 mức giá) và `PricingSettings` (khung giờ chung: số giờ tối thiểu, giờ
+  nhận/trả qua đêm và theo ngày — **chỉ 1 dòng**, id cố định `PricingSettings.SINGLETON_ID`).
+  Dialog "Sửa bảng giá" sửa cả hai cùng lúc → 1 API `PUT /room-types/overview` (so sánh id trong
+  danh sách gửi lên với DB để biết thêm/sửa/xoá hạng nào; chặn xoá hạng còn phòng).
+- `Room`: giá theo hạng hoặc giá riêng (`pricingMode` + 4 cột `own*Price`, bắt buộc đủ cả 4 nếu
+  chọn giá riêng — kiểm tra tay trong service vì là validate chéo field, không phải annotation
+  đơn). `RoomDto` luôn trả thêm `effective*Price` (giá thật áp dụng) để frontend không phải tự
+  tính theo `pricingMode`.
+- Ảnh phòng (`RoomPhoto`) lưu trên đĩa qua `app.storage.room-photos-dir` (dev:
+  `backend/data/room-photos`, gitignore), DB chỉ lưu tên file sinh ngẫu nhiên (UUID, không lưu
+  tên gốc). Tải ảnh qua `GET /room-photos/{id}` (yêu cầu đăng nhập, cookie tự gửi kèm `<img>`
+  nên không cần xử lý gì thêm ở frontend). Ảnh đầu (`sortOrder = 0`) là ảnh bìa.
+- Phân quyền: xem (GET) cho mọi vai trò; thêm/sửa/bật-tắt/ảnh (`@PreAuthorize("hasRole('MANAGER')")`)
+  chỉ Quản lý — đây là lần đầu dùng `@PreAuthorize` trong dự án nên gặp luôn 1 lỗi: `AccessDeniedException`
+  do nó ném ra **không** tới được `AccessDeniedHandler` khai báo trong `SecurityConfig`, mà bị
+  `GlobalExceptionHandler`'s catch-all `Exception.class` nuốt mất thành 500 (vì nó phát sinh lúc
+  Spring MVC gọi method qua AOP proxy, được `ExceptionHandlerExceptionResolver` xử lý trước khi
+  tới filter chain). Phải khai báo riêng `@ExceptionHandler(AccessDeniedException.class)` trả 403
+  trong `GlobalExceptionHandler`. Áp dụng cho mọi phase sau có dùng `@PreAuthorize`.
+- Frontend `RoomFormPage`: cờ "đã chọn hạng phòng" lấy từ `computed(() =>
+  this.roomTypes().find(t => t.id === this.form.controls.roomTypeId.value))` **không tự chạy lại**
+  khi người dùng đổi lựa chọn, vì `computed()` chỉ theo dõi đọc Signal, không theo dõi
+  `FormControl.value` (một getter thường, không phải Signal). Phải đưa `valueChanges` qua
+  `toSignal()` rồi mới `computed()` dựa trên signal đó. Lưu ý cho mọi form có logic phái sinh
+  (computed) từ giá trị FormControl ở các phase sau.
+- Trạng thái phòng (Trống/Đang ở/Chờ dọn...) chưa hiển thị ở GĐ2 vì phụ thuộc dữ liệu đơn thuê
+  (GĐ4-5 mới có) — thẻ phòng tạm thời không có tag trạng thái, sẽ bổ sung khi làm vòng đời đơn.

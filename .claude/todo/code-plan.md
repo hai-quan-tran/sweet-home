@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 1 xong. Tiếp theo: GĐ 2.
+Trạng thái: GĐ 2 xong. Tiếp theo: GĐ 3.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -42,18 +42,36 @@ Trạng thái: GĐ 1 xong. Tiếp theo: GĐ 2.
   Đã kiểm tra bằng Playwright thủ công (đăng nhập → bắt đổi mật khẩu → Tổng quan → đăng xuất →
   đăng nhập lại), không còn dùng trong dự án (chỉ kiểm tra một lần).
 
-### GĐ 2: Phòng, hạng phòng, bảng giá
+### GĐ 2: Phòng, hạng phòng, bảng giá ✅
 - Hạng phòng + giá (2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày), khung giờ chung (số giờ tối thiểu, giờ qua đêm, giờ theo ngày).
 - Phòng: số, tên, tầng, hạng, số khách tối đa, giường, mô tả, ảnh, hình thức check-in mặc định, bật/tắt nhận đặt.
-- Frontend: màn Phòng & bảng giá, Thêm/Sửa phòng, dialog Sửa bảng giá.
+  Giá theo hạng hoặc giá riêng cho từng phòng.
+- Hạng phòng xoá mềm (cờ `active`, không xoá cứng): không ẩn được khi còn phòng dùng; dialog Sửa
+  bảng giá có khu vực "Hạng phòng đã ẩn" để khôi phục. Gán phòng chặn hạng đã ẩn. Lý do: xem
+  `business-rules.md` mục "Xoá mềm & lưu lịch sử (snapshot)" — chuẩn bị cho đơn (GĐ4) giữ nguyên
+  tên/giá hạng phòng lúc đặt, không đổi theo khi hạng bị sửa/ẩn sau đó.
+- Frontend: màn Phòng & bảng giá (3 tab: Phòng/Bảng giá/Phụ thu — tab Phụ thu để trống chờ GĐ3),
+  Thêm/Sửa phòng, dialog Sửa bảng giá. Nhân viên chỉ xem, ẩn mọi nút sửa.
+  Đã kiểm tra bằng Playwright thủ công (đăng nhập Quản lý → sửa bảng giá → thêm phòng → sửa phòng
+  → bật/tắt nhận đặt → đăng nhập Nhân viên kiểm tra không thấy nút sửa, vào thẳng URL thêm phòng
+  bị chặn), không còn dùng trong dự án. Phát hiện và sửa 3 lỗi thật: `@PreAuthorize` ném
+  `AccessDeniedException` bị `GlobalExceptionHandler` nuốt thành 500 thay vì 403 (đã thêm handler
+  riêng); `computed()` không phản ứng khi đổi FormControl.value (đã chuyển qua `toSignal`); dữ
+  liệu test sót lại giữa các lần chạy script làm sai lệch kết quả (đã dọn, không phải lỗi app).
+  Chi tiết kỹ thuật: xem `project-structure.md`.
 
 ### GĐ 3: Phụ thu
 - Cấu hình 5 loại phụ thu, 4 cách thu, hạng phòng áp dụng.
+- Phụ thu xoá mềm (cờ `active`) giống hạng phòng ở GĐ2: không xoá cứng, ẩn khỏi danh sách chọn,
+  có khu vực "đã ẩn" để khôi phục. Xem `business-rules.md` mục "Xoá mềm & lưu lịch sử (snapshot)".
 - Bộ tính phụ thu (test kỹ): quá giờ làm tròn lên theo giá mỗi giờ thêm + ân hạn; theo từng ngày; Tết + cuối tuần lấy mức cao hơn; cộng dồn quá giờ/thêm khách/thêm tay.
 - Frontend: danh sách phụ thu, dialog Sửa phụ thu.
 
 ### GĐ 4: Tạo đơn & danh sách đơn
 - Đơn: khách (tên, SĐT, CCCD, số khách, nguồn), phòng, loại thuê, giờ nhận/trả (tự tính), cọc, hình thức check-in, mã cửa, giá chốt lúc đặt.
+- Đơn lưu snapshot tên hạng phòng + 4 mức giá và tên + mức thu từng phụ thu đã áp dụng ngay lúc tạo/tính,
+  không chỉ tham chiếu id — đơn cũ không đổi khi hạng phòng/phụ thu bị sửa hoặc ẩn sau đó (xem
+  `business-rules.md`). Phòng không xoá được nên tham chiếu phòng qua id vẫn an toàn.
 - Kiểm tra trùng lịch, báo phòng trống; tính tiền (giá + phụ thu).
 - Cài đặt: thông tin homestay, mẫu tin nhắn (biến, mẫu tự chọn sẵn theo hình thức check-in); ghép nội dung tin nhắn từ đơn,
   sao chép mẫu có mã cửa thì ghi nhật ký.

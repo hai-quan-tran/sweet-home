@@ -1,0 +1,99 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '880px', maxWidth: '95vw' }"
+  header="Sửa bảng giá"
+>
+  <p class="sub">Giá mới chỉ áp dụng cho đơn tạo sau khi lưu. Đơn đã có giữ nguyên giá lúc đặt.</p>
+
+  @if (errorMessage()) {
+    <div class="err">{{ errorMessage() }}</div>
+  }
+
+  <h3 class="sub-h">Giá theo hạng phòng</h3>
+  <div class="tbl-w">
+    <table class="ptbl">
+      <thead>
+        <tr>
+          <th scope="col">Hạng phòng</th>
+          <th scope="col">2 giờ đầu</th>
+          <th scope="col">Mỗi giờ thêm</th>
+          <th scope="col">Qua đêm</th>
+          <th scope="col">Theo ngày</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody [formGroup]="settingsForm">
+        @for (row of rows.controls; track row; let i = $index) {
+          <tr [formGroup]="row">
+            <td class="cls">
+              <input class="inp" formControlName="name" [attr.aria-label]="'Tên hạng phòng dòng ' + (i + 1)" />
+              @if (roomNumbersByRow()[i]?.length) {
+                <small>{{ roomNumbersByRow()[i]!.join(', ') }}</small>
+              }
+            </td>
+            <td><div class="money"><input class="inp" type="number" formControlName="twoHourPrice" /><span>đ</span></div></td>
+            <td><div class="money"><input class="inp" type="number" formControlName="extraHourPrice" /><span>đ</span></div></td>
+            <td><div class="money"><input class="inp" type="number" formControlName="overnightPrice" /><span>đ</span></div></td>
+            <td><div class="money"><input class="inp" type="number" formControlName="dailyPrice" /><span>đ</span></div></td>
+            <td>
+              <button class="ibtn" type="button" [attr.aria-label]="'Ẩn dòng ' + (i + 1)" (click)="removeRow(i)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <button class="link-btn" type="button" (click)="addRow()"><i class="pi pi-plus"></i> Thêm hạng phòng</button>
+  <p class="hint">Không ẩn được hạng còn phòng. Phòng đặt giá riêng không bị ảnh hưởng bởi bảng này.
+    Đơn đã tạo giữ nguyên giá và tên hạng lúc đặt, kể cả khi hạng bị ẩn hoặc đổi giá sau đó.</p>
+
+  @if (hiddenTypes().length) {
+    <h3 class="sub-h">Hạng phòng đã ẩn</h3>
+    <ul class="hidden-list">
+      @for (t of hiddenTypes(); track t.id) {
+        <li>
+          <span>{{ t.name }}</span>
+          <button class="link-btn" type="button" (click)="restoreType(t)">
+            <i class="pi pi-replay"></i> Khôi phục
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  <h3 class="sub-h">Khung giờ áp dụng cho mọi hạng</h3>
+  <div class="g3" [formGroup]="settingsForm">
+    <div class="field">
+      <label for="minh">Theo giờ: số giờ tối thiểu</label>
+      <input id="minh" class="inp" type="number" formControlName="minHours" />
+      <span class="hint">Giá "2 giờ đầu" đổi tên theo số này</span>
+    </div>
+    <div class="field">
+      <span class="flab">Qua đêm</span>
+      <div class="g2">
+        <input class="inp" type="time" formControlName="overnightCheckIn" aria-label="Qua đêm, giờ nhận" />
+        <input class="inp" type="time" formControlName="overnightCheckOut" aria-label="Qua đêm, giờ trả hôm sau" />
+      </div>
+      <span class="hint">Nhận → trả hôm sau</span>
+    </div>
+    <div class="field">
+      <span class="flab">Theo ngày</span>
+      <div class="g2">
+        <input class="inp" type="time" formControlName="dailyCheckIn" aria-label="Theo ngày, giờ nhận" />
+        <input class="inp" type="time" formControlName="dailyCheckOut" aria-label="Theo ngày, giờ trả hôm sau" />
+      </div>
+      <span class="hint">Nhận → trả hôm sau</span>
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Huỷ" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+    <p-button label="Lưu bảng giá" [loading]="submitting()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

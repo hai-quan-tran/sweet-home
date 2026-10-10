@@ -14,6 +14,10 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   jackson:
     time-zone: Asia/Ho_Chi_Minh
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
 
 server:
   port: 8080
@@ -32,3 +36,6 @@ app:
     refresh-token-remember-days: 30
   cookie:
     secure: true
+  storage:
+    # Thư mục lưu ảnh phòng trên đĩa server, DB chỉ lưu đường dẫn
+    room-photos-dir: ${ROOM_PHOTOS_DIR}

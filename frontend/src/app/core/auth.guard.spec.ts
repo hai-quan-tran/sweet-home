@@ -2,12 +2,13 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree, provideRouter } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { authGuard, authenticatedGuard, guestGuard } from './auth.guard';
+import { authGuard, authenticatedGuard, guestGuard, managerGuard } from './auth.guard';
 import { AccountSummary } from './auth.models';
 import { AuthService } from './auth.service';
 
 describe('auth guards', () => {
   const manager: AccountSummary = { id: 1, username: 'm1', fullName: 'Quản lý', role: 'MANAGER', mustChangePassword: false };
+  const staff: AccountSummary = { id: 3, username: 's2', fullName: 'Nhân viên 2', role: 'STAFF', mustChangePassword: false };
   const mustChange: AccountSummary = { id: 2, username: 's1', fullName: 'Nhân viên', role: 'STAFF', mustChangePassword: true };
 
   function setup(user: AccountSummary | null, loadResult: AccountSummary | null = user) {
@@ -75,4 +76,16 @@ describe('auth guards', () => {
         resolve();
       });
     }));
+
+  it('managerGuard cho qua khi là Quản lý', () => {
+    setup(manager);
+    const result = TestBed.runInInjectionContext(() => managerGuard({} as never, fakeState));
+    expect(result).toBe(true);
+  });
+
+  it('managerGuard chuyển về /phong khi là Nhân viên', () => {
+    setup(staff);
+    const result = TestBed.runInInjectionContext(() => managerGuard({} as never, fakeState)) as UrlTree;
+    expect(result.toString()).toBe('/phong');
+  });
 });

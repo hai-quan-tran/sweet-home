@@ -1,0 +1,168 @@
+<div class="ph">
+  <nav class="crumb" aria-label="Đường dẫn">
+    <a routerLink="/phong">Phòng &amp; bảng giá</a>
+    <i class="pi pi-angle-right"></i>
+    <span>{{ isEdit() ? 'Sửa phòng' : 'Thêm phòng' }}</span>
+  </nav>
+  <h1 class="page-title">{{ isEdit() ? 'Sửa phòng' : 'Thêm phòng' }}</h1>
+</div>
+
+@if (!loading()) {
+  <form class="form-wrap" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-col">
+      @if (errorMessage()) {
+        <div class="err">{{ errorMessage() }}</div>
+      }
+
+      <section class="card">
+        <div class="ch"><span class="step">1</span><h2>Thông tin phòng</h2></div>
+        <div class="cb g3">
+          <div class="field">
+            <label for="no">Số phòng <span class="req">*</span></label>
+            <input id="no" class="inp" formControlName="roomNumber" />
+          </div>
+          <div class="field">
+            <label for="nm">Tên phòng <span class="req">*</span></label>
+            <input id="nm" class="inp" formControlName="name" />
+          </div>
+          <div class="field">
+            <label for="fl">Tầng</label>
+            <input id="fl" class="inp" type="number" formControlName="floor" />
+          </div>
+          <div class="field">
+            <label for="cls">Hạng phòng <span class="req">*</span></label>
+            <select id="cls" class="inp" formControlName="roomTypeId">
+              <option [ngValue]="null" disabled>— Chọn hạng —</option>
+              @for (t of roomTypes(); track t.id) {
+                <option [ngValue]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="cap">Số khách tối đa</label>
+            <input id="cap" class="inp" type="number" formControlName="maxGuests" />
+          </div>
+          <div class="field">
+            <label for="bed">Giường</label>
+            <input id="bed" class="inp" formControlName="bedConfig" placeholder="VD: 1 giường đôi" />
+          </div>
+          <div class="field span-all">
+            <label for="desc">Mô tả ngắn</label>
+            <textarea id="desc" class="inp" formControlName="description" placeholder="Ví dụ: cửa sổ trời, bồn tắm, máy chiếu…"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="ch"><span class="step">2</span><h2>Ảnh phòng</h2></div>
+        <div class="cb">
+          <label class="drop">
+            <i class="pi pi-upload"></i>
+            <b>Bấm để chọn ảnh</b>
+            <span>JPG, PNG · ảnh đầu tiên là ảnh bìa</span>
+            <input type="file" accept="image/jpeg,image/png" multiple (change)="onFilesSelected($event)" />
+          </label>
+          @if (existingPhotos().length || pendingPhotos().length) {
+            <div class="thumbs">
+              @for (photo of existingPhotos(); track photo.id; let i = $index) {
+                <div class="thumb">
+                  <img [src]="photo.url" alt="Ảnh phòng" />
+                  @if (i === 0) {
+                    <span class="tag cv">Ảnh bìa</span>
+                  }
+                  <button class="x" type="button" aria-label="Xoá ảnh" (click)="removeExistingPhoto(photo)">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              }
+              @for (staged of pendingPhotos(); track staged.previewUrl; let i = $index) {
+                <div class="thumb">
+                  <img [src]="staged.previewUrl" alt="Ảnh phòng (chưa lưu)" />
+                  @if (existingPhotos().length === 0 && i === 0) {
+                    <span class="tag cv">Ảnh bìa</span>
+                  }
+                  <button class="x" type="button" aria-label="Bỏ ảnh" (click)="removePendingPhoto(i)">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="ch"><span class="step">3</span><h2>Giá thuê</h2></div>
+        <div class="cb" [formGroup]="form">
+          <fieldset class="types two">
+            <legend>Cách tính giá</legend>
+            <label class="type" [class.on]="form.controls.pricingMode.value === 'ROOM_TYPE'">
+              <input type="radio" formControlName="pricingMode" value="ROOM_TYPE" />
+              <b>Theo bảng giá hạng {{ selectedRoomType()?.name || '...' }}</b>
+              <span>Đổi giá hạng thì phòng này đổi theo</span>
+            </label>
+            <label class="type" [class.on]="form.controls.pricingMode.value === 'OWN'">
+              <input type="radio" formControlName="pricingMode" value="OWN" />
+              <b>Giá riêng cho phòng này</b>
+              <span>Tự nhập 4 mức giá bên dưới</span>
+            </label>
+          </fieldset>
+
+          @if (form.controls.pricingMode.value === 'ROOM_TYPE' && selectedRoomType(); as t) {
+            <div class="prices4">
+              <div class="pr"><span>2 giờ đầu</span><b>{{ formatMoney(t.twoHourPrice) }}</b></div>
+              <div class="pr"><span>Mỗi giờ thêm</span><b>{{ formatMoney(t.extraHourPrice) }}</b></div>
+              <div class="pr"><span>Qua đêm</span><b>{{ formatMoney(t.overnightPrice) }}</b></div>
+              <div class="pr"><span>Theo ngày</span><b>{{ formatMoney(t.dailyPrice) }}</b></div>
+            </div>
+          }
+          @if (form.controls.pricingMode.value === 'OWN') {
+            <div class="g2">
+              <div class="field"><label for="p1">2 giờ đầu</label><input id="p1" class="inp" type="number" formControlName="ownTwoHourPrice" /></div>
+              <div class="field"><label for="p2">Mỗi giờ thêm</label><input id="p2" class="inp" type="number" formControlName="ownExtraHourPrice" /></div>
+              <div class="field"><label for="p3">Qua đêm</label><input id="p3" class="inp" type="number" formControlName="ownOvernightPrice" /></div>
+              <div class="field"><label for="p4">Theo ngày</label><input id="p4" class="inp" type="number" formControlName="ownDailyPrice" /></div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="ch"><span class="step">4</span><h2>Nhận &amp; trả phòng</h2></div>
+        <div class="cb" [formGroup]="form">
+          <fieldset class="types two">
+            <legend>Hình thức mặc định cho đơn của phòng này</legend>
+            <label class="type" [class.on]="form.controls.defaultCheckInMode.value === 'SELF'">
+              <input type="radio" formControlName="defaultCheckInMode" value="SELF" />
+              <b>Khách tự check-in / check-out</b>
+              <span>Mã cửa nhập riêng cho từng đơn</span>
+            </label>
+            <label class="type" [class.on]="form.controls.defaultCheckInMode.value === 'STAFF'">
+              <input type="radio" formControlName="defaultCheckInMode" value="STAFF" />
+              <b>Nhân viên đón khách</b>
+              <span>Đơn được gán cho nhân viên trong ca</span>
+            </label>
+          </fieldset>
+          <div class="field">
+            <label for="guide">Hướng dẫn tự nhận phòng</label>
+            <textarea id="guide" class="inp guide" formControlName="checkInGuide"></textarea>
+            <span class="hint">Được chèn vào tin nhắn gửi khách cùng mã cửa và giờ nhận, giờ trả</span>
+          </div>
+          <label class="sw">
+            <input type="checkbox" formControlName="acceptingBookings" />
+            Nhận đặt phòng
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <div class="side-col">
+      <div class="card">
+        <div class="sum-a">
+          <button class="btn-p" type="submit" [disabled]="submitting()">{{ submitting() ? 'Đang lưu...' : 'Lưu phòng' }}</button>
+          <a class="btn-t" routerLink="/phong">Huỷ</a>
+        </div>
+      </div>
+    </div>
+  </form>
+}

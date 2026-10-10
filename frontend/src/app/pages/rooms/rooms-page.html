@@ -1,0 +1,111 @@
+<div class="ph">
+  <div>
+    <h1 class="page-title">Phòng &amp; bảng giá</h1>
+    <p class="page-desc">{{ rooms().length }} phòng · {{ roomTypeCount() }} hạng phòng · giá áp dụng cho đơn tạo mới</p>
+  </div>
+  @if (isManager()) {
+    <a pButton routerLink="/phong/them"><i class="pi pi-plus" pButtonIcon></i><span pButtonLabel>Thêm phòng</span></a>
+  }
+</div>
+
+<nav class="tabs" aria-label="Mục">
+  <button type="button" [class.active]="tab() === 'phong'" (click)="tab.set('phong')">Phòng</button>
+  <button type="button" [class.active]="tab() === 'bang-gia'" (click)="tab.set('bang-gia')">Bảng giá</button>
+  <button type="button" [class.active]="tab() === 'phu-thu'" (click)="tab.set('phu-thu')">Phụ thu</button>
+</nav>
+
+@if (tab() === 'phong') {
+  @if (loading()) {
+    <p class="muted">Đang tải...</p>
+  } @else if (rooms().length === 0) {
+    <p class="muted">Chưa có phòng nào. {{ isManager() ? 'Bấm "Thêm phòng" để bắt đầu.' : '' }}</p>
+  } @else {
+    <section class="rgrid" aria-label="Danh sách phòng">
+      @for (room of rooms(); track room.id) {
+        <article class="card rc">
+          <div class="photo">
+            @if (coverPhoto(room); as url) {
+              <img [src]="url" [alt]="'Ảnh phòng ' + room.roomNumber" />
+            } @else {
+              <i class="pi pi-image"></i>
+              <span>Chưa có ảnh</span>
+            }
+          </div>
+          <div class="rc-b">
+            <div class="rc-h">
+              <div>
+                <b>{{ room.roomNumber }} · {{ room.name }}</b>
+                <span class="muted">{{ room.roomTypeName }}{{ room.floor ? ' · tầng ' + room.floor : '' }} · {{ room.maxGuests }} khách</span>
+              </div>
+            </div>
+            <span class="mode"><i class="pi" [class.pi-key]="room.defaultCheckInMode === 'SELF'" [class.pi-user]="room.defaultCheckInMode === 'STAFF'"></i>{{ checkInLabel(room) }}</span>
+            <div class="prices">
+              <div class="pr"><span>2 giờ đầu</span><b>{{ formatMoney(room.effectiveTwoHourPrice) }}</b><small>+{{ formatMoney(room.effectiveExtraHourPrice) }}/giờ</small></div>
+              <div class="pr"><span>Qua đêm</span><b>{{ formatMoney(room.effectiveOvernightPrice) }}</b></div>
+              <div class="pr"><span>Theo ngày</span><b>{{ formatMoney(room.effectiveDailyPrice) }}</b></div>
+            </div>
+          </div>
+          <div class="rc-f">
+            <label class="sw" [class.readonly]="!isManager()">
+              <input type="checkbox" role="switch" [checked]="room.acceptingBookings" [disabled]="!isManager()" (change)="toggleAccepting(room)" />
+              Nhận đặt phòng
+            </label>
+            @if (isManager()) {
+              <a class="btn-t" [routerLink]="['/phong', room.id, 'sua']">Sửa</a>
+            }
+          </div>
+        </article>
+      }
+    </section>
+  }
+}
+
+@if (tab() === 'bang-gia') {
+  <div class="price-row">
+    <section class="card">
+      <div class="ch">
+        <h2>Bảng giá theo hạng phòng</h2>
+        @if (isManager()) {
+          <button type="button" class="btn-t" (click)="pricingDialogVisible.set(true)"><i class="pi pi-pencil"></i> Sửa bảng giá</button>
+        }
+      </div>
+      @if (pricing(); as data) {
+        @if (data.roomTypes.length === 0) {
+          <p class="muted" style="padding: 16px 20px">Chưa có hạng phòng nào.</p>
+        } @else {
+          <div class="tbl-w">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th scope="col">Hạng phòng</th>
+                  <th scope="col" class="r">{{ data.settings.minHours }} giờ đầu</th>
+                  <th scope="col" class="r">Mỗi giờ thêm</th>
+                  <th scope="col" class="r">Qua đêm<small>{{ data.settings.overnightCheckIn.slice(0,5) }} → {{ data.settings.overnightCheckOut.slice(0,5) }}</small></th>
+                  <th scope="col" class="r">Theo ngày<small>{{ data.settings.dailyCheckIn.slice(0,5) }} → {{ data.settings.dailyCheckOut.slice(0,5) }}</small></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (type of data.roomTypes; track type.id) {
+                  <tr>
+                    <td><b>{{ type.name }}</b><small>{{ type.roomNumbers.join(', ') }}</small></td>
+                    <td class="r">{{ formatMoney(type.twoHourPrice) }}</td>
+                    <td class="r">{{ formatMoney(type.extraHourPrice) }}</td>
+                    <td class="r">{{ formatMoney(type.overnightPrice) }}</td>
+                    <td class="r">{{ formatMoney(type.dailyPrice) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+      <div class="foot-note">Đổi giá chỉ áp dụng cho đơn tạo sau thời điểm lưu. Đơn đã có giữ nguyên giá lúc đặt.</div>
+    </section>
+  </div>
+}
+
+@if (tab() === 'phu-thu') {
+  <p class="muted">Màn này sẽ được làm ở giai đoạn sau.</p>
+}
+
+<app-pricing-dialog [overview]="pricing()" [(visible)]="pricingDialogVisible" (saved)="onPricingSaved($event)" />

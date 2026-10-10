@@ -32,4 +32,5 @@
 - [x] Xác nhận kế hoạch và quyết định kỹ thuật
 - [x] GĐ 0: khung dự án
 - [x] GĐ 1: đăng nhập & phân quyền
-- [ ] GĐ 2: phòng, hạng phòng, bảng giá
+- [x] GĐ 2: phòng, hạng phòng, bảng giá
+- [ ] GĐ 3: phụ thu

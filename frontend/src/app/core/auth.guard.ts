@@ -40,6 +40,16 @@ export const authenticatedGuard: CanActivateFn = (_route, state) => {
   return existing !== null ? decide(existing) : authService.loadCurrentUser().pipe(map(decide));
 };
 
+/**
+ * Chỉ vai trò Quản lý được vào (ví dụ Thêm/Sửa phòng). Dùng sau authGuard (qua
+ * canActivateChild của Shell) nên currentUser() lúc này chắc chắn đã có.
+ */
+export const managerGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  return authService.currentUser()?.role === 'MANAGER' ? true : router.createUrlTree(['/phong']);
+};
+
 /** Đã đăng nhập rồi thì không vào lại màn đăng nhập nữa. */
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);

@@ -39,6 +39,17 @@
 - Đơn được tính là "đã gửi mã" khi sao chép tin nhắn có {ma_cua} cho đơn đó.
 - Frontend tự cập nhật mỗi 1 phút.
 
+## Xoá mềm & lưu lịch sử (snapshot)
+- Hạng phòng, phụ thu: không xoá cứng. "Xoá" = ẩn khỏi danh sách chọn (cờ `active`), không chọn được
+  khi tạo/sửa phòng hoặc khi áp phụ thu mới. Chỉ ẩn được khi không còn phòng đang dùng (hạng phòng)
+  hoặc không còn áp dụng hiện hành nào (phụ thu). Màn quản lý (tab Bảng giá, màn Phụ thu) có khu vực
+  "đã ẩn" để xem và khôi phục (đưa active lại true).
+- Phòng: không xoá được, kể cả mềm. Chỉ tắt "Nhận đặt phòng". Vì đơn luôn cần trỏ tới một phòng cụ thể.
+- Đơn (từ GĐ4): lưu snapshot (tên hạng phòng + 4 mức giá, tên + mức thu từng phụ thu đã áp dụng)
+  ngay lúc tạo đơn / lúc tính phụ thu, tách biệt khỏi bản ghi hạng phòng, phụ thu gốc. Sau khi sửa
+  hoặc ẩn hạng phòng/phụ thu, đơn cũ vẫn hiển thị đúng thông tin tại thời điểm đặt, không đổi theo
+  bảng giá/phụ thu hiện hành.
+
 ## Giá & phụ thu
 - Giá theo hạng phòng: 2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày.
 - Phụ thu có 4 cách thu: + % tiền phòng · số tiền / giờ · số tiền / người · số tiền / đơn.
