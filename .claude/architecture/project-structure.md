@@ -102,3 +102,47 @@
   (computed) từ giá trị FormControl ở các phase sau.
 - Trạng thái phòng (Trống/Đang ở/Chờ dọn...) chưa hiển thị ở GĐ2 vì phụ thuộc dữ liệu đơn thuê
   (GĐ4-5 mới có) — thẻ phòng tạm thời không có tag trạng thái, sẽ bổ sung khi làm vòng đời đơn.
+
+## Phụ thu (GĐ3, package `com.sweethome.surcharge`)
+- `Surcharge` (`whenType` cố định 1-1 với đơn vị tính, không cho chọn "cách thu" tự do — đã hỏi
+  và chốt với người dùng để tránh cấu hình mơ hồ): `OVERSTAY` (không `amount`, chỉ `graceMinutes`,
+  mặc định 15, mức thu lấy thẳng `extraHourPrice` của hạng phòng lúc tính) · `EXTRA_GUEST` (`amount`
+  = đ/khách vượt) · `WEEKDAY` (`amount` = %, kèm `weekdays` qua `@ElementCollection`) · `DATE_RANGE`
+  (`amount` = %, kèm `dateRanges` — con `SurchargeDateRange`, `@OneToMany(mappedBy)` cascade ALL +
+  orphanRemoval, luôn thay toàn bộ danh sách khi sửa thay vì diff từng dòng) · `MANUAL` (`amount`
+  = đ/lần, không tự cộng vào đơn, GĐ4 cho chọn tay lúc tạo/sửa đơn). `roomTypes` dùng chung cho mọi
+  loại (`@ManyToMany` qua bảng `surcharge_room_type`). Xoá mềm qua `active` giống `RoomType`, nhưng
+  **không chặn ẩn theo "còn áp dụng hiện hành"** như hạng phòng — chưa có gì tham chiếu phụ thu ở
+  GĐ3 (đơn chưa tồn tại); sẽ cần xét lại điều kiện chặn khi GĐ4 nối đơn vào phụ thu. `OVERSTAY` và
+  `EXTRA_GUEST` là "singleton": `SurchargeService` chặn tạo/khôi phục phụ thu thứ 2 cùng loại đang
+  active (`rejectIfAnotherActiveSingletonExists`), vì mỗi điều kiện chỉ nên có đúng 1 cấu hình hệ
+  thống; `WEEKDAY`/`DATE_RANGE`/`MANUAL` cho phép nhiều bản ghi.
+- **Lỗi thật đã gặp và sửa**: `SurchargeDto.from()` lúc đầu trả thẳng `surcharge.getWeekdays()` —
+  đây là `PersistentSet` do Hibernate quản lý (từ `@ElementCollection`), không phải `HashSet`
+  thường. Vì `spring.jpa.open-in-view: false`, Session đóng ngay khi `SurchargeService.list()`
+  (`@Transactional`) return, **trước khi** Jackson serialize response ở tầng servlet. Giữ nguyên
+  tham chiếu `PersistentSet` trong DTO (dù dữ liệu đã nạp sẵn trong lúc map) làm Jackson lỗi lúc
+  serialize, servlet trả 500 `"Failed to write request"` — không đi qua `GlobalExceptionHandler`
+  nên log cũng không thấy stack trace, chỉ phát hiện được khi gọi API thật qua trình duyệt/curl
+  (ca test tích hợp với `@Transactional` không bắt được, vì transaction bọc quanh test giữ Session
+  mở xuyên suốt cả POST lẫn GET trong cùng 1 test, khác hành vi thật của 2 request riêng biệt).
+  Đã sửa bằng cách copy ra `EnumSet`/`Set.of()` thường trước khi trả về DTO; thêm
+  `SurchargeSerializationIntegrationTest` (cố ý **không** `@Transactional`, tự dọn dữ liệu ở
+  `@AfterEach`) để bắt đúng lớp lỗi này — xác nhận test fail đúng khi bỏ fix, pass khi có fix.
+  **Áp dụng cho mọi phase sau**: DTO dựng từ entity có `@ElementCollection`/`@ManyToMany`/
+  `@OneToMany` lazy phải copy ra collection thường (`List.copyOf`, `new HashSet<>(...)`, hoặc
+  `.stream()....toList()`), không trả thẳng field; muốn test bắt được lớp lỗi "chỉ lộ ra giữa 2
+  request thật" thì test đó phải không dùng `@Transactional` bọc quanh class/method.
+- Bộ tính phụ thu (`SurchargeCalculator`, hàm thuần không đụng DB, dễ unit test — xem
+  `SurchargeCalculatorTest`): quá giờ — trễ ≤ ân hạn thì 0, quá ân hạn tính từ giờ trả phòng
+  (không trừ phút ân hạn) rồi làm tròn lên giờ (`Math.ceilDiv`); theo ngày (WEEKDAY, DATE_RANGE) —
+  với mỗi ngày khách ở, trong các phụ thu theo ngày khớp ngày đó chỉ lấy mức tiền cao nhất (không
+  cộng dồn giữa chúng), rồi cộng dồn theo từng ngày khác nhau; quá giờ/vượt khách/thêm tay luôn
+  cộng dồn độc lập với nhóm theo ngày. Chưa nối vào đơn thật (GĐ4 mới có đơn) — `SurchargeCalculationInput`
+  nhận dữ liệu thuần (danh sách ngày kèm giá, giờ hẹn/thực trả, số khách vượt, id phụ thu thêm tay)
+  để không phụ thuộc ngược vào entity Đơn chưa tồn tại.
+- Frontend `SurchargeDialog`: dùng chung 1 form cho cả 5 loại, ẩn/hiện trường theo `whenType`
+  (giống cấu trúc `data-when` của mock `design/PhuThu.html`) nhưng **bỏ hẳn phần chọn "Cách thu"**
+  so với mock — nhất quán với quyết định cố định đơn vị tính theo loại ở backend. `weekdays` và
+  `roomTypeIds` dùng `signal<Set<...>>` thay vì `FormArray` (đơn giản hơn cho checkbox rời rạc);
+  `dateRanges` mới dùng `FormArray` vì là các dòng lặp lại giống dialog Sửa bảng giá.

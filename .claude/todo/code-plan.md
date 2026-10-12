@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 2 xong. Tiếp theo: GĐ 3.
+Trạng thái: GĐ 3 xong. Tiếp theo: GĐ 4.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -60,12 +60,22 @@ Trạng thái: GĐ 2 xong. Tiếp theo: GĐ 3.
   liệu test sót lại giữa các lần chạy script làm sai lệch kết quả (đã dọn, không phải lỗi app).
   Chi tiết kỹ thuật: xem `project-structure.md`.
 
-### GĐ 3: Phụ thu
-- Cấu hình 5 loại phụ thu, 4 cách thu, hạng phòng áp dụng.
-- Phụ thu xoá mềm (cờ `active`) giống hạng phòng ở GĐ2: không xoá cứng, ẩn khỏi danh sách chọn,
-  có khu vực "đã ẩn" để khôi phục. Xem `business-rules.md` mục "Xoá mềm & lưu lịch sử (snapshot)".
-- Bộ tính phụ thu (test kỹ): quá giờ làm tròn lên theo giá mỗi giờ thêm + ân hạn; theo từng ngày; Tết + cuối tuần lấy mức cao hơn; cộng dồn quá giờ/thêm khách/thêm tay.
-- Frontend: danh sách phụ thu, dialog Sửa phụ thu.
+### GĐ 3: Phụ thu ✅
+- Cấu hình 5 loại phụ thu (quá giờ, vượt khách, ngày trong tuần, khoảng ngày, thêm tay). Mỗi loại
+  gắn cố định 1 đơn vị tính (không cho chọn "cách thu" tự do như mock ban đầu — đã hỏi lại và chốt
+  với người dùng để tránh cấu hình mơ hồ, xem `project-structure.md`).
+- Phụ thu xoá mềm (cờ `active`) giống hạng phòng ở GĐ2, nhưng chưa chặn ẩn theo "còn áp dụng hiện
+  hành" vì GĐ3 chưa có đơn tham chiếu tới; quá giờ & vượt khách giới hạn chỉ 1 bản ghi active mỗi
+  loại (singleton), còn lại cho phép nhiều bản ghi.
+- Bộ tính phụ thu (`SurchargeCalculator`, test kỹ qua `SurchargeCalculatorTest`): quá giờ làm tròn
+  lên theo giá mỗi giờ thêm + ân hạn; theo từng ngày; Tết + cuối tuần lấy mức cao hơn; cộng dồn quá
+  giờ/thêm khách/thêm tay. Chưa nối vào đơn (đợi GĐ4).
+- Frontend: danh sách phụ thu, dialog Thêm/Sửa phụ thu (tab Phụ thu trong màn Phòng & bảng giá).
+  Đã kiểm tra bằng Playwright thủ công (đăng nhập → thêm hạng phòng → thêm phụ thu "Cuối tuần" →
+  xác nhận hiện đúng +10% → sửa → ẩn → khôi phục), không còn dùng trong dự án. Phát hiện và sửa 1
+  lỗi thật: `SurchargeDto` trả thẳng collection lazy (`PersistentSet`) của Hibernate ra ngoài DTO,
+  với `open-in-view=false` làm GET `/surcharges` lỗi 500 ngay khi đã có phụ thu kiểu WEEKDAY/
+  DATE_RANGE; chi tiết và bài học áp dụng cho các phase sau xem `project-structure.md`.
 
 ### GĐ 4: Tạo đơn & danh sách đơn
 - Đơn: khách (tên, SĐT, CCCD, số khách, nguồn), phòng, loại thuê, giờ nhận/trả (tự tính), cọc, hình thức check-in, mã cửa, giá chốt lúc đặt.

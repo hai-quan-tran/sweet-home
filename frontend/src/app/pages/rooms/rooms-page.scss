@@ -299,6 +299,93 @@
   color: var(--p-text-muted-color);
 }
 
+.fees {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fee {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--p-content-hover-background);
+    }
+  }
+
+  & + .fee {
+    border-top: 1px solid var(--p-content-border-color);
+  }
+
+  div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  b {
+    display: block;
+    font-weight: 600;
+  }
+
+  small {
+    color: var(--p-text-muted-color);
+    font-size: 12px;
+  }
+
+  .v {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.hidden-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hidden-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--p-text-color);
+}
+
+.hidden-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+
+    & + li {
+      border-top: 1px solid var(--p-content-border-color);
+    }
+  }
+}
+
+.err {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--p-red-100);
+  color: var(--p-red-700);
+  font-size: 13px;
+}
+
 @media (max-width: 1366px) {
   .rgrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

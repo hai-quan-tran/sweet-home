@@ -105,7 +105,52 @@
 }
 
 @if (tab() === 'phu-thu') {
-  <p class="muted">Màn này sẽ được làm ở giai đoạn sau.</p>
+  <section class="card">
+    <div class="ch">
+      <h2>Phụ thu</h2>
+      @if (isManager()) {
+        <button type="button" class="btn-t" (click)="openAddSurcharge()"><i class="pi pi-plus"></i> Thêm</button>
+      }
+    </div>
+    @if (activeSurcharges().length === 0) {
+      <p class="muted" style="padding: 16px 20px">Chưa có phụ thu nào.</p>
+    } @else {
+      <ul class="fees">
+        @for (s of activeSurcharges(); track s.id) {
+          <li class="fee" [class.clickable]="isManager()" (click)="isManager() && openEditSurcharge(s)">
+            <div>
+              <b>{{ s.name }}</b>
+              <small>{{ whenDescription(s) }}</small>
+            </div>
+            <span class="v">{{ amountLabel(s) }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (hiddenSurcharges().length && isManager()) {
+      <div class="foot-note hidden-block">
+        @if (restoreError()) {
+          <div class="err">{{ restoreError() }}</div>
+        }
+        <div class="hidden-title">Phụ thu đã ẩn</div>
+        <ul class="hidden-list">
+          @for (s of hiddenSurcharges(); track s.id) {
+            <li>
+              <span>{{ s.name }}</span>
+              <button class="btn-t" type="button" (click)="restoreSurcharge(s)"><i class="pi pi-replay"></i> Khôi phục</button>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
 }
 
 <app-pricing-dialog [overview]="pricing()" [(visible)]="pricingDialogVisible" (saved)="onPricingSaved($event)" />
+<app-surcharge-dialog
+  [surcharge]="editingSurcharge()"
+  [roomTypes]="pricing()?.roomTypes ?? []"
+  [(visible)]="surchargeDialogVisible"
+  (saved)="onSurchargeSaved()"
+/>

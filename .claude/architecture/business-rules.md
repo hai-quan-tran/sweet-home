@@ -52,7 +52,12 @@
 
 ## Giá & phụ thu
 - Giá theo hạng phòng: 2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày.
-- Phụ thu có 4 cách thu: + % tiền phòng · số tiền / giờ · số tiền / người · số tiền / đơn.
+- Phụ thu: mỗi "áp dụng khi" gắn cố định đúng 1 cách thu (không cho chọn tự do, tránh cấu hình mơ
+  hồ — đã chốt lại với người dùng ở GĐ3, khác bản mock ban đầu):
+  - Quá giờ trả phòng → giá "mỗi giờ thêm" của hạng phòng (không nhập mức riêng).
+  - Vượt số khách tối đa → số tiền / khách vượt.
+  - Ngày trong tuần, Khoảng ngày → % tiền phòng.
+  - Thêm tay vào đơn → số tiền cố định / lần thêm.
 - Phụ thu quá giờ trả phòng:
   - Mức thu = giá "mỗi giờ thêm" của hạng phòng (không nhập mức riêng).
   - Phút ân hạn mặc định 15, quản lý sửa được trong dialog Sửa phụ thu.

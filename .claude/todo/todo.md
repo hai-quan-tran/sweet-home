@@ -33,4 +33,5 @@
 - [x] GĐ 0: khung dự án
 - [x] GĐ 1: đăng nhập & phân quyền
 - [x] GĐ 2: phòng, hạng phòng, bảng giá
-- [ ] GĐ 3: phụ thu
+- [x] GĐ 3: phụ thu
+- [ ] GĐ 4: tạo đơn & danh sách đơn

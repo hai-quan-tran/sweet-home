@@ -4,3 +4,5 @@ databaseChangeLog:
       file: db/changelog/001-auth.yaml
   - include:
       file: db/changelog/002-room.yaml
+  - include:
+      file: db/changelog/003-surcharge.yaml

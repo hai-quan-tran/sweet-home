@@ -1,0 +1,129 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '720px', maxWidth: '95vw' }"
+  [header]="surcharge() ? 'Sửa phụ thu' : 'Thêm phụ thu'"
+>
+  <p class="sub">Phụ thu tự động được cộng vào đơn khi đơn thoả điều kiện.</p>
+
+  @if (errorMessage()) {
+    <div class="err">{{ errorMessage() }}</div>
+  }
+
+  <form [formGroup]="form" class="dlg-b">
+    <div class="field">
+      <label for="s-name">Tên phụ thu <span class="req">*</span></label>
+      <input id="s-name" class="inp" formControlName="name" />
+    </div>
+
+    <fieldset class="opts">
+      <legend>Áp dụng khi</legend>
+      <label class="opt" [class.on]="isOverstay()">
+        <input type="radio" formControlName="whenType" value="OVERSTAY" />Quá giờ trả phòng
+      </label>
+      <label class="opt" [class.on]="isExtraGuest()">
+        <input type="radio" formControlName="whenType" value="EXTRA_GUEST" />Vượt số khách tối đa
+      </label>
+      <label class="opt" [class.on]="isWeekday()">
+        <input type="radio" formControlName="whenType" value="WEEKDAY" />Ngày trong tuần
+      </label>
+      <label class="opt" [class.on]="isDateRange()">
+        <input type="radio" formControlName="whenType" value="DATE_RANGE" />Khoảng ngày
+      </label>
+      <label class="opt" [class.on]="isManual()">
+        <input type="radio" formControlName="whenType" value="MANUAL" />Thêm tay vào đơn
+      </label>
+    </fieldset>
+
+    @if (isOverstay()) {
+      <div class="field">
+        <label for="s-grace">Phút ân hạn</label>
+        <div class="money unit-l"><input id="s-grace" class="inp" type="number" formControlName="graceMinutes" /><span>phút</span></div>
+        <span class="hint">Trả muộn trong thời gian ân hạn thì không tính. Quá ân hạn thì tính từ giờ trả phòng
+          (không trừ phút ân hạn), làm tròn lên theo giờ: trễ 30 phút tính 1 giờ, trễ 1 giờ 20 phút tính 2 giờ.
+          Mức thu theo giá "mỗi giờ thêm" của từng hạng phòng, không nhập riêng ở đây.</span>
+      </div>
+    }
+
+    @if (isExtraGuest()) {
+      <p class="hint">Tính cho mỗi khách vượt số khách tối đa của phòng. Số khách tối đa cài ở từng phòng.</p>
+      <div class="field">
+        <label for="s-amount">Mức thu</label>
+        <div class="money"><input id="s-amount" class="inp" type="number" formControlName="amount" /><span>{{ amountUnit() }}</span></div>
+      </div>
+    }
+
+    @if (isWeekday()) {
+      <div class="field">
+        <span class="flab">Các ngày áp dụng</span>
+        <div class="cbs days">
+          @for (opt of weekdayOptions; track opt.value) {
+            <label class="cb" [class.on]="weekdays().has(opt.value)">
+              <input type="checkbox" [checked]="weekdays().has(opt.value)" (change)="toggleWeekday(opt.value)" />{{ opt.label }}
+            </label>
+          }
+        </div>
+        <span class="hint">Tính cho từng ngày khách ở rơi vào các ngày đã chọn. Đơn theo giờ và qua đêm tính theo ngày nhận phòng.</span>
+      </div>
+      <div class="field">
+        <label for="s-amount">Mức thu</label>
+        <div class="money"><input id="s-amount" class="inp" type="number" formControlName="amount" /><span>{{ amountUnit() }}</span></div>
+      </div>
+    }
+
+    @if (isDateRange()) {
+      <div class="field">
+        <span class="flab">Các khoảng ngày</span>
+        <div class="ranges">
+          @for (row of dateRanges.controls; track row; let i = $index) {
+            <div class="rg" [formGroup]="row">
+              <input class="inp" formControlName="name" [attr.aria-label]="'Tên dịp ' + (i + 1)" placeholder="Tên dịp" />
+              <input class="inp" type="date" formControlName="fromDate" [attr.aria-label]="'Từ ngày, dịp ' + (i + 1)" />
+              <input class="inp" type="date" formControlName="toDate" [attr.aria-label]="'Đến ngày, dịp ' + (i + 1)" />
+              <button class="ibtn" type="button" [attr.aria-label]="'Xoá dịp ' + (i + 1)" (click)="removeDateRange(i)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          }
+        </div>
+        <button class="link-btn" type="button" (click)="addDateRange()"><i class="pi pi-plus"></i> Thêm khoảng ngày</button>
+        <span class="hint">Tính cho từng ngày khách ở nằm trong khoảng. Đơn theo giờ và qua đêm tính theo ngày nhận phòng.
+          Một ngày thoả cả "Ngày trong tuần" và "Khoảng ngày" thì chỉ lấy mức cao hơn.</span>
+      </div>
+      <div class="field">
+        <label for="s-amount">Mức thu</label>
+        <div class="money"><input id="s-amount" class="inp" type="number" formControlName="amount" /><span>{{ amountUnit() }}</span></div>
+      </div>
+    }
+
+    @if (isManual()) {
+      <p class="hint">Không tự cộng vào đơn. Khi tạo hoặc sửa đơn, nhân viên chọn phụ thu này để thêm vào.</p>
+      <div class="field">
+        <label for="s-amount">Mức thu</label>
+        <div class="money"><input id="s-amount" class="inp" type="number" formControlName="amount" /><span>{{ amountUnit() }}</span></div>
+      </div>
+    }
+
+    <div class="field">
+      <span class="flab">Áp dụng cho hạng phòng</span>
+      <div class="cbs">
+        @for (type of roomTypes(); track type.id) {
+          <label class="cb" [class.on]="selectedRoomTypeIds().has(type.id)">
+            <input type="checkbox" [checked]="selectedRoomTypeIds().has(type.id)" (change)="toggleRoomType(type.id)" />{{ type.name }}
+          </label>
+        }
+      </div>
+    </div>
+  </form>
+
+  <ng-template #footer>
+    @if (surcharge()) {
+      <button class="link-btn del" type="button" (click)="hide()">Xoá phụ thu</button>
+    }
+    <p-button label="Huỷ" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+    <p-button label="Lưu phụ thu" [loading]="submitting()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

@@ -6,6 +6,7 @@ import { provideRouter } from '@angular/router';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
 import { RoomDto } from '../../core/room.models';
+import { SurchargeDto } from '../../core/surcharge.models';
 import { RoomsPage } from './rooms-page';
 
 describe('RoomsPage', () => {
@@ -36,6 +37,19 @@ describe('RoomsPage', () => {
     photos: [],
   };
 
+  const sampleSurcharge: SurchargeDto = {
+    id: 1,
+    name: 'Cuối tuần',
+    whenType: 'WEEKDAY',
+    amount: 10,
+    graceMinutes: null,
+    weekdays: ['FRIDAY', 'SATURDAY'],
+    dateRanges: [],
+    roomTypeIds: [1],
+    roomTypeNames: ['Tiêu chuẩn'],
+    active: true,
+  };
+
   async function render(role: 'MANAGER' | 'STAFF') {
     const user: AccountSummary = { id: 1, username: 'u', fullName: 'Người dùng', role, mustChangePassword: false };
     await TestBed.configureTestingModule({
@@ -56,6 +70,7 @@ describe('RoomsPage', () => {
       hiddenRoomTypes: [],
       settings: { minHours: 2, overnightCheckIn: '21:00:00', overnightCheckOut: '12:00:00', dailyCheckIn: '14:00:00', dailyCheckOut: '12:00:00' },
     });
+    httpMock.expectOne('/api/surcharges').flush([sampleSurcharge]);
     fixture.detectChanges();
     return fixture;
   }
@@ -104,5 +119,45 @@ describe('RoomsPage', () => {
     fixture.detectChanges();
     expect(el.textContent).toContain('Bảng giá theo hạng phòng');
     expect(el.textContent).toContain('Tiêu chuẩn');
+  });
+
+  function openSurchargeTab(fixture: ReturnType<typeof TestBed.createComponent<RoomsPage>>) {
+    const el = fixture.nativeElement as HTMLElement;
+    const tabButton = Array.from(el.querySelectorAll('.tabs button')).find((b) => b.textContent?.trim() === 'Phụ thu')!;
+    (tabButton as HTMLButtonElement).click();
+    fixture.detectChanges();
+  }
+
+  it('tab Phụ thu hiện đúng tên và mức thu từ API', async () => {
+    const fixture = await render('MANAGER');
+    openSurchargeTab(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Cuối tuần');
+    expect(el.textContent).toContain('+10%');
+  });
+
+  it('Quản lý thấy nút Thêm phụ thu', async () => {
+    const fixture = await render('MANAGER');
+    openSurchargeTab(fixture);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Thêm');
+  });
+
+  it('Nhân viên không thấy nút Thêm phụ thu', async () => {
+    const fixture = await render('STAFF');
+    openSurchargeTab(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.ch button.btn-t')).toBeNull();
+  });
+
+  it('bấm vào một phụ thu (Quản lý) thì mở dialog sửa', async () => {
+    const fixture = await render('MANAGER');
+    openSurchargeTab(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+    const item = el.querySelector<HTMLElement>('.fee')!;
+    item.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['editingSurcharge']()?.name).toBe('Cuối tuần');
+    expect(fixture.componentInstance['surchargeDialogVisible']()).toBe(true);
   });
 });
