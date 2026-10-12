@@ -6,3 +6,7 @@ databaseChangeLog:
       file: db/changelog/002-room.yaml
   - include:
       file: db/changelog/003-surcharge.yaml
+  - include:
+      file: db/changelog/004-settings.yaml
+  - include:
+      file: db/changelog/005-order.yaml

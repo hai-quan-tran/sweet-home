@@ -39,3 +39,6 @@ app:
   storage:
     # Thư mục lưu ảnh phòng trên đĩa server, DB chỉ lưu đường dẫn
     room-photos-dir: ${ROOM_PHOTOS_DIR}
+  # Khoá AES-256 (base64) mã hoá CCCD và mã cửa trong DB (GĐ4)
+  crypto:
+    secret: ${CRYPTO_SECRET}

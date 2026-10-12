@@ -1,0 +1,172 @@
+<div class="ph">
+  <div>
+    <nav class="crumb" aria-label="Đường dẫn"><a routerLink="/don-thue">Đơn thuê</a><i class="pi pi-angle-right"></i><span>Tạo mới</span></nav>
+    <h1 class="page-title">Tạo đơn thuê</h1>
+  </div>
+</div>
+
+@if (errorMessage()) {
+  <div class="err">{{ errorMessage() }}</div>
+}
+
+<form class="form-wrap" [formGroup]="form" (ngSubmit)="submit(false)">
+  <div class="form-col">
+    <section class="card">
+      <div class="ch"><span class="step">1</span><h2>Phòng &amp; thời gian</h2></div>
+      <div class="cb">
+        <fieldset class="types">
+          <legend>Loại thuê</legend>
+          @for (type of rentalTypes; track type) {
+            <label class="type" [class.on]="form.controls.rentalType.value === type">
+              <input type="radio" formControlName="rentalType" [value]="type" />
+              <b>{{ rentalTypeLabel[type] }}</b>
+            </label>
+          }
+        </fieldset>
+
+        <div class="g3">
+          <div class="field">
+            <label for="room">Phòng <span class="req">*</span></label>
+            <select id="room" class="inp" formControlName="roomId">
+              @for (r of rooms(); track r.id) {
+                <option [value]="r.id">{{ r.roomNumber }} · {{ r.name }} ({{ r.roomTypeName }})</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="d">Ngày nhận <span class="req">*</span></label>
+            <input id="d" class="inp" type="date" formControlName="checkInDate" />
+          </div>
+          @if (isHourly()) {
+            <div class="field">
+              <label for="t">Giờ nhận <span class="req">*</span></label>
+              <input id="t" class="inp" type="time" formControlName="checkInTime" />
+            </div>
+            <div class="field">
+              <label for="h">Số giờ thuê</label>
+              <div class="stepper">
+                <button type="button" (click)="stepQuantity(-1)" aria-label="Bớt 1 giờ"><i class="pi pi-minus"></i></button>
+                <input class="num" formControlName="quantity" inputmode="numeric" />
+                <button type="button" (click)="stepQuantity(1)" aria-label="Thêm 1 giờ"><i class="pi pi-plus"></i></button>
+              </div>
+            </div>
+          }
+          @if (form.controls.rentalType.value === 'DAILY') {
+            <div class="field">
+              <label for="days">Số ngày thuê</label>
+              <div class="stepper">
+                <button type="button" (click)="stepQuantity(-1)" aria-label="Bớt 1 ngày"><i class="pi pi-minus"></i></button>
+                <input id="days" class="num" formControlName="quantity" inputmode="numeric" />
+                <button type="button" (click)="stepQuantity(1)" aria-label="Thêm 1 ngày"><i class="pi pi-plus"></i></button>
+              </div>
+            </div>
+          }
+          <div class="field span2">
+            <label>Giờ trả (tự tính)</label>
+            <input class="inp num" readonly [value]="preview()?.checkOutAt ? (preview()!.checkOutAt | date: 'HH:mm · dd/MM/yyyy') : '—'" />
+          </div>
+        </div>
+
+        @if (preview(); as p) {
+          <div class="avail" [class.bad]="!p.available">
+            <i class="pi" [class.pi-check-circle]="p.available" [class.pi-exclamation-circle]="!p.available"></i>
+            {{ p.available ? 'Phòng trống trong khung giờ này.' : p.conflictMessage }}
+          </div>
+        }
+
+        <fieldset class="types two">
+          <legend>Nhận &amp; trả phòng</legend>
+          <label class="type" [class.on]="form.controls.checkInMode.value === 'SELF'">
+            <input type="radio" formControlName="checkInMode" value="SELF" /><b>Khách tự check-in / check-out</b>
+          </label>
+          <label class="type" [class.on]="form.controls.checkInMode.value === 'STAFF'">
+            <input type="radio" formControlName="checkInMode" value="STAFF" /><b>Nhân viên đón khách</b>
+          </label>
+        </fieldset>
+
+        @if (form.controls.checkInMode.value === 'SELF') {
+          <div class="field">
+            <label for="code">Mã cửa cho đơn này <span class="req">*</span></label>
+            <div class="iw">
+              <input id="code" class="inp num" [type]="showDoorCode() ? 'text' : 'password'" formControlName="doorCode" autocomplete="off" />
+              <button class="eye" type="button" (click)="showDoorCode.set(!showDoorCode())" [attr.aria-label]="showDoorCode() ? 'Ẩn mã cửa' : 'Hiện mã cửa'">
+                <i class="pi" [class.pi-eye]="!showDoorCode()" [class.pi-eye-slash]="showDoorCode()"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><span class="step">2</span><h2>Thông tin khách</h2></div>
+      <div class="cb">
+        <div class="g2">
+          <div class="field"><label for="phone">Số điện thoại <span class="req">*</span></label><input id="phone" class="inp num" type="tel" formControlName="guestPhone" /></div>
+          <div class="field"><label for="name">Họ tên <span class="req">*</span></label><input id="name" class="inp" formControlName="guestName" /></div>
+          <div class="field"><label for="idn">CCCD / Hộ chiếu</label><input id="idn" class="inp num" formControlName="guestIdNumber" /></div>
+          <div class="field">
+            <label for="g">Số khách</label>
+            <div class="stepper">
+              <button type="button" (click)="stepGuestCount(-1)" aria-label="Bớt 1 khách"><i class="pi pi-minus"></i></button>
+              <input id="g" class="num" formControlName="guestCount" inputmode="numeric" />
+              <button type="button" (click)="stepGuestCount(1)" aria-label="Thêm 1 khách"><i class="pi pi-plus"></i></button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="src">Nguồn đặt</label>
+            <select id="src" class="inp" formControlName="source">
+              @for (s of sourceOptions; track s.value) {
+                <option [value]="s.value">{{ s.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field span-all"><label for="note">Ghi chú</label><textarea id="note" class="inp" formControlName="note" placeholder="Yêu cầu thêm của khách, giờ đến dự kiến…"></textarea></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><span class="step">3</span><h2>Đặt cọc &amp; giảm giá</h2></div>
+      <div class="cb">
+        <div class="g2">
+          <div class="field"><label for="dep">Tiền cọc</label><div class="iw money"><input id="dep" class="inp num" type="number" formControlName="deposit" /><span>đ</span></div></div>
+          <div class="field">
+            <span class="flab">Hình thức cọc</span>
+            <div class="radios">
+              <label class="radio" [class.on]="form.controls.depositMethod.value === 'TRANSFER'"><input type="radio" formControlName="depositMethod" value="TRANSFER" />Chuyển khoản</label>
+              <label class="radio" [class.on]="form.controls.depositMethod.value === 'CASH'"><input type="radio" formControlName="depositMethod" value="CASH" />Tiền mặt</label>
+            </div>
+          </div>
+          <div class="field"><label for="disc">Giảm giá</label><div class="iw money"><input id="disc" class="inp num" type="number" formControlName="discount" /><span>đ</span></div></div>
+          <div class="field"><label for="why">Lý do giảm</label><input id="why" class="inp" formControlName="discountReason" placeholder="Không bắt buộc" /></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <aside class="card sum" aria-label="Tóm tắt đơn">
+    <div class="ch"><h2>Tóm tắt đơn</h2><span class="tag t-b" style="margin-left: auto">{{ rentalTypeLabel[form.controls.rentalType.value] }}</span></div>
+    <div class="sum-b">
+      @if (selectedRoom(); as room) {
+        <div class="sum-room"><b>{{ room.roomNumber }} · {{ room.name }}</b></div>
+      }
+      @if (preview(); as p) {
+        <div class="li"><span>Tiền phòng</span><span class="num">{{ formatMoney(p.roomPriceAmount) }}</span></div>
+        @for (s of p.surcharges; track s.name) {
+          <div class="li"><span>{{ s.name }}</span><span class="num">{{ formatMoney(s.amount) }}</span></div>
+        }
+        <div class="tot"><span>Tổng tiền</span><b class="num">{{ formatMoney(p.totalAmount) }}</b></div>
+        <div class="li"><span>Đã cọc</span><span class="num">−{{ formatMoney(form.controls.deposit.value) }}</span></div>
+        <div class="li due"><span>Thu khi nhận phòng</span><span class="num">{{ formatMoney(p.dueAmount) }}</span></div>
+      } @else {
+        <p class="muted">Chọn phòng và thời gian để xem tóm tắt.</p>
+      }
+    </div>
+    <div class="sum-a">
+      <button class="btn-p" type="submit" [disabled]="submitting() || preview() === null || !preview()!.available">Lưu đơn</button>
+      <button class="btn-s" type="button" [disabled]="submitting() || preview() === null || !preview()!.available" (click)="submit(true)">Lưu &amp; sao chép tin nhắn</button>
+      <a class="btn-t" routerLink="/don-thue">Huỷ</a>
+    </div>
+  </aside>
+</form>

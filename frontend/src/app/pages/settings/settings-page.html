@@ -1,0 +1,118 @@
+<div class="ph">
+  <div>
+    <h1 class="page-title">Cài đặt</h1>
+    <p class="page-desc">Mẫu tin nhắn gửi khách và thông tin homestay. Chỉ quản lý được sửa.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Mục cài đặt">
+  <button type="button" [class.active]="tab() === 'mau-tin-nhan'" (click)="tab.set('mau-tin-nhan')">Mẫu tin nhắn</button>
+  <button type="button" [class.active]="tab() === 'thong-tin'" (click)="tab.set('thong-tin')">Thông tin homestay</button>
+</nav>
+
+@if (tab() === 'mau-tin-nhan') {
+  <div class="tpl">
+    <section class="card">
+      <div class="ch">
+        <h2>Mẫu tin nhắn</h2>
+        @if (isManager()) {
+          <button class="btn-t" type="button" (click)="newTemplate()"><i class="pi pi-plus"></i> Thêm mẫu</button>
+        }
+      </div>
+      <ul class="tpls">
+        @for (t of templates(); track t.id) {
+          <li [class.on]="selectedId() === t.id">
+            <a href="javascript:void(0)" (click)="selectTemplate(t)">
+              <b>{{ t.name }}</b>
+              <small>{{ t.defaultForCheckInMode ? 'Tự chọn sẵn: ' + defaultLabel[t.defaultForCheckInMode] : 'Chọn tay' }}</small>
+              @if (t.containsDoorCode) {
+                <span class="tag t-w">Có mã cửa</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+      @if (templates().length === 0) {
+        <p class="muted" style="padding: 0 20px 16px">Chưa có mẫu tin nhắn nào.</p>
+      }
+      <div class="note">Mỗi hình thức check-in có một mẫu tự chọn sẵn khi tạo đơn. Vẫn đổi được mẫu khác trước khi sao chép.</div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>{{ selectedId() ? 'Sửa mẫu' : 'Thêm mẫu' }}</h2></div>
+      @if (errorMessage()) {
+        <div class="err">{{ errorMessage() }}</div>
+      }
+      <form [formGroup]="templateForm" class="cb">
+        <fieldset [disabled]="!isManager()" class="fs">
+          <div class="field"><label for="tname">Tên mẫu <span class="req">*</span></label><input id="tname" class="inp" formControlName="name" /></div>
+
+          <fieldset class="opts">
+            <legend>Tự chọn sẵn cho đơn</legend>
+            <label class="opt" [class.on]="templateForm.value.defaultForCheckInMode === 'SELF'">
+              <input type="radio" formControlName="defaultForCheckInMode" [value]="'SELF'" />Khách tự check-in
+            </label>
+            <label class="opt" [class.on]="templateForm.value.defaultForCheckInMode === 'STAFF'">
+              <input type="radio" formControlName="defaultForCheckInMode" [value]="'STAFF'" />Nhân viên check-in
+            </label>
+            <label class="opt" [class.on]="templateForm.value.defaultForCheckInMode == null">
+              <input type="radio" formControlName="defaultForCheckInMode" [value]="null" />Không, chọn tay
+            </label>
+          </fieldset>
+
+          <div class="field">
+            <label for="body">Nội dung <span class="req">*</span></label>
+            <textarea id="body" #bodyField class="inp" formControlName="body"></textarea>
+          </div>
+
+          <div class="field">
+            <span class="flab">Chèn thông tin</span>
+            <div class="vars">
+              @for (v of variables; track v.key) {
+                <button type="button" [class.sec]="v.sensitive" (click)="insertVariable(v.key)">{{ v.label }}</button>
+              }
+            </div>
+            <span class="hint">Bấm để chèn vào vị trí con trỏ. "Hướng dẫn của phòng" lấy từ phần Nhận &amp; trả phòng của từng phòng.
+              Mẫu có mã cửa: mỗi lần sao chép được ghi vào nhật ký.</span>
+          </div>
+        </fieldset>
+      </form>
+      @if (isManager()) {
+        <div class="cf">
+          @if (selectedId()) {
+            <button class="btn-t del" type="button" (click)="deleteTemplate()">Xoá mẫu</button>
+          }
+          <button class="btn-s" type="button" (click)="newTemplate()">Huỷ</button>
+          <button class="btn-p" type="button" [disabled]="submitting()" (click)="saveTemplate()">Lưu mẫu</button>
+        </div>
+      }
+    </section>
+  </div>
+}
+
+@if (tab() === 'thong-tin') {
+  <section class="card info">
+    <div class="ch"><h2>Thông tin homestay</h2></div>
+    @if (homestayError()) {
+      <div class="err">{{ homestayError() }}</div>
+    }
+    <form [formGroup]="homestayForm" class="cb">
+      <fieldset [disabled]="!isManager()" class="fs">
+        <div class="g2">
+          <div class="field"><label for="hname">Tên homestay <span class="req">*</span></label><input id="hname" class="inp" formControlName="name" /></div>
+          <div class="field"><label for="hotline">Hotline <span class="req">*</span></label><input id="hotline" class="inp" formControlName="hotline" /></div>
+          <div class="field span2"><label for="addr">Địa chỉ <span class="req">*</span></label><input id="addr" class="inp" formControlName="address" /></div>
+          <div class="field span2"><label for="map">Link bản đồ</label><input id="map" class="inp" formControlName="mapLink" /></div>
+          <div class="field"><label for="wifi">Tên wifi</label><input id="wifi" class="inp" formControlName="wifiName" /></div>
+          <div class="field"><label for="wpass">Mật khẩu wifi</label><input id="wpass" class="inp" formControlName="wifiPassword" /></div>
+        </div>
+      </fieldset>
+      <p class="hint">Các thông tin này được chèn vào tin nhắn gửi khách qua mẫu tin nhắn.</p>
+    </form>
+    @if (isManager()) {
+      <div class="cf">
+        <button class="btn-p" type="button" [disabled]="homestaySubmitting()" (click)="saveHomestay()">Lưu thông tin</button>
+      </div>
+    }
+  </section>
+}

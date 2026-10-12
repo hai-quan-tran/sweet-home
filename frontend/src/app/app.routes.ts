@@ -3,9 +3,12 @@ import { authGuard, authenticatedGuard, guestGuard, managerGuard } from './core/
 import { Shell } from './layout/shell';
 import { ChangePasswordPage } from './pages/change-password/change-password-page';
 import { LoginPage } from './pages/login/login-page';
+import { OrderFormPage } from './pages/orders/order-form-page';
+import { OrdersPage } from './pages/orders/orders-page';
 import { PlaceholderPage } from './pages/placeholder/placeholder-page';
 import { RoomFormPage } from './pages/rooms/room-form-page';
 import { RoomsPage } from './pages/rooms/rooms-page';
+import { SettingsPage } from './pages/settings/settings-page';
 
 /** Tạo route cho màn chưa làm, tiêu đề truyền qua data. */
 const page = (path: string, title: string) => ({ path, component: PlaceholderPage, data: { title }, title: `${title} · Sweet Home` });
@@ -26,8 +29,8 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'tong-quan' },
       page('tong-quan', 'Tổng quan'),
       page('lich', 'Lịch đặt phòng'),
-      page('don-thue', 'Đơn thuê'),
-      page('don-thue/tao-moi', 'Tạo đơn thuê'),
+      { path: 'don-thue', component: OrdersPage, title: 'Đơn thuê · Sweet Home' },
+      { path: 'don-thue/tao-moi', component: OrderFormPage, title: 'Tạo đơn thuê · Sweet Home' },
       { path: 'phong', component: RoomsPage, title: 'Phòng & bảng giá · Sweet Home' },
       {
         path: 'phong/them',
@@ -43,7 +46,7 @@ export const routes: Routes = [
       },
       page('nhan-vien', 'Nhân viên'),
       page('lich-lam', 'Lịch làm'),
-      page('cai-dat', 'Cài đặt'),
+      { path: 'cai-dat', component: SettingsPage, title: 'Cài đặt · Sweet Home' },
     ],
   },
   { path: '**', redirectTo: '' },

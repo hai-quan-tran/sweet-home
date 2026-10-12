@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-rental-order
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: rental_order
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: status, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: room_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: rental_type, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: check_in_at, type: DATETIME, constraints: { nullable: false } }
+              - column: { name: check_out_at, type: DATETIME, constraints: { nullable: false } }
+              - column: { name: guest_name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: guest_phone, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: guest_id_number_encrypted, type: VARCHAR(255) }
+              - column: { name: guest_id_number_last4, type: VARCHAR(4) }
+              - column: { name: guest_count, type: INT, constraints: { nullable: false } }
+              - column: { name: source, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: note, type: VARCHAR(1000) }
+              - column: { name: check_in_mode, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: door_code_encrypted, type: VARCHAR(255) }
+              - column: { name: deposit, type: BIGINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: deposit_method, type: VARCHAR(20) }
+              - column: { name: discount, type: BIGINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: discount_reason, type: VARCHAR(255) }
+              - column: { name: room_type_name_snapshot, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: two_hour_price_snapshot, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: extra_hour_price_snapshot, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: overnight_price_snapshot, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: daily_price_snapshot, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: room_price_amount, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: total_amount, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - addForeignKeyConstraint:
+            baseTableName: rental_order
+            baseColumnNames: room_id
+            constraintName: fk_rental_order_room
+            referencedTableName: room
+            referencedColumnNames: id
+  - changeSet:
+      id: 005-order-surcharge
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: order_surcharge
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: order_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: amount, type: BIGINT, constraints: { nullable: false } }
+        - addForeignKeyConstraint:
+            baseTableName: order_surcharge
+            baseColumnNames: order_id
+            constraintName: fk_order_surcharge_order
+            referencedTableName: rental_order
+            referencedColumnNames: id
+            onDelete: CASCADE

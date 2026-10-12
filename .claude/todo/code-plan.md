@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 3 xong. Tiếp theo: GĐ 4.
+Trạng thái: GĐ 4 xong. Tiếp theo: GĐ 5.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -77,16 +77,45 @@ Trạng thái: GĐ 3 xong. Tiếp theo: GĐ 4.
   với `open-in-view=false` làm GET `/surcharges` lỗi 500 ngay khi đã có phụ thu kiểu WEEKDAY/
   DATE_RANGE; chi tiết và bài học áp dụng cho các phase sau xem `project-structure.md`.
 
-### GĐ 4: Tạo đơn & danh sách đơn
-- Đơn: khách (tên, SĐT, CCCD, số khách, nguồn), phòng, loại thuê, giờ nhận/trả (tự tính), cọc, hình thức check-in, mã cửa, giá chốt lúc đặt.
-- Đơn lưu snapshot tên hạng phòng + 4 mức giá và tên + mức thu từng phụ thu đã áp dụng ngay lúc tạo/tính,
-  không chỉ tham chiếu id — đơn cũ không đổi khi hạng phòng/phụ thu bị sửa hoặc ẩn sau đó (xem
-  `business-rules.md`). Phòng không xoá được nên tham chiếu phòng qua id vẫn an toàn.
-- Kiểm tra trùng lịch, báo phòng trống; tính tiền (giá + phụ thu).
-- Cài đặt: thông tin homestay, mẫu tin nhắn (biến, mẫu tự chọn sẵn theo hình thức check-in); ghép nội dung tin nhắn từ đơn,
-  sao chép mẫu có mã cửa thì ghi nhật ký.
-- Frontend: màn Tạo đơn (kèm tóm tắt, sao chép tin nhắn), màn Đơn thuê (tab trạng thái, tìm kiếm, lọc, chi tiết).
-- Frontend: màn Cài đặt (Nhân viên chỉ xem).
+### GĐ 4: Tạo đơn & danh sách đơn ✅
+- Đơn: khách (tên, SĐT, CCCD, số khách, nguồn), phòng, loại thuê, giờ nhận/trả (tự tính theo khung
+  giờ chung), cọc, hình thức check-in, mã cửa (bắt buộc khi khách tự check-in), giá chốt lúc đặt.
+  CCCD và mã cửa mã hoá AES-256/GCM (`CryptoService`, khoá `app.crypto.secret`); CCCD chỉ trả về
+  dạng che 4 số cuối, mã cửa có endpoint giải mã riêng.
+- Đơn lưu snapshot tên hạng phòng + 4 mức giá, tiền phòng đã tính, và tên + mức thu từng phụ thu
+  đã áp dụng (bảng con `order_surcharge`) ngay lúc tạo — không tham chiếu ngược hạng phòng/phụ thu
+  gốc, đơn cũ không đổi khi hạng phòng/phụ thu bị sửa hoặc ẩn sau đó (xem `business-rules.md`).
+- Kiểm tra trùng lịch (chặn tạo đơn chồng giờ cùng phòng), báo phòng trống; tính tiền phòng theo
+  loại thuê (theo giờ/qua đêm/theo ngày) + phụ thu tự động (vượt khách, theo ngày) — quá giờ và
+  thêm tay **chưa** áp dụng lúc tạo (chưa có giờ trả thực tế / chưa có nơi chọn tay ở GĐ4, đợi GĐ5).
+  Có endpoint "xem trước" (preview, không lưu DB) để màn Tạo đơn tự cập nhật giờ trả + tóm tắt tiền
+  khi người dùng gõ, tránh lặp logic tính toán ở frontend.
+- Cài đặt: thông tin homestay (1 dòng, singleton giống `PricingSettings`), mẫu tin nhắn (CRUD, tối
+  đa 1 mẫu mặc định mỗi hình thức check-in — lưu mẫu mới nhận mặc định tự bỏ mặc định ở mẫu cũ).
+  Mẫu tin nhắn **không xoá mềm** (xoá cứng được) vì đơn không tham chiếu tới mẫu, chỉ render tạm
+  lúc sao chép — khác hạng phòng/phụ thu.
+- Ghép nội dung tin nhắn từ đơn làm hoàn toàn ở **frontend** (`core/message-template.ts`, hàm
+  thuần `renderMessageTemplate`/`buildOrderMessageContext`), không có endpoint backend riêng —
+  giữ đúng tinh thần "app chỉ tạo nội dung để sao chép". Biến `{huong_dan}` lấy `checkInGuide`
+  **hiện hành** của phòng (gọi `GET /rooms/{id}`), không snapshot, vì hướng dẫn phòng không thuộc
+  nhóm giá/phụ thu cần đóng băng theo lịch sử.
+- **Phạm vi cố ý cắt bớt ở GĐ4** (không phải thiếu sót, đã đối chiếu lại với phần GĐ5 trong kế
+  hoạch): chưa ghi nhật ký thao tác xem mã cửa/sao chép tin nhắn có mã cửa (hạ tầng nhật ký là của
+  GĐ7, theo đúng tiền lệ đã chốt ở GĐ1 — xem `project-structure.md`); mã cửa cho Nhân viên xem
+  không giới hạn theo "đang trong ca trực" (hạ tầng Lịch làm là GĐ8); đơn thuê **chỉ tạo & xem**,
+  chưa sửa/huỷ/đổi trạng thái/thu tiền (toàn bộ vòng đời đơn là GĐ5); phụ thu "thêm tay" chưa chọn
+  được lúc tạo đơn (chỉ áp dụng được từ GĐ5 khi có nơi thao tác theo từng mốc của đơn).
+- Frontend: màn Tạo đơn (3 bước: phòng & thời gian · thông tin khách · cọc & giảm giá; tóm tắt +
+  "Lưu & sao chép tin nhắn"), màn Đơn thuê (tab trạng thái, tìm kiếm, lọc theo phòng, phân trang,
+  chi tiết đơn chỉ xem — không có hành động vòng đời). Màn Cài đặt (2 tab: Mẫu tin nhắn, Thông tin
+  homestay; Nhân viên chỉ xem — `<fieldset disabled>` bọc quanh form thay vì khoá từng ô).
+  Đã kiểm tra bằng Playwright thủ công toàn bộ luồng (cài đặt homestay + mẫu tin nhắn → thêm hạng
+  phòng + phòng → tạo đơn, xem tóm tắt tự cập nhật → Lưu & sao chép tin nhắn → xác nhận nội dung
+  đã sao chép đúng biến → mở lại đơn trong danh sách, hiện mã cửa → tạo đơn trùng giờ bị chặn đúng
+  thông báo), không còn dùng trong dự án. Không phát hiện lỗi thật lần này (khác GĐ2/GĐ3), có thể
+  nhờ áp dụng ngay bài học "copy khỏi collection lazy trước khi đưa vào DTO" từ GĐ3 cho
+  `RentalOrder.surcharges` và viết thêm `OrderSerializationIntegrationTest` (không `@Transactional`)
+  để tự kiểm chứng điều đó trước khi test tay.
 
 ### GĐ 5: Vòng đời đơn
 - Trạng thái: Đã đặt → Đang ở → Quá giờ → Chờ xác nhận trả → Đã trả / Đã huỷ.

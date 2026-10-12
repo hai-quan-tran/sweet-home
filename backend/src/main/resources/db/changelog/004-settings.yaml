@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-homestay-info
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: homestay_info
+            columns:
+              - column: { name: id, type: BIGINT, constraints: { primaryKey: true } }
+              - column: { name: name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: hotline, type: VARCHAR(30), constraints: { nullable: false } }
+              - column: { name: address, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: map_link, type: VARCHAR(255) }
+              - column: { name: wifi_name, type: VARCHAR(100) }
+              - column: { name: wifi_password, type: VARCHAR(100) }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - insert:
+            tableName: homestay_info
+            columns:
+              - column: { name: id, value: "1" }
+              - column: { name: name, value: "Sweet Home" }
+              - column: { name: hotline, value: "" }
+              - column: { name: address, value: "" }
+              - column: { name: created_at, valueDate: "now()" }
+  - changeSet:
+      id: 004-message-template
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: message_template
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: name, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: body, type: VARCHAR(2000), constraints: { nullable: false } }
+              - column: { name: default_for_check_in_mode, type: VARCHAR(20) }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }

@@ -17,6 +17,8 @@ app:
     secure: false
   storage:
     room-photos-dir: ./data/room-photos
+  crypto:
+    secret: Ja2DTB1AVopEb2Y3l+TZkLs9HHa7/VNUJVYppyzUkVU=
 
 logging:
   level:

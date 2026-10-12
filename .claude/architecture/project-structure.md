@@ -146,3 +146,55 @@
   so với mock — nhất quán với quyết định cố định đơn vị tính theo loại ở backend. `weekdays` và
   `roomTypeIds` dùng `signal<Set<...>>` thay vì `FormArray` (đơn giản hơn cho checkbox rời rạc);
   `dateRanges` mới dùng `FormArray` vì là các dòng lặp lại giống dialog Sửa bảng giá.
+
+## Mã hoá dữ liệu nhạy cảm (GĐ4, package `com.sweethome.common.crypto`)
+- `CryptoService`: AES-256/GCM, khoá base64 đọc từ `app.crypto.secret` (`${CRYPTO_SECRET}` ở
+  stage/prod, giá trị cố định ở `application-dev.yml` — cùng kiểu cấu hình với `app.jwt.secret`).
+  Mỗi lần `encrypt()` sinh IV ngẫu nhiên riêng, ghép `IV + bản mã` rồi encode base64 thành 1 chuỗi
+  lưu DB; `decrypt()` tách lại IV từ đầu chuỗi. Dùng cho CCCD và mã cửa của đơn thuê (xem
+  `business-rules.md` mục "Xoá mềm & lưu lịch sử" — không liên quan, nhưng cùng chỗ nói về mã hoá).
+
+## Đơn thuê & Cài đặt (GĐ4, package `com.sweethome.order`, `com.sweethome.settings`)
+- `RentalOrder` (bảng `rental_order` — **không đặt tên bảng là `order`**, trùng từ khoá SQL):
+  không có cột `code` riêng; mã đơn hiển thị ("SH-1036") dựng từ id lúc map DTO
+  (`OrderDto.codeOf(id) = "SH-" + (1000 + id)`), đơn giản hơn một cột/sequence riêng. `status`
+  mặc định `BOOKED`, GĐ4 không có đường nào đổi sang trạng thái khác (xem enum `OrderStatus` đủ 6
+  giá trị cho GĐ5 dùng sau). CCCD lưu 2 cột: `guestIdNumberEncrypted` (AES, nguồn sự thật) +
+  `guestIdNumberLast4` (plain, 4 ký tự cuối) — tách riêng để không phải giải mã mỗi lần hiển thị
+  danh sách/chi tiết (chỉ cần che dạng "•••••••• 7302"). Mã cửa chỉ có `doorCodeEncrypted`, không
+  có bản che sẵn vì luôn cần giá trị thật khi hiện/sao chép tin nhắn — giải mã qua
+  `GET /orders/{id}/door-code` riêng, không trả trong `OrderDto` chung (tránh lộ khi chỉ cần xem
+  danh sách). Snapshot giá + tên hạng phòng lúc tạo (4 cột `*Snapshot`), phụ thu áp dụng lúc tạo
+  lưu con `OrderSurcharge` (tên + số tiền, không tham chiếu `Surcharge` gốc) — cùng nguyên tắc với
+  snapshot của `Surcharge` dùng cho `SurchargeCalculator` ở GĐ3.
+- Lịch nhận/trả tính theo `rentalType` (`OrderService.computeSchedule`, hàm riêng dễ test):
+  `HOURLY` cần `checkInTime` + số giờ (≥ `minHours`, mặc định `minHours`); `OVERNIGHT` cố định theo
+  `overnightCheckIn/Out` của `PricingSettings`, luôn đúng 1 đêm, không có ô số lượng; `DAILY` cần số
+  ngày (mặc định 1), giờ nhận/trả cố định theo `dailyCheckIn/Out`. Kiểm tra trùng lịch qua
+  `RentalOrderRepository.findOverlapping` (giao khoảng `[checkInAt, checkOutAt)`, loại trừ đơn
+  `CANCELLED` dù GĐ4 chưa tạo được đơn huỷ — chuẩn bị sẵn cho GĐ5).
+- Tính phụ thu lúc tạo đơn: lấy phụ thu `active` áp dụng cho đúng hạng phòng
+  (`SurchargeRepository.findActiveByRoomTypeId`), build `SurchargeCalculationInput` với
+  `scheduledCheckOut/actualCheckOut = null` (chưa trả phòng → phụ thu quá giờ luôn ra 0, đúng ý
+  đồ) và `extraGuestCount = max(0, guestCount - room.maxGuests)`. `stayDays` cho `DAILY` là danh
+  sách từng ngày kèm giá ngày đó (dùng `IntStream.range` sinh `LocalDate` liên tiếp); `HOURLY`/
+  `OVERNIGHT` chỉ có 1 ngày — đúng input `SurchargeCalculator` đã thiết kế sẵn từ GĐ3.
+- `POST /orders/preview`: cùng logic tính lịch/giá/phụ thu/trùng lịch như tạo đơn thật nhưng không
+  lưu DB — dùng chung 1 hàm `computeSchedule` + `calculateSurcharges` ở service, tránh phải chép
+  lại các quy tắc tính toán (vốn khá rối: GĐ2 giá theo hạng/giá riêng, GĐ3 phụ thu) sang frontend.
+  Frontend gọi API này (debounce 300ms theo `form.valueChanges`) để tự cập nhật "Giờ trả (tự tính)"
+  và tóm tắt tiền khi người dùng gõ form Tạo đơn — không tính tay ở Angular.
+- `Settings` (`HomestayInfo` singleton giống `PricingSettings`; `MessageTemplate` không xoá mềm,
+  xoá cứng vì không entity nào tham chiếu). Nội dung tin nhắn **không có endpoint backend để
+  "render"** — ghép biến hoàn toàn ở frontend (`core/message-template.ts`), vì chỉ cần hiển thị
+  tạm để sao chép, không lưu lại; biến `{huong_dan}` lấy `Room.checkInGuide` hiện hành qua
+  `GET /rooms/{id}` lúc cần (không snapshot, khác các biến tiền/giá).
+- Test có `OrderSerializationIntegrationTest` (không `@Transactional`, xem bài học ở mục Phụ thu
+  phía trên) xác nhận `RentalOrder.surcharges` (`@OneToMany` lazy) không lặp lại lỗi 500 của GĐ3 —
+  `OrderDto.from()` đã tự `.stream()....toList()` chuyển sang `List<OrderSurchargeDto>` phẳng trước
+  khi trả, nên test này thực chất là test phòng ngừa (pass ngay từ đầu), không phải fix một lỗi
+  mới phát hiện.
+- Phạm vi cố ý cắt bớt ở GĐ4 (lý do và thứ tự phụ thuộc các phase sau): chưa ghi nhật ký xem mã
+  cửa/sao chép tin nhắn (hạ tầng nhật ký là GĐ7); mã cửa không giới hạn theo "đang trong ca trực"
+  (hạ tầng Lịch làm là GĐ8); đơn chỉ tạo & xem, chưa có sửa/huỷ/đổi trạng thái/thu tiền (GĐ5); phụ
+  thu "thêm tay" chưa chọn được lúc tạo đơn (cần nơi thao tác theo mốc của đơn ở GĐ5).

@@ -1,0 +1,122 @@
+<div class="ph">
+  <div><h1 class="page-title">Đơn thuê</h1><p class="page-desc">Tất cả đơn đã nhập, mới nhất ở trên cùng</p></div>
+  <a class="btn-p" routerLink="/don-thue/tao-moi"><i class="pi pi-plus"></i> Tạo đơn thuê</a>
+</div>
+
+<div class="split">
+  <section class="card">
+    <nav class="tabs" aria-label="Lọc theo trạng thái">
+      @for (t of statusTabs; track t.label) {
+        <button type="button" [class.active]="statusFilter() === t.value" (click)="setStatus(t.value)">
+          {{ t.label }}
+          @if (listResponse(); as r) {
+            <span class="n">{{ t.value === null ? r.total : r.countByStatus[t.value] }}</span>
+          }
+        </button>
+      }
+    </nav>
+    <div class="filters">
+      <label class="search"><i class="pi pi-search"></i><input type="search" placeholder="Mã đơn, tên hoặc SĐT khách" [value]="search()" (input)="onSearch($any($event.target).value)" /></label>
+      <select class="sel" (change)="setRoomFilter($any($event.target).value)">
+        <option value="">Tất cả phòng</option>
+        @for (r of rooms(); track r.id) {
+          <option [value]="r.id">{{ r.roomNumber }} · {{ r.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="tbl-w">
+      @if (loading()) {
+        <p class="muted" style="padding: 16px 20px">Đang tải...</p>
+      } @else if (!listResponse() || listResponse()!.items.length === 0) {
+        <p class="muted" style="padding: 16px 20px">Chưa có đơn nào.</p>
+      } @else {
+        <table class="tbl">
+          <thead><tr><th scope="col">Khách · mã đơn</th><th scope="col">Phòng</th><th scope="col">Thời gian</th><th scope="col" class="r">Tổng tiền</th><th scope="col">Trạng thái</th></tr></thead>
+          <tbody>
+            @for (o of listResponse()!.items; track o.id) {
+              <tr [class.sel]="selectedOrder()?.id === o.id" (click)="selectOrder(o)">
+                <td><b>{{ o.guestName }}</b><small>{{ o.code }} · {{ o.guestPhone }}</small></td>
+                <td><b>{{ o.roomNumber }}</b><small>{{ rentalTypeLabel[o.rentalType] }} · {{ checkInModeLabel[o.checkInMode] }}</small></td>
+                <td class="num"><b>{{ o.checkInAt.slice(11,16) }} → {{ o.checkOutAt.slice(11,16) }}</b><small>{{ o.checkInAt.slice(8,10) }}/{{ o.checkInAt.slice(5,7) }} → {{ o.checkOutAt.slice(8,10) }}/{{ o.checkOutAt.slice(5,7) }}</small></td>
+                <td class="r num">{{ formatMoney(o.totalAmount) }}</td>
+                <td><span class="tag" [class]="statusTag[o.status].cls">{{ statusTag[o.status].label }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+    @if (listResponse() && listResponse()!.total > 0) {
+      <div class="pager">
+        <span class="muted">Hiển thị {{ page() * 10 + 1 }}–{{ Math.min((page() + 1) * 10, listResponse()!.total) }} trên {{ listResponse()!.total }} đơn</span>
+        <div class="pages">
+          <button class="ibtn" type="button" (click)="setPage(page() - 1)" [disabled]="page() === 0"><i class="pi pi-angle-left"></i></button>
+          <button class="ibtn" type="button" aria-current="page">{{ page() + 1 }}</button>
+          <button class="ibtn" type="button" (click)="setPage(page() + 1)" [disabled]="page() + 1 >= totalPages()"><i class="pi pi-angle-right"></i></button>
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (selectedOrder(); as o) {
+    <aside class="card" aria-label="Chi tiết đơn">
+      <div class="dp-h">
+        <div class="dp-t"><h2>{{ o.code }}</h2><span class="tag" [class]="statusTag[o.status].cls">{{ statusTag[o.status].label }}</span></div>
+      </div>
+
+      <div class="sec">
+        <h3>Khách thuê</h3>
+        <div class="kv"><span>Họ tên</span><b>{{ o.guestName }}</b></div>
+        <div class="kv"><span>Số điện thoại</span><a class="num" [href]="'tel:' + o.guestPhone">{{ o.guestPhone }}</a></div>
+        @if (o.guestIdNumberMasked) {
+          <div class="kv"><span>CCCD</span><span class="num">{{ o.guestIdNumberMasked }}</span></div>
+        }
+        <div class="kv"><span>Số khách · nguồn</span><span>{{ o.guestCount }} người · {{ sourceLabel[o.source] }}</span></div>
+        @if (o.note) {
+          <div class="kv"><span>Ghi chú</span><span>{{ o.note }}</span></div>
+        }
+      </div>
+
+      <div class="sec">
+        <h3>{{ o.roomNumber }} · {{ o.roomName }} — {{ rentalTypeLabel[o.rentalType] }} · {{ o.checkInMode === 'SELF' ? 'khách tự check-in' : 'nhân viên đón' }}</h3>
+        <div class="kv"><span>Nhận phòng</span><b class="num">{{ o.checkInAt.slice(11,16) }}, {{ o.checkInAt.slice(8,10) }}/{{ o.checkInAt.slice(5,7) }}/{{ o.checkInAt.slice(0,4) }}</b></div>
+        <div class="kv"><span>Trả phòng</span><b class="num">{{ o.checkOutAt.slice(11,16) }}, {{ o.checkOutAt.slice(8,10) }}/{{ o.checkOutAt.slice(5,7) }}/{{ o.checkOutAt.slice(0,4) }}</b></div>
+        @if (o.hasDoorCode) {
+          <div class="code">
+            <div><span class="muted">Mã cửa của đơn</span><b class="num">{{ doorCode() ?? '•• •• ••' }}</b></div>
+            <button class="btn-s" type="button" (click)="revealDoorCode()" [disabled]="revealingDoorCode()"><i class="pi pi-eye"></i> Hiện</button>
+          </div>
+        }
+      </div>
+
+      <div class="sec">
+        <h3>Tiền</h3>
+        <div class="kv"><span>Tiền phòng ({{ o.roomTypeNameSnapshot }})</span><span class="num">{{ formatMoney(o.roomPriceAmount) }}</span></div>
+        @for (s of o.surcharges; track s.name) {
+          <div class="kv"><span>{{ s.name }}</span><span class="num">{{ formatMoney(s.amount) }}</span></div>
+        }
+        @if (o.discount > 0) {
+          <div class="kv"><span>Giảm giá{{ o.discountReason ? ' (' + o.discountReason + ')' : '' }}</span><span class="num">−{{ formatMoney(o.discount) }}</span></div>
+        }
+        <div class="kv tot"><span>Tổng</span><span class="num">{{ formatMoney(o.totalAmount) }}</span></div>
+        <div class="kv"><span>Đã cọc{{ o.depositMethod === 'TRANSFER' ? ' (chuyển khoản)' : o.depositMethod === 'CASH' ? ' (tiền mặt)' : '' }}</span><span class="num">−{{ formatMoney(o.deposit) }}</span></div>
+        <div class="kv due"><span>Còn phải thu</span><span class="num">{{ formatMoney(o.dueAmount) }}</span></div>
+      </div>
+
+      <div class="dp-a">
+        @if (copyFeedback()) {
+          <p class="hint">{{ copyFeedback() }}</p>
+        }
+        <div class="msg">
+          <select class="sel" [ngModel]="selectedTemplateId()" (ngModelChange)="selectedTemplateId.set($event)">
+            @for (t of templates(); track t.id) {
+              <option [ngValue]="t.id">{{ t.name }}</option>
+            }
+          </select>
+          <button class="btn-s" type="button" (click)="copyMessage()"><i class="pi pi-copy"></i> Sao chép</button>
+        </div>
+        <a class="btn-s" [href]="'tel:' + o.guestPhone">Gọi khách</a>
+      </div>
+    </aside>
+  }
+</div>

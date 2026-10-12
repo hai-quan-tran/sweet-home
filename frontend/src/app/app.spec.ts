@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
@@ -21,6 +23,8 @@ describe('Routing', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes, withComponentInputBinding()),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: { currentUser: signal(user).asReadonly(), loadCurrentUser: () => of(user) } },
       ],
     });

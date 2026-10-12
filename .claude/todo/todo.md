@@ -34,4 +34,5 @@
 - [x] GĐ 1: đăng nhập & phân quyền
 - [x] GĐ 2: phòng, hạng phòng, bảng giá
 - [x] GĐ 3: phụ thu
-- [ ] GĐ 4: tạo đơn & danh sách đơn
+- [x] GĐ 4: tạo đơn & danh sách đơn
+- [ ] GĐ 5: vòng đời đơn
