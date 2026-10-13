@@ -20,8 +20,9 @@ const sampleOrder = {
   id: 36, code: 'SH-1036', status: 'BOOKED', roomId: 1, roomNumber: '101', roomName: 'Mộc', roomTypeNameSnapshot: 'Tiêu chuẩn',
   rentalType: 'OVERNIGHT', checkInAt: '2026-10-07T21:00:00', checkOutAt: '2026-10-08T12:00:00',
   guestName: 'Phạm Quốc Bảo', guestPhone: '0903112457', guestIdNumberMasked: null, guestCount: 2,
-  source: 'ZALO', note: null, checkInMode: 'SELF', hasDoorCode: true, deposit: 0, depositMethod: null,
-  discount: 0, discountReason: null, roomPriceAmount: 350000, surcharges: [], totalAmount: 350000, dueAmount: 350000,
+  source: 'ZALO', note: null, checkInMode: 'SELF', hasDoorCode: true, deposit: 100000, depositMethod: 'TRANSFER',
+  discount: 0, discountReason: null, roomPriceAmount: 350000, surcharges: [], totalAmount: 350000, payments: [], paidAmount: 100000,
+  dueAmount: 250000,
 };
 
 describe('OrdersPage', () => {
@@ -114,5 +115,60 @@ describe('OrdersPage', () => {
     await Promise.resolve();
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));
+  });
+  it('thu tiền: mặc định số còn phải thu, lưu xong cập nhật đơn và đóng form', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+
+    fixture.componentInstance.openPaymentForm();
+    expect(fixture.componentInstance['paymentAmount']()).toBe(250000);
+    fixture.componentInstance.savePayment();
+
+    const req = httpMock.expectOne({ url: '/api/orders/36/payments', method: 'POST' });
+    expect(req.request.body).toEqual({ amount: 250000, method: 'CASH', note: null });
+    req.flush({ ...sampleOrder, paidAmount: 350000, dueAmount: 0 });
+
+    expect(fixture.componentInstance['selectedOrder']()?.dueAmount).toBe(0);
+    expect(fixture.componentInstance['paymentFormId']()).toBeNull();
+  });
+
+  it('thu tiền: số tiền <= 0 thì báo lỗi, không gọi API', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+
+    fixture.componentInstance.openPaymentForm();
+    fixture.componentInstance['paymentAmount'].set(0);
+    fixture.componentInstance.savePayment();
+
+    expect(fixture.componentInstance['paymentError']()).toContain('lớn hơn 0');
+  });
+
+  it('sửa và xoá khoản đã thu gọi PUT/DELETE, lỗi từ server hiện ra', async () => {
+    const payment = { id: 7, amount: 50000, method: 'CASH', note: null, createdAt: '2026-10-07T14:00:00Z', createdBy: 'admin' };
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush({ ...sampleOrder, payments: [payment] });
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+
+    fixture.componentInstance.openPaymentForm(payment as any);
+    fixture.componentInstance.savePayment();
+    httpMock.expectOne({ url: '/api/orders/36/payments/7', method: 'PUT' })
+      .flush({ detail: 'Tổng đã thu vượt tổng tiền của đơn' }, { status: 400, statusText: 'Bad Request' });
+    expect(fixture.componentInstance['paymentError']()).toBe('Tổng đã thu vượt tổng tiền của đơn');
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    fixture.componentInstance.deletePayment(payment as any);
+    httpMock.expectOne({ url: '/api/orders/36/payments/7', method: 'DELETE' }).flush(sampleOrder);
+    expect(fixture.componentInstance['selectedOrder']()?.payments.length).toBe(0);
+  });
+
+  it('formatTime hiển thị giờ:phút, ngày/tháng', async () => {
+    const fixture = await render();
+    const iso = new Date(2026, 9, 7, 9, 5).toISOString();
+    expect(fixture.componentInstance.formatTime(iso)).toBe('09:05, 07/10');
   });
 });

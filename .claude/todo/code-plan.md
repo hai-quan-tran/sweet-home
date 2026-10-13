@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 4 xong. Tiếp theo: GĐ 5.
+Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1). Mỗi phần nhỏ của GĐ5 xong thì tự commit, hết GĐ5 mới chờ xác nhận.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -119,9 +119,18 @@ Trạng thái: GĐ 4 xong. Tiếp theo: GĐ 5.
 
 ### GĐ 5: Vòng đời đơn
 - Trạng thái: Đã đặt → Đang ở → Quá giờ → Chờ xác nhận trả → Đã trả / Đã huỷ.
-- Khách tự check-in: tự chuyển trạng thái theo giờ (tác vụ định kỳ), quản lý xác nhận và sửa giờ thực tế.
-- Nhận/trả phòng, thu tiền, phụ thu quá giờ khi trả, huỷ đơn (theo quyền); trạng thái phòng Chờ dọn → Trống.
-- Frontend: nút thao tác trong chi tiết đơn, xác nhận trả phòng.
+- Quy tắc nghiệp vụ đã chốt: `business-rules.md` (Check-in/check-out, Huỷ đơn, Tiền cọc & thu
+  tiền, Sửa đơn). Chia 5 phần, mỗi phần xong → xác nhận → commit:
+- [x] 5.1 Thu tiền: cọc bắt buộc (> 0, ≤ tổng, có hình thức); bảng khoản thu (số tiền, hình thức,
+  thời điểm, người thu); chi tiết đơn hiện Tổng / Đã thu / Còn phải thu; NV thu được, chỉ Quản lý
+  sửa/xoá khoản đã thu.
+- [ ] 5.2 Nhận phòng & tự chuyển trạng thái: tác vụ mỗi phút (tự check-in: Đang ở → Chờ xác nhận
+  trả; NV đón: Đang ở → Quá giờ); nút Nhận phòng cho đơn NV đón.
+- [ ] 5.3 Trả phòng: giờ nhận/trả thực tế sửa được, phụ thu quá giờ, phụ thu thêm tay, thu đủ số
+  còn lại → Đã trả; phòng Chờ dọn, nút "Đã dọn" ở màn Phòng → Trống.
+- [ ] 5.4 Huỷ đơn: hoàn cọc 100/50/0%, chỉ Quản lý sửa số hoàn, lý do bắt buộc khi sửa, NV chỉ huỷ
+  đơn chỉ có cọc.
+- [ ] 5.5 Sửa đơn: chỉ khi Đã đặt, tính lại giá theo bảng giá hiện hành, kiểm tra trùng lịch.
 
 ### GĐ 6: Lịch đặt phòng & gia hạn
 - API timeline theo ngày/tuần/tháng; bấm ô trống tạo đơn.

@@ -28,6 +28,8 @@ const order: OrderDto = {
   roomPriceAmount: 350000,
   surcharges: [],
   totalAmount: 350000,
+  payments: [],
+  paidAmount: 0,
   dueAmount: 350000,
 };
 

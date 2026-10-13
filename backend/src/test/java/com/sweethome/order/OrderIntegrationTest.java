@@ -1,5 +1,6 @@
 package com.sweethome.order;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -27,7 +28,8 @@ import com.sweethome.auth.AccountRepository;
 import com.sweethome.auth.AccountRole;
 
 /**
- * Kiểm tra API đơn thuê qua filter chain thật: Quản lý và Nhân viên đều tạo/xem được đơn.
+ * Kiểm tra API đơn thuê qua filter chain thật: Quản lý và Nhân viên đều tạo/xem/thu tiền được,
+ * chỉ Quản lý sửa/xoá khoản đã thu.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -158,6 +160,46 @@ class OrderIntegrationTest {
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
 						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
 				.andExpect(status().isConflict());
+	}
+
+	@Test
+	void staffCanCollectPaymentButOnlyManagerCanEditOrDeleteIt() throws Exception {
+		MvcResult createResult = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(createResult.getResponse().getContentAsString(), "$.id")).longValue();
+
+		MvcResult payResult = mvc.perform(post("/orders/" + orderId + "/payments")
+						.cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"amount\":100000,\"method\":\"CASH\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paidAmount").value(150000))
+				.andExpect(jsonPath("$.dueAmount").value(50000))
+				.andExpect(jsonPath("$.payments[0].createdBy").isNotEmpty())
+				.andReturn();
+		long paymentId = ((Number) JsonPath.read(payResult.getResponse().getContentAsString(), "$.payments[0].id")).longValue();
+		String paymentUrl = "/orders/" + orderId + "/payments/" + paymentId;
+
+		mvc.perform(put(paymentUrl).cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"amount\":50000,\"method\":\"CASH\"}"))
+				.andExpect(status().isForbidden());
+		mvc.perform(delete(paymentUrl).cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isForbidden());
+
+		mvc.perform(put(paymentUrl).cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"amount\":50000,\"method\":\"TRANSFER\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paidAmount").value(100000));
+		mvc.perform(delete(paymentUrl).cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.payments").isEmpty());
 	}
 
 	@Test

@@ -26,8 +26,8 @@ import com.sweethome.room.CheckInMode;
  * @param note            ghi chú, có thể bỏ trống
  * @param checkInMode     hình thức check-in cho đơn này
  * @param doorCode        mã cửa riêng cho đơn, bắt buộc nếu {@code checkInMode == SELF}
- * @param deposit         tiền cọc
- * @param depositMethod   hình thức cọc, bắt buộc nếu {@code deposit > 0}
+ * @param deposit         tiền cọc, bắt buộc > 0 và không vượt tổng tiền
+ * @param depositMethod   hình thức cọc
  * @param discount        giảm giá
  * @param discountReason  lý do giảm, có thể bỏ trống
  */
@@ -45,8 +45,8 @@ public record OrderUpsertRequest(
 		String note,
 		@NotNull(message = "Bắt buộc nhập") CheckInMode checkInMode,
 		String doorCode,
-		@PositiveOrZero(message = "Không được âm") long deposit,
-		DepositMethod depositMethod,
+		@Positive(message = "Phải lớn hơn 0") long deposit,
+		@NotNull(message = "Bắt buộc nhập") PaymentMethod depositMethod,
 		@PositiveOrZero(message = "Không được âm") long discount,
 		String discountReason) {
 }

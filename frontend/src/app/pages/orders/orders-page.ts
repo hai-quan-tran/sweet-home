@@ -2,10 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { Observable, finalize } from 'rxjs';
 
+import { AuthService } from '../../core/auth.service';
 import { formatMoney } from '../../core/money';
 import { buildOrderMessageContext, renderMessageTemplate } from '../../core/message-template';
-import { OrderDto, OrderListResponse, OrderStatus } from '../../core/order.models';
+import { OrderDto, OrderListResponse, OrderPaymentDto, OrderStatus, PaymentMethod } from '../../core/order.models';
 import { OrderListQuery, OrderService } from '../../core/order.service';
 import { RoomDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
@@ -36,9 +38,11 @@ const CHECK_IN_MODE_LABEL: Record<OrderDto['checkInMode'], string> = { SELF: 't�
 const SOURCE_LABEL: Record<OrderDto['source'], string> = {
   ZALO: 'Zalo', FACEBOOK: 'Facebook', PHONE: 'Gọi điện', REGULAR: 'Khách quen', OTHER: 'Khác',
 };
+const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = { TRANSFER: 'chuyển khoản', CASH: 'tiền mặt' };
+const CLOSED_STATUSES: OrderStatus[] = ['CHECKED_OUT', 'CANCELLED'];
 const PAGE_SIZE = 10;
 
-/** Màn Đơn thuê: danh sách lọc/tìm kiếm theo trạng thái + chi tiết đơn đang chọn (chỉ xem, GĐ4). */
+/** Màn Đơn thuê: danh sách lọc/tìm kiếm theo trạng thái + chi tiết đơn đang chọn, thu tiền. */
 @Component({
   selector: 'app-orders-page',
   imports: [RouterLink, ButtonModule, FormsModule],
@@ -51,6 +55,7 @@ export class OrdersPage {
   private readonly settingsService = inject(SettingsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   protected readonly formatMoney = formatMoney;
   protected readonly Math = Math;
@@ -59,6 +64,8 @@ export class OrdersPage {
   protected readonly rentalTypeLabel = RENTAL_TYPE_LABEL;
   protected readonly checkInModeLabel = CHECK_IN_MODE_LABEL;
   protected readonly sourceLabel = SOURCE_LABEL;
+  protected readonly paymentMethodLabel = PAYMENT_METHOD_LABEL;
+  protected readonly isManager = computed(() => this.auth.currentUser()?.role === 'MANAGER');
 
   protected readonly statusFilter = signal<OrderStatus | null>(null);
   protected readonly roomFilter = signal<number | null>(null);
@@ -78,8 +85,20 @@ export class OrdersPage {
   protected readonly selectedTemplateId = signal<number | null>(null);
   protected readonly copyFeedback = signal<string | null>(null);
 
+  /** Form thu tiền: null = đóng, 0 = thêm mới, > 0 = id khoản thu đang sửa. */
+  protected readonly paymentFormId = signal<number | null>(null);
+  protected readonly paymentAmount = signal(0);
+  protected readonly paymentMethod = signal<PaymentMethod>('CASH');
+  protected readonly paymentNote = signal('');
+  protected readonly paymentError = signal<string | null>(null);
+  protected readonly savingPayment = signal(false);
+
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
   protected readonly selectedTemplate = computed(() => this.templates().find((t) => t.id === this.selectedTemplateId()) ?? null);
+  protected readonly canCollect = computed(() => {
+    const order = this.selectedOrder();
+    return order !== null && !CLOSED_STATUSES.includes(order.status);
+  });
 
   constructor() {
     this.roomService.list().subscribe((rooms) => this.rooms.set(rooms));
@@ -147,6 +166,7 @@ export class OrdersPage {
 
   private openOrder(id: number, autoCopy: boolean): void {
     this.doorCode.set(null);
+    this.paymentFormId.set(null);
     this.copyFeedback.set(null);
     this.orderService.get(id).subscribe((order) => {
       this.selectedOrder.set(order);
@@ -195,5 +215,68 @@ export class OrdersPage {
     } else {
       render(this.doorCode());
     }
+  }
+  /** Mở form thu tiền: thêm mới (mặc định số còn phải thu) hoặc sửa một khoản đã thu. */
+  openPaymentForm(payment?: OrderPaymentDto): void {
+    const order = this.selectedOrder();
+    if (!order) {
+      return;
+    }
+    this.paymentFormId.set(payment?.id ?? 0);
+    this.paymentAmount.set(payment?.amount ?? order.dueAmount);
+    this.paymentMethod.set(payment?.method ?? 'CASH');
+    this.paymentNote.set(payment?.note ?? '');
+    this.paymentError.set(null);
+  }
+
+  /** Đóng form thu tiền. */
+  closePaymentForm(): void {
+    this.paymentFormId.set(null);
+  }
+
+  /** Lưu khoản thu đang nhập (thêm mới hoặc sửa). */
+  savePayment(): void {
+    const order = this.selectedOrder();
+    const formId = this.paymentFormId();
+    if (!order || formId === null || this.savingPayment()) {
+      return;
+    }
+    if (!(this.paymentAmount() > 0)) {
+      this.paymentError.set('Số tiền phải lớn hơn 0.');
+      return;
+    }
+    const request = { amount: this.paymentAmount(), method: this.paymentMethod(), note: this.paymentNote().trim() || null };
+    const call = formId === 0
+      ? this.orderService.addPayment(order.id, request)
+      : this.orderService.updatePayment(order.id, formId, request);
+    this.runPaymentCall(call);
+  }
+
+  /** Xoá một khoản đã thu (chỉ Quản lý), có hỏi lại trước khi xoá. */
+  deletePayment(payment: OrderPaymentDto): void {
+    const order = this.selectedOrder();
+    if (!order || this.savingPayment() || !confirm(`Xoá khoản thu ${formatMoney(payment.amount)}?`)) {
+      return;
+    }
+    this.paymentError.set(null);
+    this.runPaymentCall(this.orderService.deletePayment(order.id, payment.id));
+  }
+
+  /** Giờ + ngày theo giờ máy, ví dụ "14:05, 13/10". */
+  formatTime(iso: string): string {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}, ${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+  }
+
+  private runPaymentCall(call: Observable<OrderDto>): void {
+    this.savingPayment.set(true);
+    call.pipe(finalize(() => this.savingPayment.set(false))).subscribe({
+      next: (order) => {
+        this.selectedOrder.set(order);
+        this.paymentFormId.set(null);
+      },
+      error: (err) => this.paymentError.set(err?.error?.detail ?? 'Không lưu được khoản thu, thử lại sau.'),
+    });
   }
 }

@@ -136,7 +136,7 @@ class OrderSerializationIntegrationTest {
 		String orderPayload = """
 				{"roomId":%d,"rentalType":"HOURLY","checkInDate":"2026-10-07","checkInTime":"15:00","quantity":3,
 				 "guestName":"Phan Thu Trang","guestPhone":"0987654321","guestCount":4,"source":"ZALO",
-				 "checkInMode":"SELF","doorCode":"482915","deposit":0,"discount":0}
+				 "checkInMode":"SELF","doorCode":"482915","deposit":50000,"depositMethod":"CASH","discount":0}
 				""".formatted(roomId);
 		MvcResult orderResult = mvc.perform(post("/orders").cookie(accessCookie)
 						.header("X-XSRF-TOKEN", csrf).cookie(csrfCookie)

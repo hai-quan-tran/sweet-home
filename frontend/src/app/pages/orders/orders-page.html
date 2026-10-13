@@ -99,8 +99,45 @@
           <div class="kv"><span>Giảm giá{{ o.discountReason ? ' (' + o.discountReason + ')' : '' }}</span><span class="num">−{{ formatMoney(o.discount) }}</span></div>
         }
         <div class="kv tot"><span>Tổng</span><span class="num">{{ formatMoney(o.totalAmount) }}</span></div>
-        <div class="kv"><span>Đã cọc{{ o.depositMethod === 'TRANSFER' ? ' (chuyển khoản)' : o.depositMethod === 'CASH' ? ' (tiền mặt)' : '' }}</span><span class="num">−{{ formatMoney(o.deposit) }}</span></div>
+        <div class="kv"><span>Đã cọc{{ o.depositMethod ? ' (' + paymentMethodLabel[o.depositMethod] + ')' : '' }}</span><span class="num">−{{ formatMoney(o.deposit) }}</span></div>
+        @for (p of o.payments; track p.id) {
+          <div class="kv pay">
+            <span>Thu {{ formatTime(p.createdAt) }} · {{ paymentMethodLabel[p.method] }}{{ p.createdBy ? ' · ' + p.createdBy : '' }}@if (p.note) {<small>{{ p.note }}</small>}</span>
+            <span class="num">
+              −{{ formatMoney(p.amount) }}
+              @if (isManager() && canCollect()) {
+                <button class="ib" type="button" title="Sửa khoản thu" (click)="openPaymentForm(p)"><i class="pi pi-pencil"></i></button>
+                <button class="ib" type="button" title="Xoá khoản thu" (click)="deletePayment(p)"><i class="pi pi-trash"></i></button>
+              }
+            </span>
+          </div>
+        }
+        <div class="kv"><span>Đã thu</span><span class="num">{{ formatMoney(o.paidAmount) }}</span></div>
         <div class="kv due"><span>Còn phải thu</span><span class="num">{{ formatMoney(o.dueAmount) }}</span></div>
+
+        @if (paymentFormId() !== null) {
+          <div class="pay-form">
+            <div class="pf-row">
+              <label>Số tiền<input class="inp num" type="number" min="1" [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)" /></label>
+              <label>Hình thức
+                <select class="sel" [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+                  <option value="CASH">Tiền mặt</option>
+                  <option value="TRANSFER">Chuyển khoản</option>
+                </select>
+              </label>
+            </div>
+            <label>Ghi chú<input class="inp" maxlength="255" placeholder="Không bắt buộc" [ngModel]="paymentNote()" (ngModelChange)="paymentNote.set($event)" /></label>
+            <div class="pf-a">
+              <button class="btn-p" type="button" [disabled]="savingPayment()" (click)="savePayment()">{{ paymentFormId() === 0 ? 'Thu tiền' : 'Lưu' }}</button>
+              <button class="btn-s" type="button" (click)="closePaymentForm()">Huỷ</button>
+            </div>
+          </div>
+        } @else if (canCollect() && o.dueAmount > 0) {
+          <button class="btn-s add-pay" type="button" (click)="openPaymentForm()"><i class="pi pi-wallet"></i> Thu tiền</button>
+        }
+        @if (paymentError()) {
+          <p class="pay-err">{{ paymentError() }}</p>
+        }
       </div>
 
       <div class="dp-a">

@@ -3,12 +3,29 @@ import { CheckInMode } from './room.models';
 export type OrderStatus = 'BOOKED' | 'CHECKED_IN' | 'OVERSTAY' | 'PENDING_CHECKOUT' | 'CHECKED_OUT' | 'CANCELLED';
 export type RentalType = 'HOURLY' | 'OVERNIGHT' | 'DAILY';
 export type OrderSource = 'ZALO' | 'FACEBOOK' | 'PHONE' | 'REGULAR' | 'OTHER';
-export type DepositMethod = 'TRANSFER' | 'CASH';
+export type PaymentMethod = 'TRANSFER' | 'CASH';
 
 /** Một dòng phụ thu đã cộng vào đơn. */
 export interface OrderSurchargeDto {
   name: string;
   amount: number;
+}
+
+/** Một khoản thu thêm của đơn (ngoài cọc). */
+export interface OrderPaymentDto {
+  id: number;
+  amount: number;
+  method: PaymentMethod;
+  note: string | null;
+  createdAt: string;
+  createdBy: string | null;
+}
+
+/** Dữ liệu thêm/sửa một khoản thu. */
+export interface OrderPaymentRequest {
+  amount: number;
+  method: PaymentMethod;
+  note: string | null;
 }
 
 /** Thông tin đầy đủ một đơn thuê. */
@@ -32,12 +49,14 @@ export interface OrderDto {
   checkInMode: CheckInMode;
   hasDoorCode: boolean;
   deposit: number;
-  depositMethod: DepositMethod | null;
+  depositMethod: PaymentMethod | null;
   discount: number;
   discountReason: string | null;
   roomPriceAmount: number;
   surcharges: OrderSurchargeDto[];
   totalAmount: number;
+  payments: OrderPaymentDto[];
+  paidAmount: number;
   dueAmount: number;
 }
 
@@ -57,7 +76,7 @@ export interface OrderUpsertRequest {
   checkInMode: CheckInMode;
   doorCode: string | null;
   deposit: number;
-  depositMethod: DepositMethod | null;
+  depositMethod: PaymentMethod;
   discount: number;
   discountReason: string | null;
 }

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { OrderPreviewRequest, OrderUpsertRequest } from './order.models';
+import { OrderPaymentRequest, OrderPreviewRequest, OrderUpsertRequest } from './order.models';
 import { OrderService } from './order.service';
 
 describe('OrderService', () => {
@@ -60,5 +60,22 @@ describe('OrderService', () => {
     const req = httpMock.expectOne({ url: '/api/orders', method: 'POST' });
     expect(req.request.body).toBe(body);
     req.flush({});
+  });
+  it('addPayment gọi POST /api/orders/:id/payments kèm body', () => {
+    const body: OrderPaymentRequest = { amount: 100000, method: 'CASH', note: null };
+    service.addPayment(5, body).subscribe();
+    const req = httpMock.expectOne({ url: '/api/orders/5/payments', method: 'POST' });
+    expect(req.request.body).toBe(body);
+    req.flush({});
+  });
+
+  it('updatePayment gọi PUT /api/orders/:id/payments/:paymentId', () => {
+    service.updatePayment(5, 7, { amount: 1, method: 'TRANSFER', note: null }).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/payments/7', method: 'PUT' }).flush({});
+  });
+
+  it('deletePayment gọi DELETE /api/orders/:id/payments/:paymentId', () => {
+    service.deletePayment(5, 7).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/payments/7', method: 'DELETE' }).flush({});
   });
 });

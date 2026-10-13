@@ -27,12 +27,14 @@ class OrderControllerTest {
 
 	@Mock
 	private OrderService orderService;
+	@Mock
+	private OrderPaymentService paymentService;
 
 	private MockMvc mvc;
 
 	@BeforeEach
 	void setUp() {
-		mvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService))
+		mvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, paymentService))
 				.setControllerAdvice(new GlobalExceptionHandler()).build();
 	}
 
@@ -52,8 +54,26 @@ class OrderControllerTest {
 						.content("""
 								{"rentalType":"HOURLY","checkInDate":"2026-10-07","checkInTime":"15:00","quantity":3,
 								 "guestName":"A","guestPhone":"0900000000","guestCount":2,"source":"ZALO",
-								 "checkInMode":"SELF","doorCode":"123456","deposit":0,"discount":0}
+								 "checkInMode":"SELF","doorCode":"123456","deposit":50000,"depositMethod":"CASH","discount":0}
 								"""))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void createRejectsZeroDeposit() throws Exception {
+		mvc.perform(post("/orders").contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"roomId":1,"rentalType":"HOURLY","checkInDate":"2026-10-07","checkInTime":"15:00",
+								 "guestName":"A","guestPhone":"0900000000","guestCount":2,"source":"ZALO",
+								 "checkInMode":"SELF","doorCode":"123456","deposit":0,"depositMethod":"CASH","discount":0}
+								"""))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void addPaymentRejectsNonPositiveAmount() throws Exception {
+		mvc.perform(post("/orders/1/payments").contentType(MediaType.APPLICATION_JSON)
+						.content("{\"amount\":0,\"method\":\"CASH\"}"))
 				.andExpect(status().isBadRequest());
 	}
 

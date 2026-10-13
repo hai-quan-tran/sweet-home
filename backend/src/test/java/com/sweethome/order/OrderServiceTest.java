@@ -84,7 +84,7 @@ class OrderServiceTest {
 
 	private OrderUpsertRequest requestHourly(LocalDate date, LocalTime time, Integer hours) {
 		return new OrderUpsertRequest(10L, RentalType.HOURLY, date, time, hours, "Nguyễn Văn A", "0900000000",
-				null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 0L, null, 0L, null);
+				null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 50000L, PaymentMethod.CASH, 0L, null);
 	}
 
 	@Test
@@ -121,7 +121,7 @@ class OrderServiceTest {
 	@Test
 	void createOvernightUsesFixedScheduleAndFlatPrice() {
 		var request = new OrderUpsertRequest(10L, RentalType.OVERNIGHT, LocalDate.of(2026, 10, 7), null, null,
-				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 0L, null,
+				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 50000L, PaymentMethod.CASH,
 				0L, null);
 
 		var dto = service.create(request);
@@ -134,7 +134,7 @@ class OrderServiceTest {
 	@Test
 	void createDailyMultipliesByNumberOfDays() {
 		var request = new OrderUpsertRequest(10L, RentalType.DAILY, LocalDate.of(2026, 10, 7), null, 3,
-				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 0L, null,
+				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "123456", 50000L, PaymentMethod.CASH,
 				0L, null);
 
 		var dto = service.create(request);
@@ -155,7 +155,7 @@ class OrderServiceTest {
 	@Test
 	void createRejectsWhenSelfCheckInMissingDoorCode() {
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
-				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, " ", 0L, null,
+				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, " ", 50000L, PaymentMethod.CASH,
 				0L, null);
 
 		assertThatThrownBy(() -> service.create(request)).isInstanceOf(BusinessException.class);
@@ -164,7 +164,7 @@ class OrderServiceTest {
 	@Test
 	void createAllowsStaffCheckInWithoutDoorCode() {
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
-				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.STAFF, null, 0L, null,
+				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.STAFF, null, 50000L, PaymentMethod.CASH,
 				0L, null);
 
 		var dto = service.create(request);
@@ -187,7 +187,7 @@ class OrderServiceTest {
 	void createEncryptsDoorCodeAndCccdStoringOnlyLast4Plain() {
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
 				3, "Nguyễn Văn A", "0900000000", "079201007302", 2, OrderSource.ZALO, null, CheckInMode.SELF,
-				"482915", 0L, null, 0L, null);
+				"482915", 50000L, PaymentMethod.CASH, 0L, null);
 		ArgumentCaptor<RentalOrder> captor = ArgumentCaptor.forClass(RentalOrder.class);
 
 		var dto = service.create(request);
@@ -206,8 +206,8 @@ class OrderServiceTest {
 		var surcharge = extraGuestSurcharge(1L, "Thêm khách", 50000);
 		when(surchargeRepository.findActiveByRoomTypeId(1L)).thenReturn(List.of(surcharge));
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
-				3, "Nguyễn Văn A", "0900000000", null, 4, OrderSource.ZALO, null, CheckInMode.SELF, "482915", 0L,
-				null, 0L, null);
+				3, "Nguyễn Văn A", "0900000000", null, 4, OrderSource.ZALO, null, CheckInMode.SELF, "482915", 50000L,
+				PaymentMethod.CASH, 0L, null);
 
 		var dto = service.create(request);
 
@@ -219,14 +219,26 @@ class OrderServiceTest {
 	@Test
 	void createSubtractsDiscountFromTotal() {
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
-				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "482915", 0L,
-				null, 50000L, "Khách quen");
+				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "482915", 50000L,
+				PaymentMethod.CASH, 50000L, "Khách quen");
 
 		var dto = service.create(request);
 
 		assertThat(dto.discount()).isEqualTo(50000);
 		assertThat(dto.totalAmount()).isEqualTo(200000 - 50000);
-		assertThat(dto.dueAmount()).isEqualTo(200000 - 50000);
+		assertThat(dto.paidAmount()).isEqualTo(50000);
+		assertThat(dto.dueAmount()).isEqualTo(200000 - 50000 - 50000);
+	}
+
+	@Test
+	void createRejectsDepositAboveTotal() {
+		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
+				3, "Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, "482915", 200001L,
+				PaymentMethod.CASH, 0L, null);
+
+		assertThatThrownBy(() -> service.create(request))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("Tiền cọc");
 	}
 
 	@Test

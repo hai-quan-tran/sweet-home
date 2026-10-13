@@ -35,8 +35,7 @@ import com.sweethome.surcharge.SurchargeDayCharge;
 import com.sweethome.surcharge.SurchargeRepository;
 
 /**
- * Tạo đơn thuê và xem danh sách/chi tiết. GĐ4 không sửa/huỷ/đổi trạng thái đơn — các thao tác đó
- * (nhận/trả phòng, thu tiền, huỷ) thuộc GĐ5 "Vòng đời đơn".
+ * Tạo đơn thuê và xem danh sách/chi tiết. Thu tiền xem {@link OrderPaymentService}.
  */
 @Service
 public class OrderService {
@@ -174,6 +173,9 @@ public class OrderService {
 		SurchargeCalculationResult surcharges = calculateSurcharges(room, prices, schedule, request.guestCount(),
 				Set.of());
 		long total = Math.max(0, schedule.roomPrice() + surcharges.total() - request.discount());
+		if (request.deposit() > total) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Tiền cọc không được vượt tổng tiền");
+		}
 
 		RentalOrder order = new RentalOrder();
 		order.setRoom(room);
@@ -195,7 +197,7 @@ public class OrderService {
 			order.setDoorCodeEncrypted(cryptoService.encrypt(request.doorCode()));
 		}
 		order.setDeposit(request.deposit());
-		order.setDepositMethod(request.depositMethod());
+		order.setPaymentMethod(request.depositMethod());
 		order.setDiscount(request.discount());
 		order.setDiscountReason(request.discountReason());
 		order.setRoomTypeNameSnapshot(prices.roomTypeName());

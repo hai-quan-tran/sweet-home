@@ -6,6 +6,7 @@ import {
   DoorCodeResponse,
   OrderDto,
   OrderListResponse,
+  OrderPaymentRequest,
   OrderPreviewRequest,
   OrderPreviewResponse,
   OrderStatus,
@@ -56,5 +57,20 @@ export class OrderService {
   /** Tạo đơn thuê mới. */
   create(request: OrderUpsertRequest): Observable<OrderDto> {
     return this.http.post<OrderDto>(BASE, request);
+  }
+
+  /** Thu thêm một khoản tiền của đơn. */
+  addPayment(orderId: number, request: OrderPaymentRequest): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${BASE}/${orderId}/payments`, request);
+  }
+
+  /** Sửa một khoản đã thu (chỉ Quản lý). */
+  updatePayment(orderId: number, paymentId: number, request: OrderPaymentRequest): Observable<OrderDto> {
+    return this.http.put<OrderDto>(`${BASE}/${orderId}/payments/${paymentId}`, request);
+  }
+
+  /** Xoá một khoản đã thu (chỉ Quản lý). */
+  deletePayment(orderId: number, paymentId: number): Observable<OrderDto> {
+    return this.http.delete<OrderDto>(`${BASE}/${orderId}/payments/${paymentId}`);
   }
 }

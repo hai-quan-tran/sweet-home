@@ -198,3 +198,23 @@
   cửa/sao chép tin nhắn (hạ tầng nhật ký là GĐ7); mã cửa không giới hạn theo "đang trong ca trực"
   (hạ tầng Lịch làm là GĐ8); đơn chỉ tạo & xem, chưa có sửa/huỷ/đổi trạng thái/thu tiền (GĐ5); phụ
   thu "thêm tay" chưa chọn được lúc tạo đơn (cần nơi thao tác theo mốc của đơn ở GĐ5).
+
+## Thu tiền (GĐ5.1, package `com.sweethome.order`)
+- Cọc vẫn lưu trên đơn (`deposit`, `depositMethod`) — bắt buộc khi tạo: `@Positive` + `@NotNull`
+  ở `OrderUpsertRequest`, kiểm tra "không vượt tổng tiền" ở `OrderService.create` (cần tổng đã tính).
+- Enum `DepositMethod` đổi tên thành `PaymentMethod`, dùng chung cho cọc và khoản thu (giá trị lưu DB
+  không đổi: `TRANSFER`/`CASH`).
+- Khoản thu thêm: `OrderPayment` (bảng `order_payment`, changelog `006-order-payment.yaml`), con của
+  `RentalOrder` (`@OneToMany` cascade + orphanRemoval giống `OrderSurcharge`), kế thừa `Auditable` nên
+  thời điểm thu/người thu lấy từ `createdAt/createdBy`, không thêm cột riêng.
+  `RentalOrder.getPaidAmount()` = cọc + tổng khoản thu; `OrderDto` trả thêm `payments`, `paidAmount`,
+  `dueAmount = max(0, total - paid)`.
+- `OrderPaymentService` (tách khỏi `OrderService` cho gọn): thêm/sửa/xoá khoản thu; chặn đơn đã trả
+  hoặc đã huỷ; chặn tổng đã thu vượt tổng tiền. Dùng `saveAndFlush` để DTO trả về có id/`createdAt`
+  của khoản vừa thêm.
+- API: `POST /orders/{id}/payments` (mọi vai trò), `PUT|DELETE /orders/{id}/payments/{paymentId}`
+  (`@PreAuthorize` MANAGER). Trả về `OrderDto` đầy đủ để frontend thay luôn đơn đang xem.
+- Frontend: chi tiết đơn (màn Đơn thuê) hiện từng khoản thu (giờ, hình thức, người thu), Đã thu, Còn
+  phải thu; nút "Thu tiền" mở form ngay trong khung chi tiết (mặc định số còn phải thu); Quản lý có
+  nút sửa/xoá từng khoản (xoá hỏi lại bằng `confirm`). Màn Tạo đơn: tiền cọc bắt buộc, báo lỗi ngay
+  khi cọc vượt tổng tiền xem trước.

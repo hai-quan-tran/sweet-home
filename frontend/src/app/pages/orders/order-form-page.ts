@@ -8,7 +8,7 @@ import { catchError, debounceTime, of, switchMap } from 'rxjs';
 
 import { CheckInMode, RoomDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
-import { DepositMethod, OrderPreviewRequest, OrderPreviewResponse, OrderSource, RentalType } from '../../core/order.models';
+import { PaymentMethod, OrderPreviewRequest, OrderPreviewResponse, OrderSource, RentalType } from '../../core/order.models';
 import { OrderService } from '../../core/order.service';
 import { formatMoney } from '../../core/money';
 
@@ -58,8 +58,8 @@ export class OrderFormPage {
     guestCount: new FormControl(2, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
     source: new FormControl<OrderSource>('ZALO', { nonNullable: true }),
     note: new FormControl('', { nonNullable: true }),
-    deposit: new FormControl(0, { nonNullable: true, validators: Validators.min(0) }),
-    depositMethod: new FormControl<DepositMethod>('TRANSFER', { nonNullable: true }),
+    deposit: new FormControl(0, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
+    depositMethod: new FormControl<PaymentMethod>('TRANSFER', { nonNullable: true }),
     discount: new FormControl(0, { nonNullable: true, validators: Validators.min(0) }),
     discountReason: new FormControl('', { nonNullable: true }),
   });
@@ -142,9 +142,19 @@ export class OrderFormPage {
     this.form.controls.guestCount.setValue(next);
   }
 
+  /** Lỗi ô tiền cọc: bắt buộc > 0 và không vượt tổng tiền đang xem trước; null nếu hợp lệ. */
+  depositError(): string | null {
+    const control = this.form.controls.deposit;
+    if (control.invalid) {
+      return control.touched ? 'Bắt buộc nhập tiền cọc lớn hơn 0' : null;
+    }
+    const total = this.preview()?.totalAmount;
+    return total !== undefined && control.value > total ? 'Tiền cọc không được vượt tổng tiền' : null;
+  }
+
   /** Lưu đơn. */
   submit(copyMessage: boolean): void {
-    if (this.form.invalid || this.submitting()) {
+    if (this.form.invalid || this.submitting() || this.depositError() !== null) {
       this.form.markAllAsTouched();
       return;
     }

@@ -4,6 +4,38 @@
 - Mỗi phòng có hình thức mặc định: khách tự check-in/out hoặc nhân viên đón. Sửa được cho từng đơn.
 - Khách tự check-in: trạng thái tự chuyển theo giờ, quản lý xác nhận lại (sửa giờ thực tế nếu cần).
 - Mã cửa lưu riêng cho từng đơn.
+- Tự chuyển trạng thái theo giờ (mỗi phút):
+  - Khách tự check-in: đến giờ nhận → Đang ở; đến giờ trả → Chờ xác nhận trả.
+  - Nhân viên đón: nhân viên bấm Nhận phòng; quá giờ nhận mà khách chưa tới vẫn giữ Đã đặt;
+    đang ở mà quá giờ trả → Quá giờ.
+- Trả phòng sớm hơn giờ đã đặt: không giảm tiền.
+- Trả phòng phải thu đủ số còn lại (chọn hình thức) ngay lúc xác nhận trả; không cho trả khi còn nợ.
+- Sau khi trả phòng, phòng chuyển Chờ dọn; bấm "Đã dọn" để về Trống.
+
+## Tiền cọc & thu tiền
+- Tạo đơn bắt buộc có cọc: > 0, không vượt tổng tiền, bắt buộc chọn hình thức cọc.
+- "Đã thu" của đơn = cọc + các khoản thu thêm. Chỉ Quản lý sửa/xoá được khoản đã thu (kể cả cọc).
+
+## Sửa đơn
+- Chỉ sửa được khi đơn còn Đã đặt. Đổi phòng/giờ thì tính lại giá theo bảng giá hiện hành
+  (như tạo đơn mới), có kiểm tra trùng lịch. Sửa tiền cọc chỉ Quản lý.
+
+## Huỷ đơn
+- Chỉ huỷ được đơn ở trạng thái Đã đặt hoặc Đang ở. Riêng đơn khách tự check-in mà khách không
+  đến (đã tự chuyển sang Chờ xác nhận trả) cũng huỷ được, không hoàn cọc.
+- Hoàn cọc theo thời điểm huỷ so với giờ nhận phòng của đơn:
+  - Trước giờ nhận phòng 1 ngày trở lên: hoàn 100% cọc.
+  - Trong vòng 1 ngày trước giờ nhận phòng: hoàn 50% cọc.
+  - Từ giờ nhận phòng trở đi (gồm đơn Đang ở): không hoàn cọc.
+  - "1 ngày" = 24 giờ. Ví dụ nhận phòng 14:00 ngày 15: huỷ đến 14:00 ngày 14 → 100%; sau đó đến
+    trước 14:00 ngày 15 → 50%; từ 14:00 ngày 15 → 0%.
+- App tự tính số tiền hoàn làm mặc định; chỉ Quản lý được sửa lại khi cần.
+- Lý do huỷ: bắt buộc khi số tiền hoàn khác mức app tự tính, các trường hợp khác không bắt buộc.
+- Huỷ đơn Đang ở chỉ dành cho khách không đến (trạng thái tự chuyển theo giờ). Khách đã vào ở thì
+  không huỷ mà trả phòng, tính tiền như bình thường.
+- Mọi đơn đều có cọc (bắt buộc nhập lúc tạo đơn). Nhân viên được huỷ đơn chỉ có cọc; đơn đã thu
+  thêm tiền ngoài cọc thì chỉ Quản lý huỷ ("đã thu tiền" = có khoản thu ngoài cọc).
+- Huỷ là không hoàn tác được. Muốn khôi phục thì tạo đơn mới trong khung giờ đó.
 
 ## Nhân viên
 - Có tài khoản riêng, vai trò Nhân viên hoặc Quản lý.

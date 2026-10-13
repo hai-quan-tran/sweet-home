@@ -120,7 +120,7 @@ describe('OrderFormPage', () => {
       guestCount: 2,
       source: 'ZALO',
       note: '',
-      deposit: 0,
+      deposit: 50000,
       depositMethod: 'TRANSFER',
       discount: 0,
       discountReason: '',
@@ -150,7 +150,7 @@ describe('OrderFormPage', () => {
       guestCount: 2,
       source: 'ZALO',
       note: '',
-      deposit: 0,
+      deposit: 50000,
       depositMethod: 'TRANSFER',
       discount: 0,
       discountReason: '',
@@ -162,5 +162,21 @@ describe('OrderFormPage', () => {
     req.flush({ id: 42 });
 
     expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 42, copy: 1 } });
+  });
+  it('tiền cọc: bắt buộc > 0 và không vượt tổng tiền xem trước', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+    const deposit = component['form'].controls.deposit;
+
+    deposit.setValue(0);
+    deposit.markAsTouched();
+    expect(component.depositError()).toContain('Bắt buộc');
+
+    component['preview'].set({ totalAmount: 150000 } as any);
+    deposit.setValue(150001);
+    expect(component.depositError()).toContain('vượt');
+
+    deposit.setValue(150000);
+    expect(component.depositError()).toBeNull();
   });
 });

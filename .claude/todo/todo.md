@@ -25,6 +25,7 @@
 - [x] Phút ân hạn: mặc định 15, cho sửa, khi tính không trừ phút ân hạn
 - [x] Phụ thu quá giờ: luôn làm tròn lên theo giờ (trễ 30 phút → 1 giờ, 1 giờ 20 phút → 2 giờ)
 - [x] Phụ thu quá giờ tính theo giá "mỗi giờ thêm" của hạng phòng
+- [x] Huỷ đơn: trạng thái được huỷ, mức hoàn cọc, cọc bắt buộc, NV huỷ được đơn chỉ có cọc, lý do huỷ, không hoàn tác (xem business-rules.md)
 
 ## Bước tiếp theo
 - [x] Chốt các câu hỏi trên
@@ -36,3 +37,8 @@
 - [x] GĐ 3: phụ thu
 - [x] GĐ 4: tạo đơn & danh sách đơn
 - [ ] GĐ 5: vòng đời đơn
+- [ ] GĐ 6: lịch đặt phòng & gia hạn
+- [ ] GĐ 7: nhân viên & nhật ký
+- [ ] GĐ 8: lịch làm
+- [ ] GĐ 9: tổng quan & thông báo
+- [ ] GĐ 10: hoàn thiện

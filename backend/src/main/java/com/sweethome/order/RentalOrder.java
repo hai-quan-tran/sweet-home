@@ -28,8 +28,7 @@ import com.sweethome.room.Room;
  * tạo, tách biệt khỏi {@code RoomType}/{@code Surcharge} gốc — sửa hoặc ẩn hạng phòng/phụ thu sau
  * đó không làm đổi đơn cũ (xem {@code business-rules.md} mục "Xoá mềm & lưu lịch sử").
  * <p>
- * GĐ4 chỉ tạo đơn ở trạng thái {@link OrderStatus#BOOKED}; các mốc còn lại trong vòng đời đơn
- * (giờ nhận/trả thực tế, thu tiền, huỷ...) để GĐ5 bổ sung cột khi cần, tránh thêm cột chưa dùng.
+ * Tiền cọc lưu trên đơn, các khoản thu thêm lưu ở {@link OrderPayment}.
  */
 @Entity
 @Table(name = "rental_order")
@@ -94,7 +93,7 @@ public class RentalOrder extends Auditable {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "deposit_method", length = 20)
-	private DepositMethod depositMethod;
+	private PaymentMethod depositMethod;
 
 	@Column(nullable = false)
 	private long discount = 0;
@@ -126,6 +125,10 @@ public class RentalOrder extends Auditable {
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("id asc")
 	private List<OrderSurcharge> surcharges = new ArrayList<>();
+
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("id asc")
+	private List<OrderPayment> payments = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -251,11 +254,11 @@ public class RentalOrder extends Auditable {
 		this.deposit = deposit;
 	}
 
-	public DepositMethod getDepositMethod() {
+	public PaymentMethod getPaymentMethod() {
 		return depositMethod;
 	}
 
-	public void setDepositMethod(DepositMethod depositMethod) {
+	public void setPaymentMethod(PaymentMethod depositMethod) {
 		this.depositMethod = depositMethod;
 	}
 
@@ -344,5 +347,20 @@ public class RentalOrder extends Auditable {
 				this.surcharges.add(s);
 			}
 		}
+	}
+
+	public List<OrderPayment> getPayments() {
+		return payments;
+	}
+
+	/** Thêm một khoản thu, gắn quan hệ 2 chiều cho cascade. */
+	public void addPayment(OrderPayment payment) {
+		payment.setOrder(this);
+		payments.add(payment);
+	}
+
+	/** Tổng đã thu = tiền cọc + các khoản thu thêm. */
+	public long getPaidAmount() {
+		return deposit + payments.stream().mapToLong(OrderPayment::getAmount).sum();
 	}
 }

@@ -2,26 +2,31 @@ package com.sweethome.order;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * API đơn thuê. Quản lý và Nhân viên đều tạo/xem được (xem {@code business-rules.md}); GĐ4 chưa
- * có sửa/huỷ/đổi trạng thái.
+ * API đơn thuê. Quản lý và Nhân viên đều tạo/xem/thu tiền được; sửa/xoá khoản đã thu chỉ Quản lý
+ * (xem {@code business-rules.md}).
  */
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
 
 	private final OrderService orderService;
+	private final OrderPaymentService paymentService;
 
-	public OrderController(OrderService orderService) {
+	public OrderController(OrderService orderService, OrderPaymentService paymentService) {
 		this.orderService = orderService;
+		this.paymentService = paymentService;
 	}
 
 	/** Danh sách đơn có lọc/tìm kiếm/phân trang. */
@@ -57,5 +62,26 @@ public class OrderController {
 	@PostMapping
 	public OrderDto create(@Valid @RequestBody OrderUpsertRequest request) {
 		return orderService.create(request);
+	}
+
+	/** Thu thêm một khoản tiền của đơn. */
+	@PostMapping("/{id}/payments")
+	public OrderDto addPayment(@PathVariable Long id, @Valid @RequestBody OrderPaymentRequest request) {
+		return paymentService.add(id, request);
+	}
+
+	/** Sửa một khoản đã thu (chỉ Quản lý). */
+	@PutMapping("/{id}/payments/{paymentId}")
+	@PreAuthorize("hasRole('MANAGER')")
+	public OrderDto updatePayment(@PathVariable Long id, @PathVariable Long paymentId,
+			@Valid @RequestBody OrderPaymentRequest request) {
+		return paymentService.update(id, paymentId, request);
+	}
+
+	/** Xoá một khoản đã thu (chỉ Quản lý). */
+	@DeleteMapping("/{id}/payments/{paymentId}")
+	@PreAuthorize("hasRole('MANAGER')")
+	public OrderDto deletePayment(@PathVariable Long id, @PathVariable Long paymentId) {
+		return paymentService.delete(id, paymentId);
 	}
 }

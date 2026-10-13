@@ -30,12 +30,14 @@ public record OrderDto(
 		CheckInMode checkInMode,
 		boolean hasDoorCode,
 		long deposit,
-		DepositMethod depositMethod,
+		PaymentMethod depositMethod,
 		long discount,
 		String discountReason,
 		long roomPriceAmount,
 		List<OrderSurchargeDto> surcharges,
 		long totalAmount,
+		List<OrderPaymentDto> payments,
+		long paidAmount,
 		long dueAmount) {
 
 	/** Mã đơn hiển thị, dựng từ id (không lưu cột riêng). */
@@ -65,12 +67,14 @@ public record OrderDto(
 				order.getCheckInMode(),
 				order.getDoorCodeEncrypted() != null,
 				order.getDeposit(),
-				order.getDepositMethod(),
+				order.getPaymentMethod(),
 				order.getDiscount(),
 				order.getDiscountReason(),
 				order.getRoomPriceAmount(),
 				order.getSurcharges().stream().map(OrderSurchargeDto::from).toList(),
 				order.getTotalAmount(),
-				Math.max(0, order.getTotalAmount() - order.getDeposit()));
+				order.getPayments().stream().map(OrderPaymentDto::from).toList(),
+				order.getPaidAmount(),
+				Math.max(0, order.getTotalAmount() - order.getPaidAmount()));
 	}
 }
