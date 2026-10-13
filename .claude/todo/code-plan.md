@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 5 xong code (5.1–5.5 đã commit), chờ người dùng xác nhận trước khi sang GĐ 6.
+Trạng thái: GĐ 5 xong. Tiếp theo: GĐ 6.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -117,7 +117,7 @@ Trạng thái: GĐ 5 xong code (5.1–5.5 đã commit), chờ người dùng xá
   `RentalOrder.surcharges` và viết thêm `OrderSerializationIntegrationTest` (không `@Transactional`)
   để tự kiểm chứng điều đó trước khi test tay.
 
-### GĐ 5: Vòng đời đơn ✅ (chờ xác nhận)
+### GĐ 5: Vòng đời đơn ✅
 - Trạng thái: Đã đặt → Đang ở → Quá giờ → Chờ xác nhận trả → Đã trả / Đã huỷ.
 - Quy tắc nghiệp vụ đã chốt: `business-rules.md` (Check-in/check-out, Huỷ đơn, Tiền cọc & thu
   tiền, Sửa đơn). Chia 5 phần, mỗi phần xong → xác nhận → commit:
