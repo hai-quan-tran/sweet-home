@@ -59,6 +59,11 @@ export class OrderService {
     return this.http.post<OrderDto>(BASE, request);
   }
 
+  /** Xác nhận khách đã nhận phòng. */
+  checkIn(orderId: number): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${BASE}/${orderId}/check-in`, {});
+  }
+
   /** Thu thêm một khoản tiền của đơn. */
   addPayment(orderId: number, request: OrderPaymentRequest): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${BASE}/${orderId}/payments`, request);

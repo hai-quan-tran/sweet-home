@@ -78,4 +78,8 @@ describe('OrderService', () => {
     service.deletePayment(5, 7).subscribe();
     httpMock.expectOne({ url: '/api/orders/5/payments/7', method: 'DELETE' }).flush({});
   });
+  it('checkIn gọi POST /api/orders/:id/check-in', () => {
+    service.checkIn(5).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/check-in', method: 'POST' }).flush({});
+  });
 });

@@ -42,6 +42,8 @@ class OrderIntegrationTest {
 	private AccountRepository accountRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private OrderLifecycleService lifecycleService;
 
 	private String managerAccessToken;
 	private String managerCsrf;
@@ -200,6 +202,33 @@ class OrderIntegrationTest {
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.payments").isEmpty());
+	}
+
+	@Test
+	void staffCheckInAndAutoTransitionOfPastSelfCheckInOrder() throws Exception {
+		MvcResult staffOrder = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(orderPayload().replace("\"SELF\"", "\"STAFF\"").replace("2026-10-07", "2026-10-08")))
+				.andExpect(status().isOk())
+				.andReturn();
+		long staffOrderId = ((Number) JsonPath.read(staffOrder.getResponse().getContentAsString(), "$.id")).longValue();
+		mvc.perform(post("/orders/" + staffOrderId + "/check-in").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("CHECKED_IN"))
+				.andExpect(jsonPath("$.actualCheckInAt").isNotEmpty());
+
+		MvcResult selfOrder = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long selfOrderId = ((Number) JsonPath.read(selfOrder.getResponse().getContentAsString(), "$.id")).longValue();
+		lifecycleService.advanceStatuses();
+		mvc.perform(get("/orders/" + selfOrderId).cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$.status").value("PENDING_CHECKOUT"))
+				.andExpect(jsonPath("$.actualCheckInAt").value("2026-10-07T15:00:00"));
 	}
 
 	@Test

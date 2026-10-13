@@ -81,6 +81,9 @@
         <h3>{{ o.roomNumber }} · {{ o.roomName }} — {{ rentalTypeLabel[o.rentalType] }} · {{ o.checkInMode === 'SELF' ? 'khách tự check-in' : 'nhân viên đón' }}</h3>
         <div class="kv"><span>Nhận phòng</span><b class="num">{{ o.checkInAt.slice(11,16) }}, {{ o.checkInAt.slice(8,10) }}/{{ o.checkInAt.slice(5,7) }}/{{ o.checkInAt.slice(0,4) }}</b></div>
         <div class="kv"><span>Trả phòng</span><b class="num">{{ o.checkOutAt.slice(11,16) }}, {{ o.checkOutAt.slice(8,10) }}/{{ o.checkOutAt.slice(5,7) }}/{{ o.checkOutAt.slice(0,4) }}</b></div>
+        @if (o.actualCheckInAt) {
+          <div class="kv"><span>Nhận thực tế</span><b class="num">{{ o.actualCheckInAt.slice(11,16) }}, {{ o.actualCheckInAt.slice(8,10) }}/{{ o.actualCheckInAt.slice(5,7) }}</b></div>
+        }
         @if (o.hasDoorCode) {
           <div class="code">
             <div><span class="muted">Mã cửa của đơn</span><b class="num">{{ doorCode() ?? '•• •• ••' }}</b></div>
@@ -141,6 +144,12 @@
       </div>
 
       <div class="dp-a">
+        @if (o.status === 'BOOKED') {
+          <button class="btn-p" type="button" [disabled]="acting()" (click)="checkIn()"><i class="pi pi-sign-in"></i> Nhận phòng</button>
+        }
+        @if (actionError()) {
+          <p class="pay-err">{{ actionError() }}</p>
+        }
         @if (copyFeedback()) {
           <p class="hint">{{ copyFeedback() }}</p>
         }

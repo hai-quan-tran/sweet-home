@@ -12,3 +12,5 @@ databaseChangeLog:
       file: db/changelog/005-order.yaml
   - include:
       file: db/changelog/006-order-payment.yaml
+  - include:
+      file: db/changelog/007-order-lifecycle.yaml

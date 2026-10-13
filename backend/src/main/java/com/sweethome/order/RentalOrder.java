@@ -56,6 +56,10 @@ public class RentalOrder extends Auditable {
 	@Column(name = "check_out_at", nullable = false)
 	private LocalDateTime checkOutAt;
 
+	/** Giờ nhận phòng thực tế; null khi chưa nhận. */
+	@Column(name = "actual_check_in_at")
+	private LocalDateTime actualCheckInAt;
+
 	@Column(name = "guest_name", nullable = false, length = 100)
 	private String guestName;
 
@@ -172,6 +176,14 @@ public class RentalOrder extends Auditable {
 
 	public void setCheckOutAt(LocalDateTime checkOutAt) {
 		this.checkOutAt = checkOutAt;
+	}
+
+	public LocalDateTime getActualCheckInAt() {
+		return actualCheckInAt;
+	}
+
+	public void setActualCheckInAt(LocalDateTime actualCheckInAt) {
+		this.actualCheckInAt = actualCheckInAt;
 	}
 
 	public String getGuestName() {

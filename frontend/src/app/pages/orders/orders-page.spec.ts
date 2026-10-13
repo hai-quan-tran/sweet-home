@@ -171,4 +171,32 @@ describe('OrdersPage', () => {
     const iso = new Date(2026, 9, 7, 9, 5).toISOString();
     expect(fixture.componentInstance.formatTime(iso)).toBe('09:05, 07/10');
   });
+  it('nhận phòng: hỏi lại, gọi API, cập nhật đơn và tải lại danh sách', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    fixture.componentInstance.checkIn();
+    httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
+      .flush({ ...sampleOrder, status: 'CHECKED_IN', actualCheckInAt: '2026-10-07T21:05:00' });
+    httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [], total: 0, countByStatus: {} });
+
+    expect(fixture.componentInstance['selectedOrder']()?.status).toBe('CHECKED_IN');
+  });
+
+  it('nhận phòng lỗi thì hiện thông báo từ server', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    fixture.componentInstance.checkIn();
+    httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
+      .flush({ detail: 'Chỉ nhận phòng được đơn ở trạng thái Đã đặt' }, { status: 400, statusText: 'Bad Request' });
+
+    expect(fixture.componentInstance['actionError']()).toContain('Đã đặt');
+  });
 });

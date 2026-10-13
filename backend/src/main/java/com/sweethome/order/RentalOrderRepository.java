@@ -29,6 +29,18 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 			@Param("checkOutAt") LocalDateTime checkOutAt);
 
 	/**
+	 * Đơn cần tự chuyển trạng thái theo giờ: đơn khách tự check-in đã tới giờ nhận, hoặc đơn đang ở
+	 * đã tới giờ trả.
+	 *
+	 * @param now thời điểm hiện tại
+	 * @return danh sách đơn cần xét
+	 */
+	@Query("select o from RentalOrder o where (o.status = com.sweethome.order.OrderStatus.BOOKED "
+			+ "and o.checkInMode = com.sweethome.room.CheckInMode.SELF and o.checkInAt <= :now) "
+			+ "or (o.status = com.sweethome.order.OrderStatus.CHECKED_IN and o.checkOutAt <= :now)")
+	List<RentalOrder> findDueForAutoTransition(@Param("now") LocalDateTime now);
+
+	/**
 	 * Danh sách đơn có lọc, mới nhất ở trên, dùng cho màn Đơn thuê.
 	 *
 	 * @param status    trạng thái, null nghĩa là mọi trạng thái

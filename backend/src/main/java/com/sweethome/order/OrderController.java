@@ -23,10 +23,13 @@ public class OrderController {
 
 	private final OrderService orderService;
 	private final OrderPaymentService paymentService;
+	private final OrderLifecycleService lifecycleService;
 
-	public OrderController(OrderService orderService, OrderPaymentService paymentService) {
+	public OrderController(OrderService orderService, OrderPaymentService paymentService,
+			OrderLifecycleService lifecycleService) {
 		this.orderService = orderService;
 		this.paymentService = paymentService;
+		this.lifecycleService = lifecycleService;
 	}
 
 	/** Danh sách đơn có lọc/tìm kiếm/phân trang. */
@@ -62,6 +65,12 @@ public class OrderController {
 	@PostMapping
 	public OrderDto create(@Valid @RequestBody OrderUpsertRequest request) {
 		return orderService.create(request);
+	}
+
+	/** Xác nhận khách đã nhận phòng. */
+	@PostMapping("/{id}/check-in")
+	public OrderDto checkIn(@PathVariable Long id) {
+		return lifecycleService.checkIn(id);
 	}
 
 	/** Thu thêm một khoản tiền của đơn. */

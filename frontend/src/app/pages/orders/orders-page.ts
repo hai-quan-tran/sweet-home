@@ -92,6 +92,8 @@ export class OrdersPage {
   protected readonly paymentNote = signal('');
   protected readonly paymentError = signal<string | null>(null);
   protected readonly savingPayment = signal(false);
+  protected readonly acting = signal(false);
+  protected readonly actionError = signal<string | null>(null);
 
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
   protected readonly selectedTemplate = computed(() => this.templates().find((t) => t.id === this.selectedTemplateId()) ?? null);
@@ -166,6 +168,7 @@ export class OrdersPage {
 
   private openOrder(id: number, autoCopy: boolean): void {
     this.doorCode.set(null);
+    this.actionError.set(null);
     this.paymentFormId.set(null);
     this.copyFeedback.set(null);
     this.orderService.get(id).subscribe((order) => {
@@ -277,6 +280,26 @@ export class OrdersPage {
         this.paymentFormId.set(null);
       },
       error: (err) => this.paymentError.set(err?.error?.detail ?? 'Không lưu được khoản thu, thử lại sau.'),
+    });
+  }
+  /** Xác nhận khách đã nhận phòng (đơn Đã đặt), có hỏi lại trước. */
+  checkIn(): void {
+    const order = this.selectedOrder();
+    if (!order || this.acting() || !confirm(`Xác nhận khách đã nhận phòng ${order.roomNumber}?`)) {
+      return;
+    }
+    this.runAction(this.orderService.checkIn(order.id));
+  }
+
+  private runAction(call: Observable<OrderDto>): void {
+    this.acting.set(true);
+    this.actionError.set(null);
+    call.pipe(finalize(() => this.acting.set(false))).subscribe({
+      next: (order) => {
+        this.selectedOrder.set(order);
+        this.reload();
+      },
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Không thực hiện được, thử lại sau.'),
     });
   }
 }

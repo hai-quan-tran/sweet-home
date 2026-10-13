@@ -218,3 +218,16 @@
   phải thu; nút "Thu tiền" mở form ngay trong khung chi tiết (mặc định số còn phải thu); Quản lý có
   nút sửa/xoá từng khoản (xoá hỏi lại bằng `confirm`). Màn Tạo đơn: tiền cọc bắt buộc, báo lỗi ngay
   khi cọc vượt tổng tiền xem trước.
+
+## Nhận phòng & tự chuyển trạng thái (GĐ5.2)
+- `common.time.TimeConfig`: bean `Clock` (giờ Việt Nam) + `@EnableScheduling`. Service nghiệp vụ cần
+  "bây giờ" thì inject `Clock` (test dùng `Clock.fixed`), không gọi `LocalDateTime.now()` trực tiếp.
+- `OrderLifecycleService` (vòng đời đơn, 5.3–5.4 sẽ thêm trả phòng/huỷ vào đây):
+  - `checkIn`: chỉ đơn `BOOKED`, ghi `actualCheckInAt` = bây giờ (cột mới, changelog `007-order-lifecycle.yaml`).
+  - `advanceStatuses`: `OrderStatusScheduler` gọi mỗi phút. Lấy đơn tới mốc qua
+    `RentalOrderRepository.findDueForAutoTransition`, rồi áp hàm thuần `advance(order, now)`:
+    tự check-in `BOOKED → CHECKED_IN` (giờ nhận thực tế = giờ hẹn) → `PENDING_CHECKOUT` khi tới giờ
+    trả (có thể qua 2 bước trong 1 lần nếu đã trễ cả giờ trả); NV đón chỉ `CHECKED_IN → OVERSTAY`.
+    Sửa qua entity (không bulk update) để Auditing ghi `updatedBy = system`.
+- API `POST /orders/{id}/check-in` (mọi vai trò). Frontend: nút "Nhận phòng" (hỏi lại) ở chi tiết đơn
+  Đã đặt, hiện "Nhận thực tế"; danh sách tự tải lại sau thao tác.

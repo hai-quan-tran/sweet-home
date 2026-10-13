@@ -40,6 +40,7 @@ export interface OrderDto {
   rentalType: RentalType;
   checkInAt: string;
   checkOutAt: string;
+  actualCheckInAt: string | null;
   guestName: string;
   guestPhone: string;
   guestIdNumberMasked: string | null;

@@ -13,6 +13,7 @@ const order: OrderDto = {
   rentalType: 'OVERNIGHT',
   checkInAt: '2026-10-07T21:00:00',
   checkOutAt: '2026-10-08T12:00:00',
+  actualCheckInAt: null,
   guestName: 'Phạm Quốc Bảo',
   guestPhone: '0903112457',
   guestIdNumberMasked: null,
