@@ -42,6 +42,9 @@ export interface OrderDto {
   checkOutAt: string;
   actualCheckInAt: string | null;
   actualCheckOutAt: string | null;
+  cancelledAt: string | null;
+  refundAmount: number | null;
+  cancelReason: string | null;
   guestName: string;
   guestPhone: string;
   guestIdNumberMasked: string | null;
@@ -134,4 +137,17 @@ export interface CheckoutPreviewResponse {
   paidAmount: number;
   dueAmount: number;
   manualOptions: { id: number; name: string; amount: number }[];
+}
+
+/** Mức hoàn cọc app tự tính nếu huỷ ngay bây giờ. */
+export interface CancelPreviewResponse {
+  refundPercent: number;
+  defaultRefundAmount: number;
+  paidAmount: number;
+}
+
+/** Dữ liệu huỷ đơn. */
+export interface CancelRequest {
+  refundAmount: number;
+  reason: string | null;
 }

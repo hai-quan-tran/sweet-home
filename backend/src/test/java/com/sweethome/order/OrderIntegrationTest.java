@@ -267,6 +267,32 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void staffCannotEditRefundButManagerCanCancelWithReason() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+		String cancelUrl = "/orders/" + orderId + "/cancel";
+
+		// đơn 07/10 đã qua giờ nhận → mức hoàn mặc định 0
+		mvc.perform(get(cancelUrl + "/preview").cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.refundPercent").value(0));
+		mvc.perform(post(cancelUrl).cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"refundAmount\":10000,\"reason\":\"x\"}"))
+				.andExpect(status().isForbidden());
+		mvc.perform(post(cancelUrl).cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"refundAmount\":10000,\"reason\":\"Khách quen\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("CANCELLED"))
+				.andExpect(jsonPath("$.refundAmount").value(10000));
+	}
+
+	@Test
 	void listReturnsCreatedOrderAndFiltersByStatus() throws Exception {
 		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

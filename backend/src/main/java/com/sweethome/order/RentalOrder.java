@@ -64,6 +64,17 @@ public class RentalOrder extends Auditable {
 	@Column(name = "actual_check_out_at")
 	private LocalDateTime actualCheckOutAt;
 
+	/** Thời điểm huỷ; null khi chưa huỷ. */
+	@Column(name = "cancelled_at")
+	private LocalDateTime cancelledAt;
+
+	/** Số tiền hoàn cho khách khi huỷ. */
+	@Column(name = "refund_amount")
+	private Long refundAmount;
+
+	@Column(name = "cancel_reason", length = 255)
+	private String cancelReason;
+
 	@Column(name = "guest_name", nullable = false, length = 100)
 	private String guestName;
 
@@ -196,6 +207,30 @@ public class RentalOrder extends Auditable {
 
 	public void setActualCheckOutAt(LocalDateTime actualCheckOutAt) {
 		this.actualCheckOutAt = actualCheckOutAt;
+	}
+
+	public LocalDateTime getCancelledAt() {
+		return cancelledAt;
+	}
+
+	public void setCancelledAt(LocalDateTime cancelledAt) {
+		this.cancelledAt = cancelledAt;
+	}
+
+	public Long getRefundAmount() {
+		return refundAmount;
+	}
+
+	public void setRefundAmount(Long refundAmount) {
+		this.refundAmount = refundAmount;
+	}
+
+	public String getCancelReason() {
+		return cancelReason;
+	}
+
+	public void setCancelReason(String cancelReason) {
+		this.cancelReason = cancelReason;
 	}
 
 	public String getGuestName() {

@@ -248,3 +248,16 @@
   đơn: 2 ô datetime-local (mặc định giờ nhận thực tế; giờ trả = giờ hẹn nếu khách tự trả, còn lại =
   bây giờ), tick phụ thu thêm tay, tóm tắt tiền gọi preview mỗi lần đổi; màn Phòng hiện tag "Chờ dọn"
   + nút "Đã dọn".
+
+## Huỷ đơn (GĐ5.4)
+- `OrderLifecycleService.previewCancel` / `cancel`; hàm thuần `refundPercent(checkInAt, cancelAt)`
+  (≥ 24 giờ trước giờ nhận → 100, trước giờ nhận → 50, còn lại → 0), mức hoàn = cọc × %.
+- Quyền xét trong service (cần dữ liệu đơn nên không dùng `@PreAuthorize`): controller lấy vai trò từ
+  `@AuthenticationPrincipal JwtService.AuthenticatedPrincipal` truyền cờ `manager`. Nhân viên: chỉ
+  đơn chưa có khoản thu ngoài cọc, không sửa số hoàn (403). Số hoàn khác mặc định → bắt buộc lý do;
+  không vượt đã thu.
+- Lưu `cancelledAt`, `refundAmount`, `cancelReason` trên đơn (changeset `007-order-cancel`). Đơn huỷ
+  bị loại khỏi kiểm tra trùng lịch (đã có từ GĐ4) nên khung giờ trống lại ngay.
+- API: `GET /orders/{id}/cancel/preview`, `POST /orders/{id}/cancel`.
+- Frontend: nút "Huỷ đơn" (ẩn với NV khi đơn đã thu ngoài cọc), form hiện mức hoàn tự tính, ô số hoàn
+  chỉ Quản lý sửa được, lý do; xác nhận bằng `confirm`; đơn huỷ hiện mục "Đã huỷ" (lúc, số hoàn, lý do).

@@ -197,6 +197,98 @@ class OrderLifecycleServiceTest {
 				.isInstanceOf(BusinessException.class);
 	}
 
+	@Test
+	void refundPercentBy24HourBoundary() {
+		assertThat(OrderLifecycleService.refundPercent(NOW.plusHours(24), NOW)).isEqualTo(100);
+		assertThat(OrderLifecycleService.refundPercent(NOW.plusHours(24).minusMinutes(1), NOW)).isEqualTo(50);
+		assertThat(OrderLifecycleService.refundPercent(NOW.plusMinutes(1), NOW)).isEqualTo(50);
+		assertThat(OrderLifecycleService.refundPercent(NOW, NOW)).isZero();
+		assertThat(OrderLifecycleService.refundPercent(NOW.minusHours(1), NOW)).isZero();
+	}
+
+	@Test
+	void previewCancelWithin24HoursRefundsHalfDeposit() {
+		bookedOrderCheckingInAt(NOW.plusHours(5));
+
+		var preview = service.previewCancel(1L);
+
+		assertThat(preview.refundPercent()).isEqualTo(50);
+		assertThat(preview.defaultRefundAmount()).isEqualTo(25000);
+		assertThat(preview.paidAmount()).isEqualTo(50000);
+	}
+
+	@Test
+	void staffCancelsDepositOnlyOrderWithDefaultRefund() {
+		bookedOrderCheckingInAt(NOW.plusDays(2));
+
+		var dto = service.cancel(1L, new CancelRequest(50000L, null), false);
+
+		assertThat(dto.status()).isEqualTo(OrderStatus.CANCELLED);
+		assertThat(dto.refundAmount()).isEqualTo(50000);
+		assertThat(dto.cancelledAt()).isEqualTo(NOW);
+	}
+
+	@Test
+	void staffCannotCancelOrderWithExtraPayments() {
+		RentalOrder order = bookedOrderCheckingInAt(NOW.plusDays(2));
+		OrderPayment payment = new OrderPayment();
+		payment.setAmount(10000);
+		order.addPayment(payment);
+
+		assertThatThrownBy(() -> service.cancel(1L, new CancelRequest(50000L, null), false))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("Quản lý");
+	}
+
+	@Test
+	void staffCannotChangeRefundAmount() {
+		bookedOrderCheckingInAt(NOW.plusDays(2));
+
+		assertThatThrownBy(() -> service.cancel(1L, new CancelRequest(10000L, "Khách quen"), false))
+				.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	void managerChangingRefundNeedsReason() {
+		bookedOrderCheckingInAt(NOW.minusHours(1));
+
+		assertThatThrownBy(() -> service.cancel(1L, new CancelRequest(20000L, " "), true))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("lý do");
+
+		var dto = service.cancel(1L, new CancelRequest(20000L, "Khách quen"), true);
+		assertThat(dto.refundAmount()).isEqualTo(20000);
+		assertThat(dto.cancelReason()).isEqualTo("Khách quen");
+	}
+
+	@Test
+	void refundCannotExceedPaid() {
+		bookedOrderCheckingInAt(NOW.plusDays(2));
+
+		assertThatThrownBy(() -> service.cancel(1L, new CancelRequest(60000L, "Bồi thường"), true))
+				.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	void pendingCheckoutCancellableOnlyForSelfCheckIn() {
+		RentalOrder self = order(CheckInMode.SELF, OrderStatus.PENDING_CHECKOUT, 12, 16);
+		when(orderRepository.findById(1L)).thenReturn(Optional.of(self));
+		assertThat(service.cancel(1L, new CancelRequest(0L, null), false).status()).isEqualTo(OrderStatus.CANCELLED);
+
+		RentalOrder staff = order(CheckInMode.STAFF, OrderStatus.PENDING_CHECKOUT, 12, 16);
+		when(orderRepository.findById(1L)).thenReturn(Optional.of(staff));
+		assertThatThrownBy(() -> service.previewCancel(1L)).isInstanceOf(BusinessException.class);
+	}
+
+	private RentalOrder bookedOrderCheckingInAt(LocalDateTime checkInAt) {
+		RentalOrder order = order(CheckInMode.STAFF, OrderStatus.BOOKED, 12, 16);
+		order.setCheckInAt(checkInAt);
+		order.setCheckOutAt(checkInAt.plusHours(3));
+		order.setDeposit(50000);
+		when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+		return order;
+	}
+
 	/** Đơn 12:00 → 16:00, tổng 200.000, cọc 50.000. */
 	private RentalOrder stayingOrder(OrderStatus status) {
 		RentalOrder order = order(CheckInMode.STAFF, status, 12, 16);

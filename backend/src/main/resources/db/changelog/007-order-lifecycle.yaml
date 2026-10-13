@@ -23,3 +23,13 @@ databaseChangeLog:
             tableName: room
             columns:
               - column: { name: needs_cleaning, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }
+  - changeSet:
+      id: 007-order-cancel
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: rental_order
+            columns:
+              - column: { name: cancelled_at, type: DATETIME }
+              - column: { name: refund_amount, type: BIGINT }
+              - column: { name: cancel_reason, type: VARCHAR(255) }

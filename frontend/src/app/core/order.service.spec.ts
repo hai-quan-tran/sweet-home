@@ -89,4 +89,10 @@ describe('OrderService', () => {
     service.checkout(5, body).subscribe();
     httpMock.expectOne({ url: '/api/orders/5/checkout', method: 'POST' }).flush({});
   });
+  it('previewCancel và cancel gọi đúng URL', () => {
+    service.previewCancel(5).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/cancel/preview', method: 'GET' }).flush({});
+    service.cancel(5, { refundAmount: 0, reason: null }).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/cancel', method: 'POST' }).flush({});
+  });
 });

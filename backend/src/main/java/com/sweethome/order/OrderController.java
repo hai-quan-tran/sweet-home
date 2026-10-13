@@ -3,6 +3,7 @@ package com.sweethome.order;
 import jakarta.validation.Valid;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.sweethome.auth.AccountRole;
+import com.sweethome.auth.JwtService;
 
 /**
  * API đơn thuê. Quản lý và Nhân viên đều tạo/xem/thu tiền được; sửa/xoá khoản đã thu chỉ Quản lý
@@ -83,6 +87,19 @@ public class OrderController {
 	@PostMapping("/{id}/checkout")
 	public OrderDto checkout(@PathVariable Long id, @Valid @RequestBody CheckoutRequest request) {
 		return lifecycleService.checkout(id, request);
+	}
+
+	/** Mức hoàn cọc mặc định nếu huỷ ngay bây giờ. */
+	@GetMapping("/{id}/cancel/preview")
+	public CancelPreviewResponse previewCancel(@PathVariable Long id) {
+		return lifecycleService.previewCancel(id);
+	}
+
+	/** Huỷ đơn (quyền theo vai trò, xem business-rules.md mục Huỷ đơn). */
+	@PostMapping("/{id}/cancel")
+	public OrderDto cancel(@PathVariable Long id, @Valid @RequestBody CancelRequest request,
+			@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
+		return lifecycleService.cancel(id, request, principal != null && principal.role() == AccountRole.MANAGER);
 	}
 
 	/** Thu thêm một khoản tiền của đơn. */

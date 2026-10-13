@@ -243,4 +243,50 @@ describe('OrdersPage', () => {
     fixture.componentInstance.closeCheckout();
     expect(fixture.componentInstance['checkoutOpen']()).toBe(false);
   });
+  it('huỷ đơn: lấy mức hoàn tự tính, xác nhận gửi đúng số tiền', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+    expect(fixture.componentInstance['canCancel']()).toBe(true);
+
+    fixture.componentInstance.openCancel();
+    httpMock.expectOne({ url: '/api/orders/36/cancel/preview', method: 'GET' })
+      .flush({ refundPercent: 50, defaultRefundAmount: 50000, paidAmount: 100000 });
+    expect(fixture.componentInstance['cancelRefund']()).toBe(50000);
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    fixture.componentInstance.confirmCancel();
+    const req = httpMock.expectOne({ url: '/api/orders/36/cancel', method: 'POST' });
+    expect(req.request.body).toEqual({ refundAmount: 50000, reason: null });
+    req.flush({ ...sampleOrder, status: 'CANCELLED', refundAmount: 50000 });
+    httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [], total: 0, countByStatus: {} });
+
+    expect(fixture.componentInstance['selectedOrder']()?.status).toBe('CANCELLED');
+    expect(fixture.componentInstance['cancelPreview']()).toBeNull();
+  });
+
+  it('huỷ đơn: sửa số hoàn mà không có lý do thì báo lỗi, không gọi API', async () => {
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(sampleOrder as any);
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+    fixture.componentInstance.openCancel();
+    httpMock.expectOne('/api/orders/36/cancel/preview').flush({ refundPercent: 100, defaultRefundAmount: 100000, paidAmount: 100000 });
+
+    fixture.componentInstance['cancelRefund'].set(20000);
+    fixture.componentInstance.confirmCancel();
+
+    expect(fixture.componentInstance['actionError']()).toContain('lý do');
+  });
+
+  it('Nhân viên không thấy Huỷ đơn khi đơn đã thu tiền ngoài cọc', async () => {
+    const paid = { ...sampleOrder, payments: [{ id: 1, amount: 1000, method: 'CASH', note: null, createdAt: '2026-10-07T14:00:00Z', createdBy: 'a' }] };
+    const fixture = await render();
+    fixture.componentInstance.selectOrder(paid as any);
+    httpMock.expectOne('/api/orders/36').flush(paid);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+
+    expect(fixture.componentInstance['canCancel']()).toBe(false);
+  });
 });

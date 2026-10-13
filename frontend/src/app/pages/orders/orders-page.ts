@@ -8,6 +8,7 @@ import { AuthService } from '../../core/auth.service';
 import { formatMoney } from '../../core/money';
 import { buildOrderMessageContext, renderMessageTemplate } from '../../core/message-template';
 import {
+  CancelPreviewResponse,
   CheckoutPreviewResponse,
   CheckoutRequest,
   OrderDto,
@@ -112,9 +113,23 @@ export class OrdersPage {
   protected readonly checkoutMethod = signal<PaymentMethod>('CASH');
   protected readonly checkoutPreview = signal<CheckoutPreviewResponse | null>(null);
 
+  /** Form huỷ đơn: mức hoàn tự tính, số tiền hoàn (chỉ Quản lý sửa), lý do. */
+  protected readonly cancelPreview = signal<CancelPreviewResponse | null>(null);
+  protected readonly cancelRefund = signal(0);
+  protected readonly cancelReason = signal('');
+
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
   protected readonly selectedTemplate = computed(() => this.templates().find((t) => t.id === this.selectedTemplateId()) ?? null);
   protected readonly isStaying = computed(() => STAYING_STATUSES.includes(this.selectedOrder()?.status as OrderStatus));
+  /** Huỷ được: Đã đặt, Đang ở, hoặc khách tự check-in không đến (Chờ xác nhận trả); NV chỉ huỷ đơn chưa thu gì ngoài cọc. */
+  protected readonly canCancel = computed(() => {
+    const o = this.selectedOrder();
+    if (!o) {
+      return false;
+    }
+    const status = o.status === 'BOOKED' || o.status === 'CHECKED_IN' || (o.status === 'PENDING_CHECKOUT' && o.checkInMode === 'SELF');
+    return status && (this.isManager() || o.payments.length === 0);
+  });
   protected readonly canCollect = computed(() => {
     const order = this.selectedOrder();
     return order !== null && !CLOSED_STATUSES.includes(order.status);
@@ -188,6 +203,7 @@ export class OrdersPage {
     this.doorCode.set(null);
     this.actionError.set(null);
     this.paymentFormId.set(null);
+    this.cancelPreview.set(null);
     this.checkoutOpen.set(false);
     this.copyFeedback.set(null);
     this.orderService.get(id).subscribe((order) => {
@@ -366,6 +382,47 @@ export class OrdersPage {
     this.runAction(this.orderService.checkout(order.id, request));
   }
 
+  /** Mở form huỷ: lấy mức hoàn cọc app tự tính theo thời điểm hiện tại. */
+  openCancel(): void {
+    const order = this.selectedOrder();
+    if (!order) {
+      return;
+    }
+    this.checkoutOpen.set(false);
+    this.actionError.set(null);
+    this.cancelReason.set('');
+    this.orderService.previewCancel(order.id).subscribe({
+      next: (preview) => {
+        this.cancelPreview.set(preview);
+        this.cancelRefund.set(preview.defaultRefundAmount);
+      },
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Không tính được mức hoàn cọc, thử lại sau.'),
+    });
+  }
+
+  /** Đóng form huỷ. */
+  closeCancel(): void {
+    this.cancelPreview.set(null);
+  }
+
+  /** Xác nhận huỷ đơn; số hoàn khác mức tự tính thì bắt buộc lý do. */
+  confirmCancel(): void {
+    const order = this.selectedOrder();
+    const preview = this.cancelPreview();
+    if (!order || !preview || this.acting()) {
+      return;
+    }
+    const reason = this.cancelReason().trim();
+    if (this.cancelRefund() !== preview.defaultRefundAmount && !reason) {
+      this.actionError.set('Phải nhập lý do khi sửa số tiền hoàn.');
+      return;
+    }
+    if (!confirm(`Huỷ đơn ${order.code}? Thao tác này không hoàn tác được.`)) {
+      return;
+    }
+    this.runAction(this.orderService.cancel(order.id, { refundAmount: this.cancelRefund(), reason: reason || null }));
+  }
+
   private buildCheckoutRequest(): CheckoutRequest | null {
     if (!this.checkoutIn() || !this.checkoutOut()) {
       return null;
@@ -384,6 +441,7 @@ export class OrdersPage {
     call.pipe(finalize(() => this.acting.set(false))).subscribe({
       next: (order) => {
         this.selectedOrder.set(order);
+        this.cancelPreview.set(null);
         this.checkoutOpen.set(false);
         this.reload();
       },

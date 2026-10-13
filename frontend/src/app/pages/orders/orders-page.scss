@@ -499,3 +499,12 @@
     min-height: 32px;
   }
 }
+
+.btn-s.danger {
+  color: var(--p-red-600);
+}
+
+.btn-p.danger-p {
+  background: var(--p-red-600);
+  color: #fff;
+}

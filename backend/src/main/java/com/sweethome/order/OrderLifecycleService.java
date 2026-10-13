@@ -19,8 +19,8 @@ import com.sweethome.surcharge.SurchargeRepository;
 import com.sweethome.surcharge.SurchargeWhenType;
 
 /**
- * Vòng đời đơn: nhận phòng, tự chuyển trạng thái theo giờ, trả phòng (xem {@code business-rules.md} mục
- * Check-in / check-out).
+ * Vòng đời đơn: nhận phòng, tự chuyển trạng thái theo giờ, trả phòng, huỷ (xem {@code business-rules.md} mục
+ * Check-in / check-out, Huỷ đơn).
  */
 @Service
 public class OrderLifecycleService {
@@ -126,6 +126,78 @@ public class OrderLifecycleService {
 		return new CheckoutPreviewResponse(
 				result.items().stream().map(i -> new OrderSurchargeDto(i.name(), i.amount())).toList(),
 				total, paid, Math.max(0, total - paid), options);
+	}
+
+	/**
+	 * Mức hoàn cọc mặc định nếu huỷ ngay bây giờ.
+	 *
+	 * @param orderId id đơn
+	 * @return phần trăm và số tiền hoàn mặc định
+	 */
+	@Transactional(readOnly = true)
+	public CancelPreviewResponse previewCancel(Long orderId) {
+		RentalOrder order = findCancellableOrder(orderId);
+		int percent = refundPercent(order.getCheckInAt(), LocalDateTime.now(clock));
+		return new CancelPreviewResponse(percent, order.getDeposit() * percent / 100, order.getPaidAmount());
+	}
+
+	/**
+	 * Huỷ đơn (không hoàn tác được). Nhân viên chỉ huỷ được đơn chưa thu gì ngoài cọc và không được
+	 * sửa số tiền hoàn; số hoàn khác mức tự tính thì bắt buộc lý do.
+	 *
+	 * @param orderId id đơn
+	 * @param request số tiền hoàn, lý do
+	 * @param manager người thao tác có vai trò Quản lý không
+	 * @return đơn sau khi huỷ
+	 */
+	@Transactional
+	public OrderDto cancel(Long orderId, CancelRequest request, boolean manager) {
+		RentalOrder order = findCancellableOrder(orderId);
+		if (!manager && !order.getPayments().isEmpty()) {
+			throw new BusinessException(HttpStatus.FORBIDDEN, "Đơn đã thu tiền ngoài cọc, chỉ Quản lý được huỷ");
+		}
+		LocalDateTime now = LocalDateTime.now(clock);
+		long defaultRefund = order.getDeposit() * refundPercent(order.getCheckInAt(), now) / 100;
+		long refund = request.refundAmount();
+		String reason = request.reason() == null || request.reason().isBlank() ? null : request.reason().trim();
+		if (refund != defaultRefund) {
+			if (!manager) {
+				throw new BusinessException(HttpStatus.FORBIDDEN, "Chỉ Quản lý được sửa số tiền hoàn");
+			}
+			if (reason == null) {
+				throw new BusinessException(HttpStatus.BAD_REQUEST, "Phải nhập lý do khi sửa số tiền hoàn");
+			}
+		}
+		if (refund > order.getPaidAmount()) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Số tiền hoàn không được vượt số đã thu");
+		}
+		order.setStatus(OrderStatus.CANCELLED);
+		order.setCancelledAt(now);
+		order.setRefundAmount(refund);
+		order.setCancelReason(reason);
+		return OrderDto.from(orderRepository.save(order));
+	}
+
+	/**
+	 * Phần trăm cọc được hoàn theo thời điểm huỷ: trước giờ nhận ≥ 24 giờ → 100; trong 24 giờ → 50;
+	 * từ giờ nhận trở đi → 0.
+	 */
+	static int refundPercent(LocalDateTime checkInAt, LocalDateTime cancelAt) {
+		if (!cancelAt.isAfter(checkInAt.minusHours(24))) {
+			return 100;
+		}
+		return cancelAt.isBefore(checkInAt) ? 50 : 0;
+	}
+
+	/** Đơn huỷ được: Đã đặt, Đang ở, hoặc khách tự check-in không đến đã sang Chờ xác nhận trả. */
+	private RentalOrder findCancellableOrder(Long orderId) {
+		RentalOrder order = findOrder(orderId);
+		boolean cancellable = order.getStatus() == OrderStatus.BOOKED || order.getStatus() == OrderStatus.CHECKED_IN
+				|| (order.getStatus() == OrderStatus.PENDING_CHECKOUT && order.getCheckInMode() == CheckInMode.SELF);
+		if (!cancellable) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Đơn ở trạng thái này không huỷ được");
+		}
+		return order;
 	}
 
 	private RentalOrder findStayingOrder(Long orderId) {

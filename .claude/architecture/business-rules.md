@@ -29,7 +29,8 @@
   - Từ giờ nhận phòng trở đi (gồm đơn Đang ở): không hoàn cọc.
   - "1 ngày" = 24 giờ. Ví dụ nhận phòng 14:00 ngày 15: huỷ đến 14:00 ngày 14 → 100%; sau đó đến
     trước 14:00 ngày 15 → 50%; từ 14:00 ngày 15 → 0%.
-- App tự tính số tiền hoàn làm mặc định; chỉ Quản lý được sửa lại khi cần.
+- App tự tính số tiền hoàn làm mặc định (chỉ tính trên cọc; khoản thu thêm ngoài cọc Quản lý tự cộng
+  vào khi cần); chỉ Quản lý được sửa lại, tối đa bằng số đã thu.
 - Lý do huỷ: bắt buộc khi số tiền hoàn khác mức app tự tính, các trường hợp khác không bắt buộc.
 - Huỷ đơn Đang ở chỉ dành cho khách không đến (trạng thái tự chuyển theo giờ). Khách đã vào ở thì
   không huỷ mà trả phòng, tính tiền như bình thường.

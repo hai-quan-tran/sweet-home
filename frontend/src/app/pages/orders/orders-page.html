@@ -95,6 +95,19 @@
         }
       </div>
 
+      @if (o.status === 'CANCELLED') {
+        <div class="sec">
+          <h3>Đã huỷ</h3>
+          @if (o.cancelledAt) {
+            <div class="kv"><span>Lúc</span><span class="num">{{ o.cancelledAt.slice(11,16) }}, {{ o.cancelledAt.slice(8,10) }}/{{ o.cancelledAt.slice(5,7) }}</span></div>
+          }
+          <div class="kv"><span>Hoàn cho khách</span><b class="num">{{ formatMoney(o.refundAmount ?? 0) }}</b></div>
+          @if (o.cancelReason) {
+            <div class="kv"><span>Lý do</span><span>{{ o.cancelReason }}</span></div>
+          }
+        </div>
+      }
+
       <div class="sec">
         <h3>Tiền</h3>
         <div class="kv"><span>Tiền phòng ({{ o.roomTypeNameSnapshot }})</span><span class="num">{{ formatMoney(o.roomPriceAmount) }}</span></div>
@@ -188,11 +201,36 @@
           </div>
         </div>
       }
+      @if (cancelPreview(); as cp) {
+        <div class="sec">
+          <h3>Huỷ đơn</h3>
+          <div class="pay-form">
+            <p class="hint">
+              Huỷ lúc này hoàn {{ cp.refundPercent }}% cọc ({{ formatMoney(cp.defaultRefundAmount) }}).
+              Trước giờ nhận ≥ 24 giờ hoàn 100%, trong 24 giờ hoàn 50%, từ giờ nhận trở đi không hoàn.
+            </p>
+            <label>Số tiền hoàn cho khách
+              <input class="inp num" type="number" min="0" [max]="cp.paidAmount" [readonly]="!isManager()"
+                [ngModel]="cancelRefund()" (ngModelChange)="cancelRefund.set($event)" />
+            </label>
+            <label>Lý do huỷ{{ cancelRefund() !== cp.defaultRefundAmount ? ' (bắt buộc khi sửa số tiền hoàn)' : '' }}
+              <input class="inp" maxlength="255" placeholder="Không bắt buộc" [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)" />
+            </label>
+            <div class="pf-a">
+              <button class="btn-p danger-p" type="button" [disabled]="acting()" (click)="confirmCancel()">Xác nhận huỷ đơn</button>
+              <button class="btn-s" type="button" (click)="closeCancel()">Đóng</button>
+            </div>
+          </div>
+        </div>
+      }
       <div class="dp-a">
         @if (o.status === 'BOOKED') {
           <button class="btn-p" type="button" [disabled]="acting()" (click)="checkIn()"><i class="pi pi-sign-in"></i> Nhận phòng</button>
         } @else if (isStaying() && !checkoutOpen()) {
           <button class="btn-p" type="button" (click)="openCheckout()"><i class="pi pi-sign-out"></i> {{ o.status === 'PENDING_CHECKOUT' ? 'Xác nhận trả phòng' : 'Trả phòng' }}</button>
+        }
+        @if (canCancel() && !cancelPreview()) {
+          <button class="btn-s danger" type="button" (click)="openCancel()"><i class="pi pi-times-circle"></i> Huỷ đơn</button>
         }
         @if (actionError()) {
           <p class="pay-err">{{ actionError() }}</p>
