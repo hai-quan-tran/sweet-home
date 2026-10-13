@@ -52,6 +52,11 @@ export class RoomService {
     return this.http.patch<RoomDto>(`${ROOMS_BASE}/${id}/accepting-bookings`, { acceptingBookings: accepting });
   }
 
+  /** Đánh dấu phòng đã dọn xong (Chờ dọn → Trống). */
+  markCleaned(id: number): Observable<RoomDto> {
+    return this.http.post<RoomDto>(`${ROOMS_BASE}/${id}/cleaned`, {});
+  }
+
   /** Thêm ảnh vào phòng. */
   addPhotos(id: number, files: File[]): Observable<RoomDto> {
     const form = new FormData();

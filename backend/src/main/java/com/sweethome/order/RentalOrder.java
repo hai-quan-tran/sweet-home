@@ -60,6 +60,10 @@ public class RentalOrder extends Auditable {
 	@Column(name = "actual_check_in_at")
 	private LocalDateTime actualCheckInAt;
 
+	/** Giờ trả phòng thực tế; null khi chưa trả. */
+	@Column(name = "actual_check_out_at")
+	private LocalDateTime actualCheckOutAt;
+
 	@Column(name = "guest_name", nullable = false, length = 100)
 	private String guestName;
 
@@ -184,6 +188,14 @@ public class RentalOrder extends Auditable {
 
 	public void setActualCheckInAt(LocalDateTime actualCheckInAt) {
 		this.actualCheckInAt = actualCheckInAt;
+	}
+
+	public LocalDateTime getActualCheckOutAt() {
+		return actualCheckOutAt;
+	}
+
+	public void setActualCheckOutAt(LocalDateTime actualCheckOutAt) {
+		this.actualCheckOutAt = actualCheckOutAt;
 	}
 
 	public String getGuestName() {
@@ -363,6 +375,12 @@ public class RentalOrder extends Auditable {
 
 	public List<OrderPayment> getPayments() {
 		return payments;
+	}
+
+	/** Thêm một dòng phụ thu (khi trả phòng), gắn quan hệ 2 chiều cho cascade. */
+	public void addSurcharge(OrderSurcharge surcharge) {
+		surcharge.setOrder(this);
+		surcharges.add(surcharge);
 	}
 
 	/** Thêm một khoản thu, gắn quan hệ 2 chiều cho cascade. */

@@ -91,6 +91,19 @@ public class RoomService {
 	}
 
 	/**
+	 * Đánh dấu phòng đã dọn xong (Chờ dọn → Trống).
+	 *
+	 * @param id id phòng
+	 * @return phòng sau khi đổi
+	 */
+	@Transactional
+	public RoomDto markCleaned(Long id) {
+		Room room = findRoom(id);
+		room.setNeedsCleaning(false);
+		return RoomDto.from(roomRepository.save(room));
+	}
+
+	/**
 	 * Thêm ảnh vào cuối danh sách ảnh của phòng (ảnh đầu tiên lưu lúc tạo phòng mặc nhiên là ảnh bìa).
 	 *
 	 * @param id    id phòng

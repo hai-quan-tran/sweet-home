@@ -45,7 +45,7 @@ class RoomControllerTest {
 	private RoomDto sampleDto() {
 		return new RoomDto(1L, "101", "Mộc", 1, 1L, "Tiêu chuẩn", 2, "1 giường đôi", null,
 				RoomPricingMode.ROOM_TYPE, null, null, null, null, 150000L, 50000L, 350000L, 500000L,
-				CheckInMode.SELF, null, true, List.of());
+				CheckInMode.SELF, null, true, false, List.of());
 	}
 
 	@Test

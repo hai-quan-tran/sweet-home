@@ -232,6 +232,41 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void staffChecksOutCollectingDueThenMarksRoomCleaned() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("\"SELF\"", "\"STAFF\"")))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+		mvc.perform(post("/orders/" + orderId + "/check-in").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk());
+
+		String checkout = """
+				{"actualCheckInAt":"2026-10-07T15:00:00","actualCheckOutAt":"2026-10-07T18:00:00","paymentMethod":"CASH"}
+				""";
+		mvc.perform(post("/orders/" + orderId + "/checkout/preview").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(checkout))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.dueAmount").value(150000));
+		mvc.perform(post("/orders/" + orderId + "/checkout").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(checkout))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("CHECKED_OUT"))
+				.andExpect(jsonPath("$.dueAmount").value(0));
+
+		mvc.perform(get("/rooms/" + roomId).cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$.needsCleaning").value(true));
+		mvc.perform(post("/rooms/" + roomId + "/cleaned").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.needsCleaning").value(false));
+	}
+
+	@Test
 	void listReturnsCreatedOrderAndFiltersByStatus() throws Exception {
 		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

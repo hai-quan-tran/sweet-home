@@ -37,6 +37,9 @@
                 <b>{{ room.roomNumber }} · {{ room.name }}</b>
                 <span class="muted">{{ room.roomTypeName }}{{ room.floor ? ' · tầng ' + room.floor : '' }} · {{ room.maxGuests }} khách</span>
               </div>
+              @if (room.needsCleaning) {
+                <span class="tag t-clean">Chờ dọn</span>
+              }
             </div>
             <span class="mode"><i class="pi" [class.pi-key]="room.defaultCheckInMode === 'SELF'" [class.pi-user]="room.defaultCheckInMode === 'STAFF'"></i>{{ checkInLabel(room) }}</span>
             <div class="prices">
@@ -46,6 +49,9 @@
             </div>
           </div>
           <div class="rc-f">
+            @if (room.needsCleaning) {
+              <button class="btn-t" type="button" (click)="markCleaned(room)"><i class="pi pi-check"></i> Đã dọn</button>
+            }
             <label class="sw" [class.readonly]="!isManager()">
               <input type="checkbox" role="switch" [checked]="room.acceptingBookings" [disabled]="!isManager()" (change)="toggleAccepting(room)" />
               Nhận đặt phòng

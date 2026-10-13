@@ -34,6 +34,7 @@ describe('RoomsPage', () => {
     defaultCheckInMode: 'SELF',
     checkInGuide: null,
     acceptingBookings: true,
+    needsCleaning: false,
     photos: [],
   };
 
@@ -50,7 +51,7 @@ describe('RoomsPage', () => {
     active: true,
   };
 
-  async function render(role: 'MANAGER' | 'STAFF') {
+  async function render(role: 'MANAGER' | 'STAFF', rooms: unknown[] = [sampleRoom]) {
     const user: AccountSummary = { id: 1, username: 'u', fullName: 'Người dùng', role, mustChangePassword: false };
     await TestBed.configureTestingModule({
       imports: [RoomsPage],
@@ -64,7 +65,7 @@ describe('RoomsPage', () => {
     httpMock = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(RoomsPage);
     fixture.detectChanges();
-    httpMock.expectOne('/api/rooms').flush([sampleRoom]);
+    httpMock.expectOne('/api/rooms').flush(rooms);
     httpMock.expectOne('/api/room-types/overview').flush({
       roomTypes: [{ id: 1, name: 'Tiêu chuẩn', twoHourPrice: 150000, extraHourPrice: 50000, overnightPrice: 350000, dailyPrice: 500000, roomNumbers: ['101'] }],
       hiddenRoomTypes: [],
@@ -109,6 +110,18 @@ describe('RoomsPage', () => {
     const req = httpMock.expectOne({ url: '/api/rooms/1/accepting-bookings', method: 'PATCH' });
     expect(req.request.body).toEqual({ acceptingBookings: false });
     req.flush({ ...sampleRoom, acceptingBookings: false });
+  });
+
+  it('phòng Chờ dọn: Nhân viên bấm Đã dọn thì gọi API và bỏ tag', async () => {
+    const fixture = await render('STAFF', [{ ...sampleRoom, needsCleaning: true }]);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Chờ dọn');
+
+    fixture.componentInstance.markCleaned({ ...sampleRoom, needsCleaning: true } as any);
+    httpMock.expectOne({ url: '/api/rooms/1/cleaned', method: 'POST' }).flush({ ...sampleRoom, needsCleaning: false });
+    fixture.detectChanges();
+
+    expect(el.textContent).not.toContain('Chờ dọn');
   });
 
   it('chuyển sang tab Bảng giá thì hiện bảng giá theo hạng', async () => {

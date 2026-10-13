@@ -6,6 +6,8 @@ import {
   DoorCodeResponse,
   OrderDto,
   OrderListResponse,
+  CheckoutPreviewResponse,
+  CheckoutRequest,
   OrderPaymentRequest,
   OrderPreviewRequest,
   OrderPreviewResponse,
@@ -62,6 +64,16 @@ export class OrderService {
   /** Xác nhận khách đã nhận phòng. */
   checkIn(orderId: number): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${BASE}/${orderId}/check-in`, {});
+  }
+
+  /** Xem trước tiền khi trả phòng. */
+  previewCheckout(orderId: number, request: CheckoutRequest): Observable<CheckoutPreviewResponse> {
+    return this.http.post<CheckoutPreviewResponse>(`${BASE}/${orderId}/checkout/preview`, request);
+  }
+
+  /** Trả phòng. */
+  checkout(orderId: number, request: CheckoutRequest): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${BASE}/${orderId}/checkout`, request);
   }
 
   /** Thu thêm một khoản tiền của đơn. */

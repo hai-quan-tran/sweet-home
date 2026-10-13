@@ -7,3 +7,19 @@ databaseChangeLog:
             tableName: rental_order
             columns:
               - column: { name: actual_check_in_at, type: DATETIME }
+  - changeSet:
+      id: 007-order-actual-check-out
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: rental_order
+            columns:
+              - column: { name: actual_check_out_at, type: DATETIME }
+  - changeSet:
+      id: 007-room-needs-cleaning
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: room
+            columns:
+              - column: { name: needs_cleaning, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }

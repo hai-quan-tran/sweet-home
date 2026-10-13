@@ -63,6 +63,12 @@ public class RoomController {
 		return roomService.setAcceptingBookings(id, request.acceptingBookings());
 	}
 
+	/** Đánh dấu phòng đã dọn xong (mọi vai trò). */
+	@PostMapping("/{id}/cleaned")
+	public RoomDto markCleaned(@PathVariable Long id) {
+		return roomService.markCleaned(id);
+	}
+
 	/** Thêm một hoặc nhiều ảnh vào cuối danh sách ảnh của phòng. */
 	@PostMapping("/{id}/photos")
 	@PreAuthorize("hasRole('MANAGER')")

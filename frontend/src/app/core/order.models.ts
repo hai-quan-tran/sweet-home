@@ -41,6 +41,7 @@ export interface OrderDto {
   checkInAt: string;
   checkOutAt: string;
   actualCheckInAt: string | null;
+  actualCheckOutAt: string | null;
   guestName: string;
   guestPhone: string;
   guestIdNumberMasked: string | null;
@@ -116,4 +117,21 @@ export interface OrderListResponse {
 /** Mã cửa đã giải mã của một đơn. */
 export interface DoorCodeResponse {
   doorCode: string | null;
+}
+
+/** Dữ liệu trả phòng (dùng cả cho xem trước). */
+export interface CheckoutRequest {
+  actualCheckInAt: string;
+  actualCheckOutAt: string;
+  manualSurchargeIds: number[];
+  paymentMethod: PaymentMethod | null;
+}
+
+/** Kết quả xem trước khi trả phòng. */
+export interface CheckoutPreviewResponse {
+  newSurcharges: OrderSurchargeDto[];
+  totalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  manualOptions: { id: number; name: string; amount: number }[];
 }

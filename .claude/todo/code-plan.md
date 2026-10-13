@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1, 5.2). Mỗi phần nhỏ của GĐ5 xong thì tự commit, hết GĐ5 mới chờ xác nhận.
+Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1–5.3). Mỗi phần nhỏ của GĐ5 xong thì tự commit, hết GĐ5 mới chờ xác nhận.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -126,7 +126,7 @@ Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1, 5.2). Mỗi phần nhỏ 
   sửa/xoá khoản đã thu.
 - [x] 5.2 Nhận phòng & tự chuyển trạng thái: tác vụ mỗi phút (tự check-in: Đang ở → Chờ xác nhận
   trả; NV đón: Đang ở → Quá giờ); nút Nhận phòng cho đơn NV đón.
-- [ ] 5.3 Trả phòng: giờ nhận/trả thực tế sửa được, phụ thu quá giờ, phụ thu thêm tay, thu đủ số
+- [x] 5.3 Trả phòng: giờ nhận/trả thực tế sửa được, phụ thu quá giờ, phụ thu thêm tay, thu đủ số
   còn lại → Đã trả; phòng Chờ dọn, nút "Đã dọn" ở màn Phòng → Trống.
 - [ ] 5.4 Huỷ đơn: hoàn cọc 100/50/0%, chỉ Quản lý sửa số hoàn, lý do bắt buộc khi sửa, NV chỉ huỷ
   đơn chỉ có cọc.

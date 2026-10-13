@@ -28,6 +28,7 @@ public record RoomDto(
 		CheckInMode defaultCheckInMode,
 		String checkInGuide,
 		boolean acceptingBookings,
+		boolean needsCleaning,
 		List<RoomPhotoDto> photos) {
 
 	/**
@@ -49,6 +50,7 @@ public record RoomDto(
 				own ? room.getOwnExtraHourPrice() : type.getExtraHourPrice(),
 				own ? room.getOwnOvernightPrice() : type.getOvernightPrice(),
 				own ? room.getOwnDailyPrice() : type.getDailyPrice(),
-				room.getDefaultCheckInMode(), room.getCheckInGuide(), room.isAcceptingBookings(), photos);
+				room.getDefaultCheckInMode(), room.getCheckInGuide(), room.isAcceptingBookings(), room.isNeedsCleaning(),
+				photos);
 	}
 }

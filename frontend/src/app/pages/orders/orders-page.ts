@@ -7,7 +7,15 @@ import { Observable, finalize } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { formatMoney } from '../../core/money';
 import { buildOrderMessageContext, renderMessageTemplate } from '../../core/message-template';
-import { OrderDto, OrderListResponse, OrderPaymentDto, OrderStatus, PaymentMethod } from '../../core/order.models';
+import {
+  CheckoutPreviewResponse,
+  CheckoutRequest,
+  OrderDto,
+  OrderListResponse,
+  OrderPaymentDto,
+  OrderStatus,
+  PaymentMethod,
+} from '../../core/order.models';
 import { OrderListQuery, OrderService } from '../../core/order.service';
 import { RoomDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
@@ -40,6 +48,7 @@ const SOURCE_LABEL: Record<OrderDto['source'], string> = {
 };
 const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = { TRANSFER: 'chuyển khoản', CASH: 'tiền mặt' };
 const CLOSED_STATUSES: OrderStatus[] = ['CHECKED_OUT', 'CANCELLED'];
+const STAYING_STATUSES: OrderStatus[] = ['CHECKED_IN', 'OVERSTAY', 'PENDING_CHECKOUT'];
 const PAGE_SIZE = 10;
 
 /** Màn Đơn thuê: danh sách lọc/tìm kiếm theo trạng thái + chi tiết đơn đang chọn, thu tiền. */
@@ -95,8 +104,17 @@ export class OrdersPage {
   protected readonly acting = signal(false);
   protected readonly actionError = signal<string | null>(null);
 
+  /** Form trả phòng: giờ thực tế (dạng ô datetime-local), phụ thu thêm tay, hình thức thu số còn lại. */
+  protected readonly checkoutOpen = signal(false);
+  protected readonly checkoutIn = signal('');
+  protected readonly checkoutOut = signal('');
+  protected readonly checkoutManualIds = signal<number[]>([]);
+  protected readonly checkoutMethod = signal<PaymentMethod>('CASH');
+  protected readonly checkoutPreview = signal<CheckoutPreviewResponse | null>(null);
+
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
   protected readonly selectedTemplate = computed(() => this.templates().find((t) => t.id === this.selectedTemplateId()) ?? null);
+  protected readonly isStaying = computed(() => STAYING_STATUSES.includes(this.selectedOrder()?.status as OrderStatus));
   protected readonly canCollect = computed(() => {
     const order = this.selectedOrder();
     return order !== null && !CLOSED_STATUSES.includes(order.status);
@@ -170,6 +188,7 @@ export class OrdersPage {
     this.doorCode.set(null);
     this.actionError.set(null);
     this.paymentFormId.set(null);
+    this.checkoutOpen.set(false);
     this.copyFeedback.set(null);
     this.orderService.get(id).subscribe((order) => {
       this.selectedOrder.set(order);
@@ -291,15 +310,90 @@ export class OrdersPage {
     this.runAction(this.orderService.checkIn(order.id));
   }
 
+  /**
+   * Mở form trả phòng. Giờ nhận mặc định = giờ nhận thực tế (hoặc giờ hẹn); giờ trả mặc định = giờ
+   * hẹn với đơn Chờ xác nhận trả (khách tự trả), còn lại = bây giờ.
+   */
+  openCheckout(): void {
+    const order = this.selectedOrder();
+    if (!order) {
+      return;
+    }
+    this.checkoutIn.set((order.actualCheckInAt ?? order.checkInAt).slice(0, 16));
+    this.checkoutOut.set(order.status === 'PENDING_CHECKOUT' ? order.checkOutAt.slice(0, 16) : toLocalInput(new Date()));
+    this.checkoutManualIds.set([]);
+    this.checkoutMethod.set('CASH');
+    this.checkoutPreview.set(null);
+    this.actionError.set(null);
+    this.checkoutOpen.set(true);
+    this.refreshCheckoutPreview();
+  }
+
+  /** Đóng form trả phòng. */
+  closeCheckout(): void {
+    this.checkoutOpen.set(false);
+  }
+
+  /** Bật/tắt một phụ thu thêm tay rồi tính lại. */
+  toggleManualSurcharge(id: number): void {
+    this.checkoutManualIds.update((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+    this.refreshCheckoutPreview();
+  }
+
+  /** Tính lại tiền khi đổi giờ thực tế hoặc phụ thu. */
+  refreshCheckoutPreview(): void {
+    const order = this.selectedOrder();
+    const request = this.buildCheckoutRequest();
+    if (!order || !request) {
+      return;
+    }
+    this.orderService.previewCheckout(order.id, request).subscribe({
+      next: (preview) => {
+        this.checkoutPreview.set(preview);
+        this.actionError.set(null);
+      },
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Không tính được tiền, thử lại sau.'),
+    });
+  }
+
+  /** Xác nhận trả phòng (thu luôn số còn lại theo hình thức đã chọn). */
+  confirmCheckout(): void {
+    const order = this.selectedOrder();
+    const request = this.buildCheckoutRequest();
+    if (!order || !request || this.acting()) {
+      return;
+    }
+    this.runAction(this.orderService.checkout(order.id, request));
+  }
+
+  private buildCheckoutRequest(): CheckoutRequest | null {
+    if (!this.checkoutIn() || !this.checkoutOut()) {
+      return null;
+    }
+    return {
+      actualCheckInAt: this.checkoutIn(),
+      actualCheckOutAt: this.checkoutOut(),
+      manualSurchargeIds: this.checkoutManualIds(),
+      paymentMethod: this.checkoutMethod(),
+    };
+  }
+
   private runAction(call: Observable<OrderDto>): void {
     this.acting.set(true);
     this.actionError.set(null);
     call.pipe(finalize(() => this.acting.set(false))).subscribe({
       next: (order) => {
         this.selectedOrder.set(order);
+        this.checkoutOpen.set(false);
         this.reload();
       },
       error: (err) => this.actionError.set(err?.error?.detail ?? 'Không thực hiện được, thử lại sau.'),
     });
   }
+}
+
+/** Giờ máy dạng giá trị ô datetime-local, ví dụ "2026-10-07T15:30". */
+function toLocalInput(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

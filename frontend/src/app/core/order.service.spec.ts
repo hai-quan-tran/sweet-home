@@ -82,4 +82,11 @@ describe('OrderService', () => {
     service.checkIn(5).subscribe();
     httpMock.expectOne({ url: '/api/orders/5/check-in', method: 'POST' }).flush({});
   });
+  it('previewCheckout và checkout gọi đúng URL', () => {
+    const body = { actualCheckInAt: 'a', actualCheckOutAt: 'b', manualSurchargeIds: [], paymentMethod: null };
+    service.previewCheckout(5, body).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/checkout/preview', method: 'POST' }).flush({});
+    service.checkout(5, body).subscribe();
+    httpMock.expectOne({ url: '/api/orders/5/checkout', method: 'POST' }).flush({});
+  });
 });

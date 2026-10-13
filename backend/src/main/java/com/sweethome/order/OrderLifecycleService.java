@@ -2,6 +2,8 @@ package com.sweethome.order;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,19 +11,33 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.CheckInMode;
+import com.sweethome.surcharge.Surcharge;
+import com.sweethome.surcharge.SurchargeCalculationInput;
+import com.sweethome.surcharge.SurchargeCalculationResult;
+import com.sweethome.surcharge.SurchargeCalculator;
+import com.sweethome.surcharge.SurchargeRepository;
+import com.sweethome.surcharge.SurchargeWhenType;
 
 /**
- * Vòng đời đơn: nhận phòng và tự chuyển trạng thái theo giờ (xem {@code business-rules.md} mục
+ * Vòng đời đơn: nhận phòng, tự chuyển trạng thái theo giờ, trả phòng (xem {@code business-rules.md} mục
  * Check-in / check-out).
  */
 @Service
 public class OrderLifecycleService {
 
+	private static final Set<OrderStatus> STAYING = Set.of(OrderStatus.CHECKED_IN, OrderStatus.OVERSTAY,
+			OrderStatus.PENDING_CHECKOUT);
+
 	private final RentalOrderRepository orderRepository;
+	private final SurchargeRepository surchargeRepository;
+	private final SurchargeCalculator surchargeCalculator;
 	private final Clock clock;
 
-	public OrderLifecycleService(RentalOrderRepository orderRepository, Clock clock) {
+	public OrderLifecycleService(RentalOrderRepository orderRepository, SurchargeRepository surchargeRepository,
+			SurchargeCalculator surchargeCalculator, Clock clock) {
 		this.orderRepository = orderRepository;
+		this.surchargeRepository = surchargeRepository;
+		this.surchargeCalculator = surchargeCalculator;
 		this.clock = clock;
 	}
 
@@ -33,14 +49,96 @@ public class OrderLifecycleService {
 	 */
 	@Transactional
 	public OrderDto checkIn(Long orderId) {
-		RentalOrder order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Đơn không tồn tại"));
+		RentalOrder order = findOrder(orderId);
 		if (order.getStatus() != OrderStatus.BOOKED) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chỉ nhận phòng được đơn ở trạng thái Đã đặt");
 		}
 		order.setStatus(OrderStatus.CHECKED_IN);
 		order.setActualCheckInAt(LocalDateTime.now(clock));
 		return OrderDto.from(orderRepository.save(order));
+	}
+
+	/**
+	 * Xem trước tiền khi trả phòng: phụ thu quá giờ theo giờ trả thực tế, phụ thu thêm tay đã chọn,
+	 * tổng mới và số còn phải thu. Không lưu DB.
+	 *
+	 * @param orderId id đơn
+	 * @param request giờ thực tế, phụ thu thêm tay
+	 * @return kết quả xem trước
+	 */
+	@Transactional(readOnly = true)
+	public CheckoutPreviewResponse previewCheckout(Long orderId, CheckoutRequest request) {
+		return computeCheckout(findStayingOrder(orderId), request);
+	}
+
+	/**
+	 * Trả phòng: lưu giờ thực tế, cộng phụ thu mới, thu đủ số còn lại, chuyển Đã trả và đánh dấu
+	 * phòng Chờ dọn. Trả sớm không giảm tiền.
+	 *
+	 * @param orderId id đơn
+	 * @param request giờ thực tế, phụ thu thêm tay, hình thức thu số còn lại
+	 * @return đơn sau khi trả phòng
+	 */
+	@Transactional
+	public OrderDto checkout(Long orderId, CheckoutRequest request) {
+		RentalOrder order = findStayingOrder(orderId);
+		CheckoutPreviewResponse result = computeCheckout(order, request);
+		if (result.dueAmount() > 0 && request.paymentMethod() == null) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chọn hình thức thu số tiền còn lại");
+		}
+		order.setActualCheckInAt(request.actualCheckInAt());
+		order.setActualCheckOutAt(request.actualCheckOutAt());
+		for (OrderSurchargeDto item : result.newSurcharges()) {
+			OrderSurcharge row = new OrderSurcharge();
+			row.setName(item.name());
+			row.setAmount(item.amount());
+			order.addSurcharge(row);
+		}
+		order.setTotalAmount(result.totalAmount());
+		if (result.dueAmount() > 0) {
+			OrderPayment payment = new OrderPayment();
+			payment.setAmount(result.dueAmount());
+			payment.setMethod(request.paymentMethod());
+			payment.setNote("Thu khi trả phòng");
+			order.addPayment(payment);
+		}
+		order.setStatus(OrderStatus.CHECKED_OUT);
+		order.getRoom().setNeedsCleaning(true);
+		return OrderDto.from(orderRepository.saveAndFlush(order));
+	}
+
+	private CheckoutPreviewResponse computeCheckout(RentalOrder order, CheckoutRequest request) {
+		if (!request.actualCheckOutAt().isAfter(request.actualCheckInAt())) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Giờ trả thực tế phải sau giờ nhận thực tế");
+		}
+		List<Surcharge> applicable = surchargeRepository.findActiveByRoomTypeId(order.getRoom().getRoomType().getId());
+		Set<Long> manualIds = request.manualSurchargeIds() == null ? Set.of() : request.manualSurchargeIds();
+		SurchargeCalculationInput input = new SurchargeCalculationInput(List.of(), order.getExtraHourPriceSnapshot(),
+				order.getCheckOutAt(), request.actualCheckOutAt(), 0, manualIds);
+		SurchargeCalculationResult result = surchargeCalculator.calculate(input, applicable);
+
+		long total = order.getTotalAmount() + result.total();
+		long paid = order.getPaidAmount();
+		List<CheckoutPreviewResponse.ManualSurchargeOption> options = applicable.stream()
+				.filter(s -> s.getWhenType() == SurchargeWhenType.MANUAL)
+				.map(s -> new CheckoutPreviewResponse.ManualSurchargeOption(s.getId(), s.getName(), s.getAmount()))
+				.toList();
+		return new CheckoutPreviewResponse(
+				result.items().stream().map(i -> new OrderSurchargeDto(i.name(), i.amount())).toList(),
+				total, paid, Math.max(0, total - paid), options);
+	}
+
+	private RentalOrder findStayingOrder(Long orderId) {
+		RentalOrder order = findOrder(orderId);
+		if (!STAYING.contains(order.getStatus())) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chỉ trả phòng được đơn đang ở");
+		}
+		return order;
+	}
+
+	private RentalOrder findOrder(Long orderId) {
+		return orderRepository.findById(orderId)
+				.orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Đơn không tồn tại"));
 	}
 
 	/**

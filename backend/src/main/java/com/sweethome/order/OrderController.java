@@ -73,6 +73,18 @@ public class OrderController {
 		return lifecycleService.checkIn(id);
 	}
 
+	/** Xem trước tiền khi trả phòng (phụ thu quá giờ, thêm tay, còn phải thu). */
+	@PostMapping("/{id}/checkout/preview")
+	public CheckoutPreviewResponse previewCheckout(@PathVariable Long id, @Valid @RequestBody CheckoutRequest request) {
+		return lifecycleService.previewCheckout(id, request);
+	}
+
+	/** Trả phòng (xác nhận trả). */
+	@PostMapping("/{id}/checkout")
+	public OrderDto checkout(@PathVariable Long id, @Valid @RequestBody CheckoutRequest request) {
+		return lifecycleService.checkout(id, request);
+	}
+
 	/** Thu thêm một khoản tiền của đơn. */
 	@PostMapping("/{id}/payments")
 	public OrderDto addPayment(@PathVariable Long id, @Valid @RequestBody OrderPaymentRequest request) {

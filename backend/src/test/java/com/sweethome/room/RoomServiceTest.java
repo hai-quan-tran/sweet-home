@@ -151,6 +151,18 @@ class RoomServiceTest {
 	}
 
 	@Test
+	void markCleanedClearsNeedsCleaning() {
+		Room room = RoomTestFactory.room(5L, "101", standard);
+		room.setNeedsCleaning(true);
+		when(roomRepository.findById(5L)).thenReturn(Optional.of(room));
+		when(roomRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		RoomDto dto = service.markCleaned(5L);
+
+		assertThat(dto.needsCleaning()).isFalse();
+	}
+
+	@Test
 	void addPhotosAppendsWithIncreasingSortOrder() {
 		Room room = RoomTestFactory.room(5L, "101", standard);
 		when(roomRepository.findById(5L)).thenReturn(Optional.of(room));

@@ -231,3 +231,20 @@
     Sửa qua entity (không bulk update) để Auditing ghi `updatedBy = system`.
 - API `POST /orders/{id}/check-in` (mọi vai trò). Frontend: nút "Nhận phòng" (hỏi lại) ở chi tiết đơn
   Đã đặt, hiện "Nhận thực tế"; danh sách tự tải lại sau thao tác.
+
+## Trả phòng & phòng chờ dọn (GĐ5.3)
+- `OrderLifecycleService.previewCheckout` / `checkout` (đơn `CHECKED_IN`, `OVERSTAY`, `PENDING_CHECKOUT`):
+  gọi lại `SurchargeCalculator` với `stayDays` rỗng (phụ thu theo ngày đã cộng lúc tạo), giá mỗi giờ
+  thêm lấy **snapshot** của đơn, giờ hẹn trả = `checkOutAt`, giờ trả = giờ thực tế nhập vào → chỉ ra
+  phụ thu quá giờ + thêm tay đã chọn. Tổng mới = tổng cũ + phụ thu mới (trả sớm không giảm).
+  Preview trả kèm `manualOptions` (phụ thu thêm tay áp dụng cho hạng phòng) để frontend không phải tự lọc.
+- Xác nhận trả: lưu `actualCheckInAt/actualCheckOutAt`, thêm dòng `OrderSurcharge` mới
+  (`RentalOrder.addSurcharge`), cập nhật tổng, tự thêm `OrderPayment` cho số còn lại (ghi chú "Thu
+  khi trả phòng", bắt buộc chọn hình thức khi còn phải thu), status `CHECKED_OUT`, `room.needsCleaning = true`.
+- `Room.needsCleaning` (cột `BIT` — **cột boolean trong dự án luôn khai `type: BIT`** ở Liquibase,
+  `BOOLEAN` ra `tinyint` làm Hibernate validate lỗi). `POST /rooms/{id}/cleaned` (mọi vai trò) → Trống.
+- API: `POST /orders/{id}/checkout/preview`, `POST /orders/{id}/checkout` (mọi vai trò).
+- Frontend: nút "Trả phòng" / "Xác nhận trả phòng" (đơn Chờ xác nhận trả) mở form trong chi tiết
+  đơn: 2 ô datetime-local (mặc định giờ nhận thực tế; giờ trả = giờ hẹn nếu khách tự trả, còn lại =
+  bây giờ), tick phụ thu thêm tay, tóm tắt tiền gọi preview mỗi lần đổi; màn Phòng hiện tag "Chờ dọn"
+  + nút "Đã dọn".

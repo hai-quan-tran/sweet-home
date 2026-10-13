@@ -79,6 +79,10 @@ public class Room extends Auditable {
 	@Column(name = "accepting_bookings", nullable = false)
 	private boolean acceptingBookings = true;
 
+	/** Chờ dọn: bật khi đơn trả phòng, tắt khi bấm "Đã dọn". */
+	@Column(name = "needs_cleaning", nullable = false)
+	private boolean needsCleaning;
+
 	@OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("sortOrder asc")
 	private List<RoomPhoto> photos = new ArrayList<>();
@@ -205,6 +209,14 @@ public class Room extends Auditable {
 
 	public void setAcceptingBookings(boolean acceptingBookings) {
 		this.acceptingBookings = acceptingBookings;
+	}
+
+	public boolean isNeedsCleaning() {
+		return needsCleaning;
+	}
+
+	public void setNeedsCleaning(boolean needsCleaning) {
+		this.needsCleaning = needsCleaning;
 	}
 
 	public List<RoomPhoto> getPhotos() {

@@ -78,6 +78,7 @@ export interface RoomDto {
   defaultCheckInMode: CheckInMode;
   checkInGuide: string | null;
   acceptingBookings: boolean;
+  needsCleaning: boolean;
   photos: RoomPhotoDto[];
 }
 

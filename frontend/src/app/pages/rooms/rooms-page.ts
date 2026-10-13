@@ -139,6 +139,13 @@ export class RoomsPage {
     });
   }
 
+  /** Đánh dấu phòng đã dọn xong. */
+  markCleaned(room: RoomDto): void {
+    this.roomService.markCleaned(room.id).subscribe((updated) => {
+      this.rooms.update((list) => list.map((r) => (r.id === updated.id ? updated : r)));
+    });
+  }
+
   /** Cập nhật lại bảng giá sau khi dialog lưu xong. */
   onPricingSaved(overview: PricingOverview): void {
     this.pricing.set(overview);

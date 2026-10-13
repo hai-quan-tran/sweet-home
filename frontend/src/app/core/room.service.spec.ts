@@ -65,6 +65,11 @@ describe('RoomService', () => {
     req.flush({});
   });
 
+  it('markCleaned gọi POST /api/rooms/:id/cleaned', () => {
+    service.markCleaned(5).subscribe();
+    httpMock.expectOne({ url: '/api/rooms/5/cleaned', method: 'POST' }).flush({});
+  });
+
   it('addPhotos gửi FormData với field "files"', () => {
     const file = new File(['a'], 'a.png', { type: 'image/png' });
     service.addPhotos(5, [file]).subscribe();
