@@ -36,7 +36,7 @@
 - [x] GĐ 2: phòng, hạng phòng, bảng giá
 - [x] GĐ 3: phụ thu
 - [x] GĐ 4: tạo đơn & danh sách đơn
-- [ ] GĐ 5: vòng đời đơn
+- [x] GĐ 5: vòng đời đơn (chờ xác nhận)
 - [ ] GĐ 6: lịch đặt phòng & gia hạn
 - [ ] GĐ 7: nhân viên & nhật ký
 - [ ] GĐ 8: lịch làm

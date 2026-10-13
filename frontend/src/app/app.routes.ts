@@ -31,6 +31,7 @@ export const routes: Routes = [
       page('lich', 'Lịch đặt phòng'),
       { path: 'don-thue', component: OrdersPage, title: 'Đơn thuê · Sweet Home' },
       { path: 'don-thue/tao-moi', component: OrderFormPage, title: 'Tạo đơn thuê · Sweet Home' },
+      { path: 'don-thue/:id/sua', component: OrderFormPage, title: 'Sửa đơn thuê · Sweet Home' },
       { path: 'phong', component: RoomsPage, title: 'Phòng & bảng giá · Sweet Home' },
       {
         path: 'phong/them',

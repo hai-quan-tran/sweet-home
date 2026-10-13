@@ -293,6 +293,28 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void staffEditsGuestInfoButCannotChangeDeposit() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+
+		mvc.perform(put("/orders/" + orderId).cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(orderPayload().replace("Phan Thu Trang", "Phan Thu Hà").replace("\"482915\"", "\"\"")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.guestName").value("Phan Thu Hà"))
+				.andExpect(jsonPath("$.hasDoorCode").value(true));
+		mvc.perform(put("/orders/" + orderId).cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("\"deposit\":50000", "\"deposit\":60000")))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
 	void listReturnsCreatedOrderAndFiltersByStatus() throws Exception {
 		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

@@ -247,13 +247,87 @@ class OrderServiceTest {
 		setId(existing, 77L);
 		when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of(existing));
 		var request = new OrderPreviewRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
-				3, 2, 0L, 0L);
+				3, 2, 0L, 0L, null);
 
 		var result = service.preview(request);
 
 		assertThat(result.available()).isFalse();
 		assertThat(result.conflictMessage()).contains(OrderDto.codeOf(77L));
 		verify(orderRepository, org.mockito.Mockito.never()).save(any());
+	}
+
+	/** Tạo đơn 15:00 → 18:00 (200.000, cọc 50.000, có mã cửa) rồi trả về entity đã lưu để sửa. */
+	private RentalOrder existingOrder() {
+		service.create(requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3));
+		ArgumentCaptor<RentalOrder> captor = ArgumentCaptor.forClass(RentalOrder.class);
+		verify(orderRepository).save(captor.capture());
+		RentalOrder order = captor.getValue();
+		when(orderRepository.findById(42L)).thenReturn(Optional.of(order));
+		return order;
+	}
+
+	@Test
+	void updateRecomputesPriceKeepsDoorCodeAndIgnoresSelfOverlap() {
+		RentalOrder order = existingOrder();
+		String doorCode = order.getDoorCodeEncrypted();
+		when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of(order));
+		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 4,
+				"Nguyễn Văn B", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, " ", 50000L,
+				PaymentMethod.CASH, 0L, null);
+
+		var dto = service.update(42L, request, false);
+
+		assertThat(dto.checkOutAt()).isEqualTo(LocalDateTime.of(2026, 10, 7, 19, 0));
+		assertThat(dto.roomPriceAmount()).isEqualTo(250000);
+		assertThat(dto.guestName()).isEqualTo("Nguyễn Văn B");
+		assertThat(order.getDoorCodeEncrypted()).isEqualTo(doorCode);
+	}
+
+	@Test
+	void updateRejectsNonBookedOrder() {
+		existingOrder().setStatus(OrderStatus.CHECKED_IN);
+
+		assertThatThrownBy(() -> service.update(42L, requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3), true))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("Đã đặt");
+	}
+
+	@Test
+	void staffCannotChangeDeposit() {
+		existingOrder();
+		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3,
+				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, null, 60000L,
+				PaymentMethod.CASH, 0L, null);
+
+		assertThatThrownBy(() -> service.update(42L, request, false))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("cọc");
+		assertThat(service.update(42L, request, true).deposit()).isEqualTo(60000);
+	}
+
+	@Test
+	void updateRejectsTotalBelowPaid() {
+		RentalOrder order = existingOrder();
+		OrderPayment payment = new OrderPayment();
+		payment.setAmount(150000);
+		order.addPayment(payment);
+
+		assertThatThrownBy(() -> service.update(42L, requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 2), true))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("đã thu");
+	}
+
+	@Test
+	void updateRejectsMovingToRoomNotAcceptingBookings() {
+		existingOrder();
+		Room other = OrderTestFactory.room(11L, "102", room.getRoomType(), 2);
+		other.setAcceptingBookings(false);
+		when(roomRepository.findById(11L)).thenReturn(Optional.of(other));
+		var request = new OrderUpsertRequest(11L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3,
+				"Nguyễn Văn A", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, null, 50000L,
+				PaymentMethod.CASH, 0L, null);
+
+		assertThatThrownBy(() -> service.update(42L, request, true)).isInstanceOf(BusinessException.class);
 	}
 
 	private void setId(RentalOrder order, long id) {

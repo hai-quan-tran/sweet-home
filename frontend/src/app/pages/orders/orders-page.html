@@ -229,6 +229,9 @@
         } @else if (isStaying() && !checkoutOpen()) {
           <button class="btn-p" type="button" (click)="openCheckout()"><i class="pi pi-sign-out"></i> {{ o.status === 'PENDING_CHECKOUT' ? 'Xác nhận trả phòng' : 'Trả phòng' }}</button>
         }
+        @if (o.status === 'BOOKED') {
+          <a class="btn-s" [routerLink]="['/don-thue', o.id, 'sua']"><i class="pi pi-pencil"></i> Sửa đơn</a>
+        }
         @if (canCancel() && !cancelPreview()) {
           <button class="btn-s danger" type="button" (click)="openCancel()"><i class="pi pi-times-circle"></i> Huỷ đơn</button>
         }

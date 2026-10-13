@@ -77,7 +77,7 @@ public record OrderDto(
 				order.getCheckInMode(),
 				order.getDoorCodeEncrypted() != null,
 				order.getDeposit(),
-				order.getPaymentMethod(),
+				order.getDepositMethod(),
 				order.getDiscount(),
 				order.getDiscountReason(),
 				order.getRoomPriceAmount(),

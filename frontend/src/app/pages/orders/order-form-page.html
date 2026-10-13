@@ -1,7 +1,7 @@
 <div class="ph">
   <div>
-    <nav class="crumb" aria-label="Đường dẫn"><a routerLink="/don-thue">Đơn thuê</a><i class="pi pi-angle-right"></i><span>Tạo mới</span></nav>
-    <h1 class="page-title">Tạo đơn thuê</h1>
+    <nav class="crumb" aria-label="Đường dẫn"><a routerLink="/don-thue">Đơn thuê</a><i class="pi pi-angle-right"></i><span>{{ editing() ? 'Sửa đơn' : 'Tạo mới' }}</span></nav>
+    <h1 class="page-title">{{ editing() ? 'Sửa đơn ' + editing()!.code : 'Tạo đơn thuê' }}</h1>
   </div>
 </div>
 
@@ -88,7 +88,7 @@
           <div class="field">
             <label for="code">Mã cửa cho đơn này <span class="req">*</span></label>
             <div class="iw">
-              <input id="code" class="inp num" [type]="showDoorCode() ? 'text' : 'password'" formControlName="doorCode" autocomplete="off" />
+              <input id="code" class="inp num" [type]="showDoorCode() ? 'text' : 'password'" formControlName="doorCode" autocomplete="off" [placeholder]="editing()?.hasDoorCode ? 'Để trống để giữ mã cũ' : ''" />
               <button class="eye" type="button" (click)="showDoorCode.set(!showDoorCode())" [attr.aria-label]="showDoorCode() ? 'Ẩn mã cửa' : 'Hiện mã cửa'">
                 <i class="pi" [class.pi-eye]="!showDoorCode()" [class.pi-eye-slash]="showDoorCode()"></i>
               </button>
@@ -104,7 +104,7 @@
         <div class="g2">
           <div class="field"><label for="phone">Số điện thoại <span class="req">*</span></label><input id="phone" class="inp num" type="tel" formControlName="guestPhone" /></div>
           <div class="field"><label for="name">Họ tên <span class="req">*</span></label><input id="name" class="inp" formControlName="guestName" /></div>
-          <div class="field"><label for="idn">CCCD / Hộ chiếu</label><input id="idn" class="inp num" formControlName="guestIdNumber" /></div>
+          <div class="field"><label for="idn">CCCD / Hộ chiếu</label><input id="idn" class="inp num" formControlName="guestIdNumber" [placeholder]="editing()?.guestIdNumberMasked ? editing()!.guestIdNumberMasked + ' (để trống để giữ)' : ''" /></div>
           <div class="field">
             <label for="g">Số khách</label>
             <div class="stepper">
@@ -130,6 +130,9 @@
       <div class="ch"><span class="step">3</span><h2>Đặt cọc &amp; giảm giá</h2></div>
       <div class="cb">
         <div class="g2">
+          @if (editing() && !isManager()) {
+            <p class="field-err g-full">Chỉ Quản lý được sửa tiền cọc.</p>
+          }
           <div class="field"><label for="dep">Tiền cọc <span class="req">*</span></label><div class="iw money"><input id="dep" class="inp num" type="number" formControlName="deposit" /><span>đ</span></div>@if (depositError(); as e) {<small class="field-err">{{ e }}</small>}</div>
           <div class="field">
             <span class="flab">Hình thức cọc</span>
@@ -164,9 +167,11 @@
       }
     </div>
     <div class="sum-a">
-      <button class="btn-p" type="submit" [disabled]="submitting() || preview() === null || !preview()!.available">Lưu đơn</button>
-      <button class="btn-s" type="button" [disabled]="submitting() || preview() === null || !preview()!.available" (click)="submit(true)">Lưu &amp; sao chép tin nhắn</button>
-      <a class="btn-t" routerLink="/don-thue">Huỷ</a>
+      <button class="btn-p" type="submit" [disabled]="submitting() || preview() === null || !preview()!.available">{{ editing() ? 'Lưu thay đổi' : 'Lưu đơn' }}</button>
+      @if (!editing()) {
+        <button class="btn-s" type="button" [disabled]="submitting() || preview() === null || !preview()!.available" (click)="submit(true)">Lưu &amp; sao chép tin nhắn</button>
+      }
+      <a class="btn-t" routerLink="/don-thue" [queryParams]="editing() ? { id: editing()!.id } : {}">Huỷ</a>
     </div>
   </aside>
 </form>

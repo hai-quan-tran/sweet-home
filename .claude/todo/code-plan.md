@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1–5.4). Mỗi phần nhỏ của GĐ5 xong thì tự commit, hết GĐ5 mới chờ xác nhận.
+Trạng thái: GĐ 5 xong code (5.1–5.5 đã commit), chờ người dùng xác nhận trước khi sang GĐ 6.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -117,7 +117,7 @@ Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1–5.4). Mỗi phần nhỏ
   `RentalOrder.surcharges` và viết thêm `OrderSerializationIntegrationTest` (không `@Transactional`)
   để tự kiểm chứng điều đó trước khi test tay.
 
-### GĐ 5: Vòng đời đơn
+### GĐ 5: Vòng đời đơn ✅ (chờ xác nhận)
 - Trạng thái: Đã đặt → Đang ở → Quá giờ → Chờ xác nhận trả → Đã trả / Đã huỷ.
 - Quy tắc nghiệp vụ đã chốt: `business-rules.md` (Check-in/check-out, Huỷ đơn, Tiền cọc & thu
   tiền, Sửa đơn). Chia 5 phần, mỗi phần xong → xác nhận → commit:
@@ -130,7 +130,7 @@ Trạng thái: GĐ 4 xong. Đang làm GĐ 5 (xong 5.1–5.4). Mỗi phần nhỏ
   còn lại → Đã trả; phòng Chờ dọn, nút "Đã dọn" ở màn Phòng → Trống.
 - [x] 5.4 Huỷ đơn: hoàn cọc 100/50/0%, chỉ Quản lý sửa số hoàn, lý do bắt buộc khi sửa, NV chỉ huỷ
   đơn chỉ có cọc.
-- [ ] 5.5 Sửa đơn: chỉ khi Đã đặt, tính lại giá theo bảng giá hiện hành, kiểm tra trùng lịch.
+- [x] 5.5 Sửa đơn: chỉ khi Đã đặt, tính lại giá theo bảng giá hiện hành, kiểm tra trùng lịch.
 
 ### GĐ 6: Lịch đặt phòng & gia hạn
 - API timeline theo ngày/tuần/tháng; bấm ô trống tạo đơn.

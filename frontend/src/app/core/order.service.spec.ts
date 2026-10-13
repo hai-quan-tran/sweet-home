@@ -95,4 +95,11 @@ describe('OrderService', () => {
     service.cancel(5, { refundAmount: 0, reason: null }).subscribe();
     httpMock.expectOne({ url: '/api/orders/5/cancel', method: 'POST' }).flush({});
   });
+  it('update gọi PUT /api/orders/:id kèm body', () => {
+    const body = {} as OrderUpsertRequest;
+    service.update(5, body).subscribe();
+    const req = httpMock.expectOne({ url: '/api/orders/5', method: 'PUT' });
+    expect(req.request.body).toBe(body);
+    req.flush({});
+  });
 });

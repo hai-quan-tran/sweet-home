@@ -96,6 +96,7 @@ export interface OrderPreviewRequest {
   guestCount: number;
   discount: number;
   deposit: number;
+  excludeOrderId: number | null;
 }
 
 /** Kết quả xem trước: lịch tự tính, phòng có trống không, tiền tạm tính. */

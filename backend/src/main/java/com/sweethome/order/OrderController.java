@@ -71,6 +71,13 @@ public class OrderController {
 		return orderService.create(request);
 	}
 
+	/** Sửa đơn còn ở trạng thái Đã đặt (sửa tiền cọc chỉ Quản lý). */
+	@PutMapping("/{id}")
+	public OrderDto update(@PathVariable Long id, @Valid @RequestBody OrderUpsertRequest request,
+			@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
+		return orderService.update(id, request, isManager(principal));
+	}
+
 	/** Xác nhận khách đã nhận phòng. */
 	@PostMapping("/{id}/check-in")
 	public OrderDto checkIn(@PathVariable Long id) {
@@ -99,7 +106,7 @@ public class OrderController {
 	@PostMapping("/{id}/cancel")
 	public OrderDto cancel(@PathVariable Long id, @Valid @RequestBody CancelRequest request,
 			@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
-		return lifecycleService.cancel(id, request, principal != null && principal.role() == AccountRole.MANAGER);
+		return lifecycleService.cancel(id, request, isManager(principal));
 	}
 
 	/** Thu thêm một khoản tiền của đơn. */
@@ -121,5 +128,9 @@ public class OrderController {
 	@PreAuthorize("hasRole('MANAGER')")
 	public OrderDto deletePayment(@PathVariable Long id, @PathVariable Long paymentId) {
 		return paymentService.delete(id, paymentId);
+	}
+
+	private static boolean isManager(JwtService.AuthenticatedPrincipal principal) {
+		return principal != null && principal.role() == AccountRole.MANAGER;
 	}
 }

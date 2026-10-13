@@ -261,3 +261,17 @@
 - API: `GET /orders/{id}/cancel/preview`, `POST /orders/{id}/cancel`.
 - Frontend: nút "Huỷ đơn" (ẩn với NV khi đơn đã thu ngoài cọc), form hiện mức hoàn tự tính, ô số hoàn
   chỉ Quản lý sửa được, lý do; xác nhận bằng `confirm`; đơn huỷ hiện mục "Đã huỷ" (lúc, số hoàn, lý do).
+
+## Sửa đơn (GĐ5.5)
+- `OrderService.update` dùng chung hàm `fill` với `create` (lịch, giá snapshot theo bảng giá hiện hành,
+  phụ thu, tổng, cọc ≤ tổng). Kiểm tra trùng lịch qua `conflictMessage(room, schedule, excludeOrderId)`
+  bỏ qua chính đơn đang sửa; `POST /orders/preview` nhận thêm `excludeOrderId` cho cùng mục đích.
+- Chỉ đơn `BOOKED`; mã cửa/CCCD để trống = giữ giá trị cũ; NV đổi cọc → 403; chuyển sang phòng đang
+  tắt nhận đặt bị chặn (giữ nguyên phòng cũ thì được); tổng mới < đã thu bị chặn.
+- API `PUT /orders/{id}` (vai trò lấy từ `@AuthenticationPrincipal`, như huỷ đơn).
+- Frontend: `OrderFormPage` dùng chung cho route `/don-thue/:id/sua` (nạp đơn + danh sách phòng bằng
+  `forkJoin`, đặt loại thuê/phòng trước rồi `patchValue` phần còn lại vì 2 ô này có `valueChanges` tự
+  đặt lại số lượng/hình thức check-in); NV bị `disable()` ô cọc. Nút "Sửa đơn" ở chi tiết đơn Đã đặt.
+- **Lưu ý đặt tên**: getter/setter cọc của `RentalOrder` là `getDepositMethod/setDepositMethod` (kiểu
+  `PaymentMethod`). Lần đổi tên enum bằng `sed` ở 5.1 từng đổi nhầm thành `getPaymentMethod`, đã sửa
+  lại ở 5.5 — khi đổi tên hàng loạt cần giới hạn theo từ nguyên (`\bDepositMethod\b`).

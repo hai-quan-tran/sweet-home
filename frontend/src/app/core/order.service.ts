@@ -63,6 +63,11 @@ export class OrderService {
     return this.http.post<OrderDto>(BASE, request);
   }
 
+  /** Sửa đơn còn ở trạng thái Đã đặt. */
+  update(id: number, request: OrderUpsertRequest): Observable<OrderDto> {
+    return this.http.put<OrderDto>(`${BASE}/${id}`, request);
+  }
+
   /** Xác nhận khách đã nhận phòng. */
   checkIn(orderId: number): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${BASE}/${orderId}/check-in`, {});

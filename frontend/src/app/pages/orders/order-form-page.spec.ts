@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { OrderFormPage } from './order-form-page';
 
 const sampleRoom = {
@@ -178,5 +178,41 @@ describe('OrderFormPage', () => {
 
     deposit.setValue(150000);
     expect(component.depositError()).toBeNull();
+  });
+  it('sửa đơn: nạp đơn vào form, Nhân viên bị khoá tiền cọc, lưu gọi PUT', async () => {
+    const order = {
+      id: 36, code: 'SH-1036', status: 'BOOKED', roomId: 1, rentalType: 'HOURLY',
+      checkInAt: '2026-10-07T15:00:00', checkOutAt: '2026-10-07T18:00:00', guestName: 'Phạm Quốc Bảo', guestPhone: '0903112457',
+      guestIdNumberMasked: '•••• 7302', guestCount: 2, source: 'ZALO', note: null, checkInMode: 'SELF', hasDoorCode: true,
+      deposit: 50000, depositMethod: 'CASH', discount: 0, discountReason: null,
+    };
+    await TestBed.configureTestingModule({
+      imports: [OrderFormPage],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '36' }) } } },
+      ],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    const fixture = TestBed.createComponent(OrderFormPage);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/rooms').flush([{ ...sampleRoom, acceptingBookings: false }]);
+    httpMock.expectOne('/api/orders/36').flush(order);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component['rooms']().length).toBe(1);
+    expect(component['form'].controls.quantity.value).toBe(3);
+    expect(component['form'].controls.checkInMode.value).toBe('SELF');
+    expect(component['form'].controls.deposit.disabled).toBe(true);
+
+    component.submit(false);
+    const req = httpMock.expectOne({ url: '/api/orders/36', method: 'PUT' });
+    expect(req.request.body.deposit).toBe(50000);
+    expect(req.request.body.doorCode).toBeNull();
+    req.flush({ id: 36 });
+    expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 36, copy: null } });
   });
 });

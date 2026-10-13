@@ -313,11 +313,11 @@ public class RentalOrder extends Auditable {
 		this.deposit = deposit;
 	}
 
-	public PaymentMethod getPaymentMethod() {
+	public PaymentMethod getDepositMethod() {
 		return depositMethod;
 	}
 
-	public void setPaymentMethod(PaymentMethod depositMethod) {
+	public void setDepositMethod(PaymentMethod depositMethod) {
 		this.depositMethod = depositMethod;
 	}
 

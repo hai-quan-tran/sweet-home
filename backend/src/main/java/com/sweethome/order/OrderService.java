@@ -35,7 +35,8 @@ import com.sweethome.surcharge.SurchargeDayCharge;
 import com.sweethome.surcharge.SurchargeRepository;
 
 /**
- * Tạo đơn thuê và xem danh sách/chi tiết. Thu tiền xem {@link OrderPaymentService}.
+ * Tạo/sửa đơn thuê và xem danh sách/chi tiết. Thu tiền xem {@link OrderPaymentService}, vòng đời
+ * (nhận/trả phòng, huỷ) xem {@link OrderLifecycleService}.
  */
 @Service
 public class OrderService {
@@ -125,11 +126,8 @@ public class OrderService {
 		Schedule schedule = computeSchedule(request.rentalType(), request.checkInDate(), request.checkInTime(),
 				request.quantity(), settings, prices);
 
-		List<RentalOrder> conflicts = orderRepository.findOverlapping(room.getId(), schedule.checkInAt(),
-				schedule.checkOutAt());
-		boolean available = conflicts.isEmpty();
-		String conflictMessage = available ? null
-				: "Phòng đã có đơn %s trong khung giờ này".formatted(OrderDto.codeOf(conflicts.get(0).getId()));
+		String conflictMessage = conflictMessage(room, schedule, request.excludeOrderId());
+		boolean available = conflictMessage == null;
 
 		SurchargeCalculationResult surcharges = calculateSurcharges(room, prices, schedule, request.guestCount(),
 				Set.of());
@@ -153,8 +151,54 @@ public class OrderService {
 		if (!room.isAcceptingBookings()) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Phòng đang tắt nhận đặt, không tạo được đơn mới");
 		}
-		if (request.checkInMode() == CheckInMode.SELF
-				&& (request.doorCode() == null || request.doorCode().isBlank())) {
+		RentalOrder order = new RentalOrder();
+		fill(order, room, request);
+		return OrderDto.from(orderRepository.save(order));
+	}
+
+	/**
+	 * Sửa đơn còn ở trạng thái Đã đặt: tính lại lịch, giá (theo bảng giá hiện hành), phụ thu như tạo
+	 * mới, kiểm tra trùng lịch bỏ qua chính đơn này. Mã cửa/CCCD để trống thì giữ giá trị cũ. Chỉ Quản
+	 * lý sửa được tiền cọc.
+	 *
+	 * @param id      id đơn
+	 * @param request dữ liệu mới
+	 * @param manager người thao tác có vai trò Quản lý không
+	 * @return đơn sau khi sửa
+	 */
+	@Transactional
+	public OrderDto update(Long id, OrderUpsertRequest request, boolean manager) {
+		RentalOrder order = findOrder(id);
+		if (order.getStatus() != OrderStatus.BOOKED) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chỉ sửa được đơn ở trạng thái Đã đặt");
+		}
+		if (!manager && (request.deposit() != order.getDeposit() || request.depositMethod() != order.getDepositMethod())) {
+			throw new BusinessException(HttpStatus.FORBIDDEN, "Chỉ Quản lý được sửa tiền cọc");
+		}
+		Room room = findRoom(request.roomId());
+		if (!room.getId().equals(order.getRoom().getId()) && !room.isAcceptingBookings()) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Phòng đang tắt nhận đặt, không chuyển đơn sang được");
+		}
+		fill(order, room, request);
+		if (order.getPaidAmount() > order.getTotalAmount()) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Tổng tiền mới thấp hơn số đã thu");
+		}
+		return OrderDto.from(orderRepository.save(order));
+	}
+
+	/** Thông báo trùng lịch nếu phòng đã có đơn khác (bỏ qua {@code excludeOrderId}) trong khung giờ; null nếu trống. */
+	private String conflictMessage(Room room, Schedule schedule, Long excludeOrderId) {
+		return orderRepository.findOverlapping(room.getId(), schedule.checkInAt(), schedule.checkOutAt()).stream()
+				.filter(o -> !o.getId().equals(excludeOrderId))
+				.findFirst()
+				.map(o -> "Phòng đã có đơn %s trong khung giờ này".formatted(OrderDto.codeOf(o.getId())))
+				.orElse(null);
+	}
+
+	/** Kiểm tra và ghi dữ liệu đơn (dùng chung cho tạo và sửa): lịch, giá snapshot, phụ thu, tổng tiền. */
+	private void fill(RentalOrder order, Room room, OrderUpsertRequest request) {
+		if (request.checkInMode() == CheckInMode.SELF && isBlank(request.doorCode())
+				&& order.getDoorCodeEncrypted() == null) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Phải nhập mã cửa khi khách tự check-in");
 		}
 
@@ -163,11 +207,9 @@ public class OrderService {
 		Schedule schedule = computeSchedule(request.rentalType(), request.checkInDate(), request.checkInTime(),
 				request.quantity(), settings, prices);
 
-		List<RentalOrder> conflicts = orderRepository.findOverlapping(room.getId(), schedule.checkInAt(),
-				schedule.checkOutAt());
-		if (!conflicts.isEmpty()) {
-			throw new BusinessException(HttpStatus.CONFLICT,
-					"Phòng đã có đơn %s trong khung giờ này".formatted(OrderDto.codeOf(conflicts.get(0).getId())));
+		String conflict = conflictMessage(room, schedule, order.getId());
+		if (conflict != null) {
+			throw new BusinessException(HttpStatus.CONFLICT, conflict);
 		}
 
 		SurchargeCalculationResult surcharges = calculateSurcharges(room, prices, schedule, request.guestCount(),
@@ -177,14 +219,13 @@ public class OrderService {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Tiền cọc không được vượt tổng tiền");
 		}
 
-		RentalOrder order = new RentalOrder();
 		order.setRoom(room);
 		order.setRentalType(request.rentalType());
 		order.setCheckInAt(schedule.checkInAt());
 		order.setCheckOutAt(schedule.checkOutAt());
 		order.setGuestName(request.guestName());
 		order.setGuestPhone(request.guestPhone());
-		if (request.guestIdNumber() != null && !request.guestIdNumber().isBlank()) {
+		if (!isBlank(request.guestIdNumber())) {
 			String digitsOnly = request.guestIdNumber().replaceAll("\\s+", "");
 			order.setGuestIdNumberEncrypted(cryptoService.encrypt(digitsOnly));
 			order.setGuestIdNumberLast4(digitsOnly.length() <= 4 ? digitsOnly : digitsOnly.substring(digitsOnly.length() - 4));
@@ -193,11 +234,11 @@ public class OrderService {
 		order.setSource(request.source());
 		order.setNote(request.note());
 		order.setCheckInMode(request.checkInMode());
-		if (request.doorCode() != null && !request.doorCode().isBlank()) {
+		if (!isBlank(request.doorCode())) {
 			order.setDoorCodeEncrypted(cryptoService.encrypt(request.doorCode()));
 		}
 		order.setDeposit(request.deposit());
-		order.setPaymentMethod(request.depositMethod());
+		order.setDepositMethod(request.depositMethod());
 		order.setDiscount(request.discount());
 		order.setDiscountReason(request.discountReason());
 		order.setRoomTypeNameSnapshot(prices.roomTypeName());
@@ -215,8 +256,10 @@ public class OrderService {
 			surchargeRows.add(row);
 		}
 		order.setSurcharges(surchargeRows);
+	}
 
-		return OrderDto.from(orderRepository.save(order));
+	private static boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 
 	private SurchargeCalculationResult calculateSurcharges(Room room, RoomPrices prices, Schedule schedule,

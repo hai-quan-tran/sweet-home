@@ -2,13 +2,15 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { catchError, debounceTime, of, switchMap } from 'rxjs';
+import { catchError, debounceTime, forkJoin, of, switchMap } from 'rxjs';
+
+import { AuthService } from '../../core/auth.service';
 
 import { CheckInMode, RoomDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
-import { PaymentMethod, OrderPreviewRequest, OrderPreviewResponse, OrderSource, RentalType } from '../../core/order.models';
+import { OrderDto, OrderPreviewRequest, OrderPreviewResponse, OrderSource, OrderUpsertRequest, PaymentMethod, RentalType } from '../../core/order.models';
 import { OrderService } from '../../core/order.service';
 import { formatMoney } from '../../core/money';
 
@@ -21,7 +23,7 @@ const SOURCE_OPTIONS: { value: OrderSource; label: string }[] = [
   { value: 'OTHER', label: 'Khác' },
 ];
 
-/** Màn Tạo đơn thuê: phòng & thời gian tự tính giờ trả + tóm tắt tiền cập nhật trực tiếp. */
+/** Màn Tạo/Sửa đơn thuê: phòng & thời gian tự tính giờ trả + tóm tắt tiền cập nhật trực tiếp. Sửa đơn qua route có :id (chỉ đơn Đã đặt). */
 @Component({
   selector: 'app-order-form-page',
   imports: [ReactiveFormsModule, RouterLink, ButtonModule, DatePipe],
@@ -32,6 +34,8 @@ export class OrderFormPage {
   private readonly roomService = inject(RoomService);
   private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly auth = inject(AuthService);
 
   protected readonly formatMoney = formatMoney;
   protected readonly rentalTypeLabel = RENTAL_TYPE_LABEL;
@@ -43,6 +47,9 @@ export class OrderFormPage {
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly showDoorCode = signal(false);
+  /** Đơn đang sửa; null khi tạo mới. */
+  protected readonly editing = signal<OrderDto | null>(null);
+  protected readonly isManager = computed(() => this.auth.currentUser()?.role === 'MANAGER');
 
   protected readonly form = new FormGroup({
     rentalType: new FormControl<RentalType>('HOURLY', { nonNullable: true }),
@@ -70,10 +77,13 @@ export class OrderFormPage {
   protected readonly isHourly = computed(() => this.form.controls.rentalType.value === 'HOURLY');
 
   constructor() {
-    this.roomService.list().subscribe((rooms) => {
-      const available = rooms.filter((r) => r.acceptingBookings);
+    const editId = Number(this.route.snapshot.paramMap.get('id')) || null;
+    forkJoin({ rooms: this.roomService.list(), order: editId ? this.orderService.get(editId) : of(null) }).subscribe(({ rooms, order }) => {
+      const available = rooms.filter((r) => r.acceptingBookings || r.id === order?.roomId);
       this.rooms.set(available);
-      if (available.length > 0 && this.form.controls.roomId.value === null) {
+      if (order) {
+        this.loadOrder(order);
+      } else if (available.length > 0 && this.form.controls.roomId.value === null) {
         this.form.controls.roomId.setValue(available[0].id);
         this.form.controls.checkInMode.setValue(available[0].defaultCheckInMode);
       }
@@ -127,7 +137,46 @@ export class OrderFormPage {
       guestCount: raw.guestCount,
       discount: raw.discount,
       deposit: raw.deposit,
+      excludeOrderId: this.editing()?.id ?? null,
     };
+  }
+
+  /**
+   * Đổ dữ liệu đơn cần sửa vào form. Đặt loại thuê và phòng trước vì 2 ô này tự đặt lại số lượng và
+   * hình thức check-in mặc định khi đổi. Mã cửa/CCCD để trống (trống = giữ giá trị cũ). Nhân viên
+   * không sửa được tiền cọc.
+   */
+  private loadOrder(order: OrderDto): void {
+    if (order.status !== 'BOOKED') {
+      this.errorMessage.set('Chỉ sửa được đơn ở trạng thái Đã đặt.');
+    }
+    this.editing.set(order);
+    const controls = this.form.controls;
+    controls.rentalType.setValue(order.rentalType);
+    controls.roomId.setValue(order.roomId);
+    const hours = Math.round((Date.parse(order.checkOutAt) - Date.parse(order.checkInAt)) / 3_600_000);
+    const days = Math.round((Date.parse(order.checkOutAt.slice(0, 10)) - Date.parse(order.checkInAt.slice(0, 10))) / 86_400_000);
+    this.form.patchValue({
+      checkInDate: order.checkInAt.slice(0, 10),
+      checkInTime: order.checkInAt.slice(11, 16),
+      quantity: order.rentalType === 'DAILY' ? days : hours,
+      checkInMode: order.checkInMode,
+      doorCode: '',
+      guestName: order.guestName,
+      guestPhone: order.guestPhone,
+      guestIdNumber: '',
+      guestCount: order.guestCount,
+      source: order.source,
+      note: order.note ?? '',
+      deposit: order.deposit,
+      depositMethod: order.depositMethod ?? 'TRANSFER',
+      discount: order.discount,
+      discountReason: order.discountReason ?? '',
+    });
+    if (!this.isManager()) {
+      controls.deposit.disable();
+      controls.depositMethod.disable();
+    }
   }
 
   /** Tăng/giảm số giờ hoặc số ngày thuê. */
@@ -152,39 +201,40 @@ export class OrderFormPage {
     return total !== undefined && control.value > total ? 'Tiền cọc không được vượt tổng tiền' : null;
   }
 
-  /** Lưu đơn. */
+  /** Lưu đơn (tạo mới hoặc lưu thay đổi khi đang sửa). */
   submit(copyMessage: boolean): void {
     if (this.form.invalid || this.submitting() || this.depositError() !== null) {
       this.form.markAllAsTouched();
       return;
     }
     const raw = this.form.getRawValue();
-    if (raw.checkInMode === 'SELF' && !raw.doorCode.trim()) {
+    const editing = this.editing();
+    if (raw.checkInMode === 'SELF' && !raw.doorCode.trim() && !editing?.hasDoorCode) {
       this.errorMessage.set('Phải nhập mã cửa khi khách tự check-in.');
       return;
     }
     this.errorMessage.set(null);
     this.submitting.set(true);
-    this.orderService
-      .create({
-        roomId: raw.roomId!,
-        rentalType: raw.rentalType,
-        checkInDate: raw.checkInDate,
-        checkInTime: raw.rentalType === 'HOURLY' ? raw.checkInTime : null,
-        quantity: raw.rentalType === 'OVERNIGHT' ? null : raw.quantity,
-        guestName: raw.guestName,
-        guestPhone: raw.guestPhone,
-        guestIdNumber: raw.guestIdNumber || null,
-        guestCount: raw.guestCount,
-        source: raw.source,
-        note: raw.note || null,
-        checkInMode: raw.checkInMode,
-        doorCode: raw.doorCode || null,
-        deposit: raw.deposit,
-        depositMethod: raw.depositMethod,
-        discount: raw.discount,
-        discountReason: raw.discountReason || null,
-      })
+    const request: OrderUpsertRequest = {
+      roomId: raw.roomId!,
+      rentalType: raw.rentalType,
+      checkInDate: raw.checkInDate,
+      checkInTime: raw.rentalType === 'HOURLY' ? raw.checkInTime : null,
+      quantity: raw.rentalType === 'OVERNIGHT' ? null : raw.quantity,
+      guestName: raw.guestName,
+      guestPhone: raw.guestPhone,
+      guestIdNumber: raw.guestIdNumber || null,
+      guestCount: raw.guestCount,
+      source: raw.source,
+      note: raw.note || null,
+      checkInMode: raw.checkInMode,
+      doorCode: raw.doorCode || null,
+      deposit: raw.deposit,
+      depositMethod: raw.depositMethod,
+      discount: raw.discount,
+      discountReason: raw.discountReason || null,
+    };
+    (editing ? this.orderService.update(editing.id, request) : this.orderService.create(request))
       .subscribe({
         next: (order) => {
           this.submitting.set(false);
@@ -192,7 +242,7 @@ export class OrderFormPage {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.errorMessage.set(err?.error?.detail ?? 'Không tạo được đơn, thử lại sau.');
+          this.errorMessage.set(err?.error?.detail ?? (editing ? 'Không lưu được đơn, thử lại sau.' : 'Không tạo được đơn, thử lại sau.'));
         },
       });
   }
