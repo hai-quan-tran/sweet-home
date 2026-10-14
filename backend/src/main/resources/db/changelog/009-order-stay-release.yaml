@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-order-stay-cleaning-requested
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: order_stay
+            columns:
+              - column: { name: cleaning_requested, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }

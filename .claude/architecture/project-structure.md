@@ -325,3 +325,21 @@
   lượng gọi preview, không tự tính ở Angular. Mở từ nút "Gia hạn" trong `OrderDetail` (đơn đang ở),
   nên có ở cả màn Đơn thuê và Lịch. Chưa vẽ thanh thời gian minh hoạ như bản thiết kế (chỉ các ô
   thông tin + cảnh báo giới hạn).
+
+## Chuyển phòng khi gia hạn (GĐ6.4)
+- Preview gia hạn không giữ được phòng thì trả thêm `moveOptions`: phòng khác, `Room.effectivePrices()`
+  bằng phòng đang ở (so cả 4 mức), `acceptingBookings`, `!needsCleaning`, `findOverlapping` rỗng trong
+  `[giờ trả hiện tại, giờ trả mới + 1 tiếng)`; kèm `freeUntil` (chặng kế tiếp ở phòng đó).
+- `ExtendRequest.targetRoomId`: bắt buộc khi không giữ được phòng, phải nằm trong `moveOptions` (409
+  nếu không). `RentalOrder.moveTo` thêm chặng mới và đổi `room`/`checkOutAt` của đơn sang phòng mới
+  (đơn luôn trỏ phòng hiện tại = chặng cuối). Giá không đổi vì cùng giá.
+- Phòng cũ Chờ dọn: cột `order_stay.cleaning_requested` (changelog `009-order-stay-release.yaml`).
+  `OrderStatusScheduler` mỗi phút gọi thêm `OrderExtensionService.releaseMovedOutRooms`: chặng không
+  phải chặng cuối, đã kết thúc, chưa đánh dấu → `room.needsCleaning = true` một lần (không bật lại sau
+  khi đã bấm "Đã dọn").
+- `OrderDto.stays` (record `Stay`: số/tên phòng, giờ) — chi tiết đơn hiện mục "Các chặng" khi > 1.
+  Màn Lịch không cần sửa gì: chặng ở phòng nào hiện ở dòng phòng đó.
+- Frontend dialog Gia hạn: chọn sẵn phòng đầu tiên trong `moveOptions`, nhãn nút "Chuyển sang 202 & gia
+  hạn đến …"; không có phòng thì hộp "Không có phòng phù hợp" + gợi ý đổi sang thêm giờ (nếu còn giờ).
+- Test JSON path lọc nhiều phần tử (`$[?(...)].x`) phải so bằng Hamcrest `contains(...)`: `.value(List.of(...))`
+  của Spring báo "but was: null" dù dữ liệu đúng.

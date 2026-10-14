@@ -44,12 +44,15 @@ class OrderIntegrationTest {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private OrderLifecycleService lifecycleService;
+	@Autowired
+	private OrderExtensionService extensionService;
 
 	private String managerAccessToken;
 	private String managerCsrf;
 	private String staffAccessToken;
 	private String staffCsrf;
 	private long roomId;
+	private long roomTypeId;
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -72,12 +75,16 @@ class OrderIntegrationTest {
 						.contentType(MediaType.APPLICATION_JSON).content(pricingPayload))
 				.andExpect(status().isOk())
 				.andReturn();
-		long roomTypeId = ((Number) JsonPath.read(pricingResult.getResponse().getContentAsString(), "$.roomTypes[0].id")).longValue();
+		roomTypeId = ((Number) JsonPath.read(pricingResult.getResponse().getContentAsString(), "$.roomTypes[0].id")).longValue();
+		return postRoom("RO-" + suffix);
+	}
 
+	/** Thêm phòng mới thuộc hạng phòng đã tạo ở {@link #createRoom}. */
+	private long postRoom(String roomNumber) throws Exception {
 		String roomPayload = """
-				{"roomNumber":"RO-%s","name":"Phòng test","floor":1,"roomTypeId":%d,"maxGuests":2,
+				{"roomNumber":"%s","name":"Phòng test","floor":1,"roomTypeId":%d,"maxGuests":2,
 				 "pricingMode":"ROOM_TYPE","defaultCheckInMode":"SELF","acceptingBookings":true}
-				""".formatted(suffix, roomTypeId);
+				""".formatted(roomNumber, roomTypeId);
 		MvcResult roomResult = mvc.perform(post("/rooms")
 						.cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
@@ -209,6 +216,48 @@ class OrderIntegrationTest {
 		mvc.perform(get("/orders/stays").param("from", "2026-10-07T00:00:00").param("to", "2026-10-08T00:00:00")
 						.cookie(new MockCookie("access_token", staffAccessToken)))
 				.andExpect(jsonPath("$[?(@.orderId == %d)].endAt".formatted(orderId)).value("2026-10-07T19:00:00"));
+	}
+
+	@Test
+	void extendMovesGuestToSamePriceRoomThenOldRoomNeedsCleaning() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("\"15:00\"", "\"19:00\"")))
+				.andExpect(status().isOk());
+		mvc.perform(post("/orders/" + orderId + "/check-in").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk());
+		long otherRoomId = postRoom("RO2-" + System.nanoTime());
+		String extendTwoHours = "{\"type\":\"HOUR\",\"quantity\":2,\"collectNow\":false,\"targetRoomId\":%d}";
+
+		mvc.perform(post("/orders/" + orderId + "/extend/preview").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"HOUR\",\"quantity\":2,\"collectNow\":false}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.available").value(false))
+				.andExpect(jsonPath("$.moveOptions[?(@.roomId == %d)]".formatted(otherRoomId)).isNotEmpty());
+		mvc.perform(post("/orders/" + orderId + "/extend").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(extendTwoHours.formatted(otherRoomId)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.roomId").value((int) otherRoomId))
+				.andExpect(jsonPath("$.checkOutAt").value("2026-10-07T20:00:00"))
+				.andExpect(jsonPath("$.stays.length()").value(2));
+		mvc.perform(get("/orders/stays").param("from", "2026-10-07T00:00:00").param("to", "2026-10-08T00:00:00")
+						.cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$[?(@.orderId == %d)].roomId".formatted(orderId)).value(org.hamcrest.Matchers.contains((int) roomId, (int) otherRoomId)));
+
+		extensionService.releaseMovedOutRooms();
+		mvc.perform(get("/rooms/" + roomId).cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$.needsCleaning").value(true));
+		mvc.perform(get("/rooms/" + otherRoomId).cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$.needsCleaning").value(false));
 	}
 
 	@Test

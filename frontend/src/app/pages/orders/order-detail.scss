@@ -225,3 +225,12 @@
   background: var(--p-red-600);
   color: #fff;
 }
+
+.kv.stays {
+  align-items: flex-start;
+
+  small {
+    display: block;
+    text-align: right;
+  }
+}

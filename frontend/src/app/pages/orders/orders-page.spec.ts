@@ -22,7 +22,7 @@ const sampleOrder = {
   guestName: 'Phạm Quốc Bảo', guestPhone: '0903112457', guestIdNumberMasked: null, guestCount: 2,
   source: 'ZALO', note: null, checkInMode: 'SELF', hasDoorCode: true, deposit: 100000, depositMethod: 'TRANSFER',
   discount: 0, discountReason: null, roomPriceAmount: 350000, surcharges: [], totalAmount: 350000, payments: [], paidAmount: 100000,
-  dueAmount: 250000,
+  dueAmount: 250000, stays: [],
 };
 
 describe('OrdersPage', () => {

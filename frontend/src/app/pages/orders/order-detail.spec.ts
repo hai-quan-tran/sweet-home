@@ -22,7 +22,7 @@ const sampleOrder = {
   guestName: 'Phạm Quốc Bảo', guestPhone: '0903112457', guestIdNumberMasked: null, guestCount: 2,
   source: 'ZALO', note: null, checkInMode: 'SELF', hasDoorCode: true, deposit: 100000, depositMethod: 'TRANSFER',
   discount: 0, discountReason: null, roomPriceAmount: 350000, surcharges: [], totalAmount: 350000, payments: [], paidAmount: 100000,
-  dueAmount: 250000,
+  dueAmount: 250000, stays: [],
 };
 
 describe('OrderDetail', () => {
@@ -236,6 +236,22 @@ describe('OrderDetail', () => {
 
     expect(fixture.componentInstance['order']()?.checkOutAt).toBe('2026-10-08T14:00:00');
     expect(changed).toHaveBeenCalled();
+  });
+
+  it('đơn chuyển phòng hiện các chặng', async () => {
+    const moved = {
+      ...sampleOrder,
+      status: 'CHECKED_IN',
+      stays: [
+        { roomNumber: '101', roomName: 'Mộc', startAt: '2026-10-07T21:00:00', endAt: '2026-10-08T12:00:00' },
+        { roomNumber: '102', roomName: 'Nắng', startAt: '2026-10-08T12:00:00', endAt: '2026-10-09T12:00:00' },
+      ],
+    };
+    const { fixture } = await render(moved);
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    expect(text).toContain('Các chặng');
+    expect(text).toContain('Phòng 102: 12:00, 08/10 → 12:00, 09/10');
   });
 
   it('đơn Đã đặt không có nút Gia hạn', async () => {

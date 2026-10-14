@@ -7,7 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.Room;
+import com.sweethome.room.RoomRepository;
 
 /**
  * Kiểm tra gia hạn tại phòng: phí theo giờ/ngày, giới hạn cách đơn kế tiếp 1 tiếng, ghi phí và thu
@@ -28,9 +31,12 @@ import com.sweethome.room.Room;
 class OrderExtensionServiceTest {
 
 	private static final LocalDateTime CHECK_OUT = LocalDateTime.of(2026, 10, 8, 12, 0);
+	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	@Mock
 	private RentalOrderRepository orderRepository;
+	@Mock
+	private RoomRepository roomRepository;
 
 	private OrderExtensionService service;
 	private Room room;
@@ -38,7 +44,8 @@ class OrderExtensionServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new OrderExtensionService(orderRepository);
+		service = new OrderExtensionService(orderRepository, roomRepository,
+				Clock.fixed(LocalDateTime.of(2026, 10, 8, 12, 30).atZone(ZONE).toInstant(), ZONE));
 		room = OrderTestFactory.room(10L, "201", OrderTestFactory.roomType(1L, "A", 150000, 60000, 350000, 650000), 2);
 		order = order(1L, "Hoàng Yến", CHECK_OUT.minusDays(2).withHour(14), CHECK_OUT);
 		order.setStatus(OrderStatus.CHECKED_IN);
@@ -53,7 +60,7 @@ class OrderExtensionServiceTest {
 
 	@Test
 	void previewHourWithoutNextOrderIsUnlimited() {
-		var preview = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 2, false, null));
+		var preview = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 2, false, null, null));
 
 		assertThat(preview.newCheckOutAt()).isEqualTo(CHECK_OUT.plusHours(2));
 		assertThat(preview.fee()).isEqualTo(120000);
@@ -68,8 +75,8 @@ class OrderExtensionServiceTest {
 	void previewKeepsOneHourBeforeNextOrder() {
 		nextOrderAt(CHECK_OUT.plusHours(2));
 
-		var oneHour = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null));
-		var oneDay = service.preview(1L, new ExtendRequest(ExtendType.DAY, 1, false, null));
+		var oneHour = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null, null));
+		var oneDay = service.preview(1L, new ExtendRequest(ExtendType.DAY, 1, false, null, null));
 
 		assertThat(oneHour.available()).isTrue();
 		assertThat(oneHour.maxCheckOutAt()).isEqualTo(CHECK_OUT.plusHours(1));
@@ -83,7 +90,7 @@ class OrderExtensionServiceTest {
 	void nextOrderRightAfterLeavesNoExtraHours() {
 		nextOrderAt(CHECK_OUT);
 
-		var preview = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null));
+		var preview = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null, null));
 
 		assertThat(preview.maxExtraHours()).isZero();
 		assertThat(preview.available()).isFalse();
@@ -93,7 +100,7 @@ class OrderExtensionServiceTest {
 	void extendMovesCheckOutAddsFeeAndCollectsNow() {
 		order.setStatus(OrderStatus.OVERSTAY);
 
-		var dto = service.extend(1L, new ExtendRequest(ExtendType.HOUR, 2, true, PaymentMethod.CASH));
+		var dto = service.extend(1L, new ExtendRequest(ExtendType.HOUR, 2, true, PaymentMethod.CASH, null));
 
 		assertThat(dto.checkOutAt()).isEqualTo(CHECK_OUT.plusHours(2));
 		assertThat(order.getStays().getLast().getEndAt()).isEqualTo(CHECK_OUT.plusHours(2));
@@ -108,7 +115,7 @@ class OrderExtensionServiceTest {
 
 	@Test
 	void extendDayAddedToCheckoutLaterHasNoPayment() {
-		var dto = service.extend(1L, new ExtendRequest(ExtendType.DAY, 1, false, null));
+		var dto = service.extend(1L, new ExtendRequest(ExtendType.DAY, 1, false, null, null));
 
 		assertThat(dto.checkOutAt()).isEqualTo(CHECK_OUT.plusDays(1));
 		assertThat(dto.surcharges()).extracting(OrderSurchargeDto::name).containsExactly("Gia hạn +1 ngày");
@@ -120,14 +127,14 @@ class OrderExtensionServiceTest {
 	void extendRejectsWhenClashingNextOrder() {
 		nextOrderAt(CHECK_OUT.plusHours(2));
 
-		assertThatThrownBy(() -> service.extend(1L, new ExtendRequest(ExtendType.HOUR, 2, false, null)))
+		assertThatThrownBy(() -> service.extend(1L, new ExtendRequest(ExtendType.HOUR, 2, false, null, null)))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("SH-1002");
 	}
 
 	@Test
 	void extendNowRequiresPaymentMethod() {
-		assertThatThrownBy(() -> service.extend(1L, new ExtendRequest(ExtendType.HOUR, 1, true, null)))
+		assertThatThrownBy(() -> service.extend(1L, new ExtendRequest(ExtendType.HOUR, 1, true, null, null)))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("hình thức");
 	}
@@ -136,9 +143,87 @@ class OrderExtensionServiceTest {
 	void onlyStayingOrderCanBeExtended() {
 		order.setStatus(OrderStatus.BOOKED);
 
-		assertThatThrownBy(() -> service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null)))
+		assertThatThrownBy(() -> service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null, null)))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("đang ở");
+	}
+
+	@Test
+	void moveOptionsOnlySamePriceCleanAcceptingAndFreeRooms() {
+		nextOrderAt(CHECK_OUT.plusHours(2));
+		Room free = otherRoom(11L, "202");
+		Room dirty = otherRoom(12L, "203");
+		dirty.setNeedsCleaning(true);
+		Room pricier = OrderTestFactory.room(13L, "204", OrderTestFactory.roomType(2L, "B", 150000, 60000, 350000, 700000), 2);
+		Room closed = otherRoom(14L, "205");
+		closed.setAcceptingBookings(false);
+		Room busy = otherRoom(15L, "206");
+		when(roomRepository.findAll()).thenReturn(List.of(room, busy, pricier, dirty, closed, free));
+		when(orderRepository.findOverlapping(eq(15L), any(), any())).thenReturn(List.of(new RentalOrder()));
+		RentalOrder later = order(3L, "Khách sau", CHECK_OUT.plusDays(1).plusHours(7), CHECK_OUT.plusDays(2));
+		when(orderRepository.findStaysStartingFrom(eq(11L), eq(1L), eq(CHECK_OUT), any())).thenReturn(later.getStays());
+
+		var preview = service.preview(1L, new ExtendRequest(ExtendType.DAY, 1, false, null, null));
+
+		assertThat(preview.available()).isFalse();
+		assertThat(preview.moveOptions()).singleElement().satisfies(o -> {
+			assertThat(o.roomNumber()).isEqualTo("202");
+			assertThat(o.freeUntil()).isEqualTo(CHECK_OUT.plusDays(1).plusHours(7));
+		});
+	}
+
+	@Test
+	void availableInPlaceHasNoMoveOptions() {
+		var preview = service.preview(1L, new ExtendRequest(ExtendType.HOUR, 1, false, null, null));
+
+		assertThat(preview.moveOptions()).isEmpty();
+	}
+
+	@Test
+	void extendWithMoveAddsStayOnNewRoom() {
+		nextOrderAt(CHECK_OUT.plusHours(2));
+		Room target = otherRoom(11L, "202");
+		when(roomRepository.findAll()).thenReturn(List.of(room, target));
+		when(roomRepository.getReferenceById(11L)).thenReturn(target);
+
+		var dto = service.extend(1L, new ExtendRequest(ExtendType.DAY, 1, false, null, 11L));
+
+		assertThat(dto.roomNumber()).isEqualTo("202");
+		assertThat(dto.checkOutAt()).isEqualTo(CHECK_OUT.plusDays(1));
+		assertThat(dto.stays()).extracting(OrderDto.Stay::roomNumber).containsExactly("201", "202");
+		assertThat(order.getStays().getFirst().getEndAt()).isEqualTo(CHECK_OUT);
+		assertThat(order.getStays().getLast().getStartAt()).isEqualTo(CHECK_OUT);
+		assertThat(dto.surcharges()).extracting(OrderSurchargeDto::name).containsExactly("Gia hạn +1 ngày");
+	}
+
+	@Test
+	void extendRejectsMoveToRoomNotInOptions() {
+		nextOrderAt(CHECK_OUT.plusHours(2));
+		Room dirty = otherRoom(11L, "202");
+		dirty.setNeedsCleaning(true);
+		when(roomRepository.findAll()).thenReturn(List.of(room, dirty));
+
+		assertThatThrownBy(() -> service.extend(1L, new ExtendRequest(ExtendType.DAY, 1, false, null, 11L)))
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("không chuyển sang được");
+	}
+
+	@Test
+	void releaseMovedOutRoomsMarksOldRoomForCleaningOnce() {
+		Room target = otherRoom(11L, "202");
+		order.moveTo(target, CHECK_OUT.plusDays(1));
+		OrderStay oldStay = order.getStays().getFirst();
+		when(orderRepository.findMovedOutStaysToRelease(LocalDateTime.of(2026, 10, 8, 12, 30))).thenReturn(List.of(oldStay));
+
+		assertThat(service.releaseMovedOutRooms()).isEqualTo(1);
+		assertThat(room.isNeedsCleaning()).isTrue();
+		assertThat(target.isNeedsCleaning()).isFalse();
+		assertThat(oldStay.isCleaningRequested()).isTrue();
+	}
+
+	/** Phòng khác cùng hạng (cùng giá) với phòng đang ở. */
+	private Room otherRoom(long id, String number) {
+		return OrderTestFactory.room(id, number, room.getRoomType(), 2);
 	}
 
 	/** Phòng có đơn khác (id 2) nhận phòng lúc {@code checkInAt}. */

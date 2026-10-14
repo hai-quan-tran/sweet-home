@@ -159,6 +159,77 @@
   }
 }
 
+.ropts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+
+  legend {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0;
+    margin-bottom: 6px;
+  }
+}
+
+.ropt {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 10px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--p-primary-color);
+  }
+
+  b {
+    display: block;
+  }
+
+  small {
+    color: var(--p-text-muted-color);
+    font-size: 12px;
+  }
+
+  .pr {
+    font-weight: 700;
+  }
+
+  &.on {
+    border-color: var(--p-primary-color);
+    background: var(--p-highlight-background);
+  }
+}
+
+.empty {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1.5px dashed var(--p-content-border-color);
+  border-radius: 10px;
+  color: var(--p-text-muted-color);
+
+  b {
+    display: block;
+    color: var(--p-text-color);
+  }
+
+  small {
+    font-size: 13px;
+  }
+}
+
 .fee {
   display: flex;
   justify-content: space-between;

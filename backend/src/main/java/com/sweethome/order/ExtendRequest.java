@@ -11,10 +11,12 @@ import jakarta.validation.constraints.NotNull;
  * @param collectNow    thu phí gia hạn ngay (true) hay cộng vào lúc trả phòng (false); bắt buộc gửi — Jackson 3
  *                      mặc định báo lỗi 400 khi thiếu trường kiểu nguyên thuỷ
  * @param paymentMethod hình thức thu, bắt buộc khi thu ngay
+ * @param targetRoomId  phòng chuyển khách sang khi không giữ được phòng đang ở; null = gia hạn tại phòng
  */
 public record ExtendRequest(
 		@NotNull(message = "Bắt buộc nhập") ExtendType type,
 		@NotNull(message = "Bắt buộc nhập") @Min(value = 1, message = "Tối thiểu 1") Integer quantity,
 		boolean collectNow,
-		PaymentMethod paymentMethod) {
+		PaymentMethod paymentMethod,
+		Long targetRoomId) {
 }

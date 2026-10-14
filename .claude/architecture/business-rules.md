@@ -114,3 +114,10 @@
   - đã dọn (phòng chưa dọn không hiện trong danh sách),
   - trống suốt thời gian gia hạn.
 - Không cần nhắc kiểm tra mã cửa khi gia hạn.
+- Phí gia hạn là một dòng riêng trong đơn ("Gia hạn +2 giờ"), tính theo giá chốt lúc đặt; chọn thu
+  ngay hoặc cộng vào lúc trả phòng. Gia hạn được khi đơn Đang ở, Quá giờ, Chờ xác nhận trả; gia hạn
+  xong đơn về Đang ở.
+- "Phòng cùng giá" = đủ 4 mức giá hiện hành (2 giờ đầu, mỗi giờ thêm, qua đêm, theo ngày) bằng phòng
+  khách đang ở; phòng phải đang nhận đặt, đã dọn và trống từ giờ trả hiện tại đến giờ trả mới + 1 tiếng.
+- Chuyển phòng: đơn có thêm chặng ở phòng mới (từ giờ trả cũ đến giờ trả mới). Phòng cũ tự chuyển
+  Chờ dọn khi chặng cũ kết thúc (tác vụ mỗi phút), không phải ngay lúc xác nhận.

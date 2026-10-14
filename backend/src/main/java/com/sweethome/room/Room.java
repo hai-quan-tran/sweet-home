@@ -211,6 +211,20 @@ public class Room extends Auditable {
 		this.acceptingBookings = acceptingBookings;
 	}
 
+	/**
+	 * Bốn mức giá đang áp dụng cho phòng (theo hạng hoặc giá riêng): 2 giờ đầu, mỗi giờ thêm, qua đêm,
+	 * theo ngày — dùng so "phòng cùng giá" khi chuyển phòng.
+	 *
+	 * @return danh sách 4 mức giá theo thứ tự trên
+	 */
+	public List<Long> effectivePrices() {
+		boolean own = pricingMode == RoomPricingMode.OWN;
+		return List.of(own ? ownTwoHourPrice : roomType.getTwoHourPrice(),
+				own ? ownExtraHourPrice : roomType.getExtraHourPrice(),
+				own ? ownOvernightPrice : roomType.getOvernightPrice(),
+				own ? ownDailyPrice : roomType.getDailyPrice());
+	}
+
 	public boolean isNeedsCleaning() {
 		return needsCleaning;
 	}

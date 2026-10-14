@@ -63,6 +63,8 @@ export interface OrderDto {
   payments: OrderPaymentDto[];
   paidAmount: number;
   dueAmount: number;
+  /** Các chặng của đơn (nhiều chặng khi gia hạn có chuyển phòng). */
+  stays: { roomNumber: string; roomName: string; startAt: string; endAt: string }[];
 }
 
 /** Dữ liệu tạo đơn thuê. */
@@ -174,6 +176,8 @@ export interface ExtendRequest {
   quantity: number;
   collectNow: boolean;
   paymentMethod: PaymentMethod | null;
+  /** Phòng chuyển khách sang khi không giữ được phòng đang ở; null = gia hạn tại phòng. */
+  targetRoomId: number | null;
 }
 
 /** Kết quả xem trước gia hạn tại phòng đang ở. */
@@ -187,4 +191,6 @@ export interface ExtendPreviewResponse {
   maxCheckOutAt: string | null;
   maxExtraHours: number | null;
   available: boolean;
+  /** Phòng cùng giá, đã dọn, trống suốt thời gian gia hạn (chỉ có khi không gia hạn được tại phòng). */
+  moveOptions: { roomId: number; roomNumber: string; roomName: string; maxGuests: number; freeUntil: string | null }[];
 }

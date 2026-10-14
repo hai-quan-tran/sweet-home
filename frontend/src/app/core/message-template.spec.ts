@@ -36,6 +36,7 @@ const order: OrderDto = {
   payments: [],
   paidAmount: 0,
   dueAmount: 350000,
+  stays: [],
 };
 
 const homestay: HomestayInfoDto = {

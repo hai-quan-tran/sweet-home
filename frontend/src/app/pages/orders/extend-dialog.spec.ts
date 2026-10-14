@@ -11,7 +11,7 @@ const order = {
 const preview = (extra: object = {}) => ({
   hourPrice: 60000, dayPrice: 650000, currentCheckOutAt: '2026-10-08T12:00:00', newCheckOutAt: '2026-10-08T13:00:00',
   fee: 60000, nextOrder: { code: 'SH-1044', guestName: 'Lý Gia Bảo', checkInAt: '2026-10-08T14:00:00' },
-  maxCheckOutAt: '2026-10-08T13:00:00', maxExtraHours: 1, available: true, ...extra,
+  maxCheckOutAt: '2026-10-08T13:00:00', maxExtraHours: 1, available: true, moveOptions: [], ...extra,
 });
 
 describe('ExtendDialog', () => {
@@ -29,7 +29,7 @@ describe('ExtendDialog', () => {
     fixture.componentRef.setInput('visible', true);
     fixture.detectChanges();
     const req = httpMock.expectOne({ url: '/api/orders/29/extend/preview', method: 'POST' });
-    expect(req.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: false, paymentMethod: null });
+    expect(req.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: false, paymentMethod: null, targetRoomId: null });
     req.flush(first);
     fixture.detectChanges();
     return { fixture, component: fixture.componentInstance };
@@ -63,8 +63,39 @@ describe('ExtendDialog', () => {
 
     component.useSuggestedHours();
     const back = httpMock.expectOne('/api/orders/29/extend/preview');
-    expect(back.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: false, paymentMethod: null });
+    expect(back.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: false, paymentMethod: null, targetRoomId: null });
     back.flush(preview());
+  });
+
+  it('trùng đơn sau nhưng có phòng cùng giá: chọn sẵn phòng đầu, gửi phòng chuyển sang khi xác nhận', async () => {
+    const options = [
+      { roomId: 7, roomNumber: '202', roomName: 'Gió', maxGuests: 2, freeUntil: '2026-10-09T19:00:00' },
+      { roomId: 8, roomNumber: '203', roomName: 'Mây', maxGuests: 2, freeUntil: null },
+    ];
+    const { component, fixture } = await open(preview({
+      newCheckOutAt: '2026-10-09T12:00:00', fee: 650000, available: false, maxExtraHours: 0, moveOptions: options,
+    }));
+
+    expect(component['targetRoomId']()).toBe(7);
+    expect(component['confirmLabel']()).toBe('Chuyển sang 202 & gia hạn đến 12:00 · 09/10');
+    expect(document.body.textContent).toContain('trống từ 12:00 · 08/10 đến 19:00 · 09/10');
+    expect(document.body.textContent).toContain('sau đó phòng 202');
+
+    component['targetRoomId'].set(8);
+    fixture.detectChanges();
+    component.confirm();
+    const req = httpMock.expectOne({ url: '/api/orders/29/extend', method: 'POST' });
+    expect(req.request.body.targetRoomId).toBe(8);
+    req.flush(order);
+  });
+
+  it('không có phòng cùng giá và không còn giờ thêm: báo không có phòng phù hợp, khoá nút', async () => {
+    const { component } = await open(preview({ available: false, maxExtraHours: 0 }));
+
+    expect(document.body.textContent).toContain('Không có phòng phù hợp');
+    expect(component['canConfirm']()).toBe(false);
+    expect(component['suggestHours']()).toBeNull();
+    expect(component['confirmLabel']()).toBe('Gia hạn');
   });
 
   it('tăng/giảm số giờ không dưới 1', async () => {
@@ -86,7 +117,7 @@ describe('ExtendDialog', () => {
     component['paymentMethod'].set('TRANSFER');
     component.confirm();
     const req = httpMock.expectOne({ url: '/api/orders/29/extend', method: 'POST' });
-    expect(req.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: true, paymentMethod: 'TRANSFER' });
+    expect(req.request.body).toEqual({ type: 'HOUR', quantity: 1, collectNow: true, paymentMethod: 'TRANSFER', targetRoomId: null });
     req.flush({ ...order, checkOutAt: '2026-10-08T13:00:00' });
 
     expect(extended).toHaveBeenCalledWith(expect.objectContaining({ checkOutAt: '2026-10-08T13:00:00' }));

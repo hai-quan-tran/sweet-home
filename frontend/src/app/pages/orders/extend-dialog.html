@@ -51,11 +51,37 @@
           <i class="pi pi-info-circle"></i>
           <span>Ở phòng {{ order().roomNumber }} chỉ gia hạn được đến {{ when(p.maxCheckOutAt) }}, vì đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }} và cần cách 1 tiếng.</span>
         </div>
+      } @else if (p.moveOptions.length) {
+        <div class="limit c" role="alert">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Phòng {{ order().roomNumber }} không giữ được đến {{ when(p.newCheckOutAt) }} vì trùng đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }}. Chọn phòng cùng giá bên dưới để chuyển khách.</span>
+        </div>
+        <fieldset class="ropts">
+          <legend>Chuyển sang phòng cùng giá</legend>
+          @for (m of p.moveOptions; track m.roomId) {
+            <label class="ropt" [class.on]="targetRoomId() === m.roomId">
+              <input type="radio" name="ext-room" [checked]="targetRoomId() === m.roomId" (change)="targetRoomId.set(m.roomId)" />
+              <div>
+                <b>{{ m.roomNumber }} · {{ m.roomName }}</b>
+                <small>{{ m.maxGuests }} khách · đã dọn · trống từ {{ when(p.currentCheckOutAt) }}{{ m.freeUntil ? ' đến ' + when(m.freeUntil) : ' trở đi' }}</small>
+              </div>
+              <span class="pr num">{{ formatMoney(type() === 'HOUR' ? p.hourPrice : p.dayPrice) }}/{{ unitLabel() }}</span>
+            </label>
+          }
+        </fieldset>
+        <p class="hint">Chỉ hiện phòng cùng giá với phòng {{ order().roomNumber }}, đã dọn và trống suốt thời gian gia hạn.</p>
       } @else {
         <div class="limit c" role="alert">
           <i class="pi pi-exclamation-triangle"></i>
-          <span>Không gia hạn thêm {{ quantity() }} {{ unitLabel() }} được. Phòng {{ order().roomNumber }} có đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }}, chỉ giữ được đến {{ when(p.maxCheckOutAt) }}.</span>
+          <span>Không gia hạn thêm {{ quantity() }} {{ unitLabel() }} được. Phòng {{ order().roomNumber }} có đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }} và không còn phòng cùng giá để chuyển khách.</span>
         </div>
+        <fieldset class="ropts">
+          <legend>Chuyển sang phòng cùng giá</legend>
+          <div class="empty">
+            <i class="pi pi-building"></i>
+            <div><b>Không có phòng phù hợp</b><small>Không có phòng nào cùng giá, đã dọn và trống từ {{ when(p.currentCheckOutAt) }} đến {{ when(p.newCheckOutAt) }}.</small></div>
+          </div>
+        </fieldset>
         @if (suggestHours(); as h) {
           <div class="alt">
             <i class="pi pi-clock"></i>
@@ -82,10 +108,18 @@
       </div>
     </div>
 
+    @if (targetRoom(); as t) {
+      <p class="hint">
+        Đơn {{ order().code }} sẽ có thêm chặng: ở phòng {{ order().roomNumber }} đến {{ when(p.currentCheckOutAt) }}, sau đó phòng
+        {{ t.roomNumber }} từ {{ when(p.currentCheckOutAt) }} đến {{ when(p.newCheckOutAt) }}. Nhân viên trong ca hỗ trợ khách chuyển phòng.
+      </p>
+    }
+
     <ul class="rules">
       <li>Nên báo trước giờ trả ít nhất 1 tiếng. Báo muộn vẫn gia hạn được nếu không trùng đơn sau.</li>
       <li>Giờ trả mới phải cách giờ nhận phòng của đơn sau ít nhất 1 tiếng.</li>
       <li>Thêm giờ tính theo giá mỗi giờ thêm, thêm ngày tính theo giá ngày của phòng.</li>
+      <li>Trùng đơn sau thì chỉ chuyển được sang phòng cùng giá, đã dọn và trống suốt thời gian gia hạn.</li>
     </ul>
   }
 
@@ -96,8 +130,8 @@
   <ng-template #footer>
     <p-button label="Huỷ" severity="secondary" [outlined]="true" (onClick)="visible.set(false)" />
     <p-button
-      [label]="preview()?.available ? 'Xác nhận gia hạn đến ' + when(preview()!.newCheckOutAt) : 'Gia hạn'"
-      [disabled]="!preview()?.available"
+      [label]="confirmLabel()"
+      [disabled]="!canConfirm()"
       [loading]="saving()"
       (onClick)="confirm()"
     />

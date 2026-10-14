@@ -40,6 +40,10 @@ public class OrderStay {
 	@Column(name = "end_at", nullable = false)
 	private LocalDateTime endAt;
 
+	/** Đã chuyển phòng của chặng sang Chờ dọn khi khách chuyển đi (chỉ xét chặng không phải chặng cuối). */
+	@Column(name = "cleaning_requested", nullable = false)
+	private boolean cleaningRequested;
+
 	protected OrderStay() {
 	}
 
@@ -82,5 +86,13 @@ public class OrderStay {
 
 	public void setEndAt(LocalDateTime endAt) {
 		this.endAt = endAt;
+	}
+
+	public boolean isCleaningRequested() {
+		return cleaningRequested;
+	}
+
+	public void setCleaningRequested(boolean cleaningRequested) {
+		this.cleaningRequested = cleaningRequested;
 	}
 }

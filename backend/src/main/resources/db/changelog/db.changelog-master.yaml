@@ -16,3 +16,5 @@ databaseChangeLog:
       file: db/changelog/007-order-lifecycle.yaml
   - include:
       file: db/changelog/008-order-stay.yaml
+  - include:
+      file: db/changelog/009-order-stay-release.yaml

@@ -21,6 +21,16 @@
     <h3>{{ o.roomNumber }} · {{ o.roomName }} — {{ rentalTypeLabel[o.rentalType] }} · {{ o.checkInMode === 'SELF' ? 'khách tự check-in' : 'nhân viên đón' }}</h3>
     <div class="kv"><span>Nhận phòng</span><b class="num">{{ o.checkInAt.slice(11,16) }}, {{ o.checkInAt.slice(8,10) }}/{{ o.checkInAt.slice(5,7) }}/{{ o.checkInAt.slice(0,4) }}</b></div>
     <div class="kv"><span>Trả phòng</span><b class="num">{{ o.checkOutAt.slice(11,16) }}, {{ o.checkOutAt.slice(8,10) }}/{{ o.checkOutAt.slice(5,7) }}/{{ o.checkOutAt.slice(0,4) }}</b></div>
+    @if (o.stays.length > 1) {
+      <div class="kv stays">
+        <span>Các chặng</span>
+        <span>
+          @for (s of o.stays; track $index) {
+            <small class="num">Phòng {{ s.roomNumber }}: {{ formatTime(s.startAt) }} → {{ formatTime(s.endAt) }}</small>
+          }
+        </span>
+      </div>
+    }
     @if (o.actualCheckInAt) {
       <div class="kv"><span>Nhận thực tế</span><b class="num">{{ o.actualCheckInAt.slice(11,16) }}, {{ o.actualCheckInAt.slice(8,10) }}/{{ o.actualCheckInAt.slice(5,7) }}</b></div>
     }

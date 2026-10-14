@@ -57,6 +57,17 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 			@Param("from") LocalDateTime from, Pageable pageable);
 
 	/**
+	 * Chặng khách đã chuyển đi (có chặng sau trong cùng đơn) đã kết thúc nhưng phòng chưa chuyển Chờ dọn.
+	 *
+	 * @param now thời điểm hiện tại
+	 * @return danh sách chặng, nạp sẵn phòng
+	 */
+	@Query("select s from OrderStay s join fetch s.room where s.cleaningRequested = false and s.endAt <= :now "
+			+ "and s.order.status <> com.sweethome.order.OrderStatus.CANCELLED "
+			+ "and exists (select n from OrderStay n where n.order = s.order and n.startAt >= s.endAt)")
+	List<OrderStay> findMovedOutStaysToRelease(@Param("now") LocalDateTime now);
+
+	/**
 	 * Đơn cần tự chuyển trạng thái theo giờ: đơn khách tự check-in đã tới giờ nhận, hoặc đơn đang ở
 	 * đã tới giờ trả.
 	 *

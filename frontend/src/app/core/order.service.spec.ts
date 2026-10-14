@@ -46,7 +46,7 @@ describe('OrderService', () => {
   });
 
   it('previewExtend và extend gọi POST /api/orders/:id/extend[/preview] kèm body', () => {
-    const body = { type: 'HOUR' as const, quantity: 2, collectNow: false, paymentMethod: null };
+    const body = { type: 'HOUR' as const, quantity: 2, collectNow: false, paymentMethod: null, targetRoomId: null };
     service.previewExtend(5, body).subscribe();
     service.extend(5, body).subscribe();
 

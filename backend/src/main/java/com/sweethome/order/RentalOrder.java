@@ -460,6 +460,21 @@ public class RentalOrder extends Auditable {
 		stays.getLast().setEndAt(newCheckOutAt);
 	}
 
+	/**
+	 * Gia hạn bằng cách chuyển sang phòng khác: thêm chặng mới từ giờ trả hiện tại đến giờ trả mới,
+	 * phòng của đơn thành phòng mới.
+	 *
+	 * @param newRoom       phòng chuyển sang
+	 * @param newCheckOutAt giờ trả mới
+	 */
+	public void moveTo(Room newRoom, LocalDateTime newCheckOutAt) {
+		OrderStay stay = new OrderStay(newRoom, checkOutAt, newCheckOutAt);
+		stay.setOrder(this);
+		stays.add(stay);
+		this.room = newRoom;
+		this.checkOutAt = newCheckOutAt;
+	}
+
 	/** Tổng đã thu = tiền cọc + các khoản thu thêm. */
 	public long getPaidAmount() {
 		return deposit + payments.stream().mapToLong(OrderPayment::getAmount).sum();

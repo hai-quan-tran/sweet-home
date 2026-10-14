@@ -43,7 +43,19 @@ public record OrderDto(
 		long totalAmount,
 		List<OrderPaymentDto> payments,
 		long paidAmount,
-		long dueAmount) {
+		long dueAmount,
+		List<Stay> stays) {
+
+	/**
+	 * Một chặng của đơn (đơn chuyển phòng khi gia hạn có nhiều chặng).
+	 *
+	 * @param roomNumber số phòng
+	 * @param roomName   tên phòng
+	 * @param startAt    giờ bắt đầu chặng
+	 * @param endAt      giờ kết thúc chặng
+	 */
+	public record Stay(String roomNumber, String roomName, LocalDateTime startAt, LocalDateTime endAt) {
+	}
 
 	/** Mã đơn hiển thị, dựng từ id (không lưu cột riêng). */
 	public static String codeOf(long id) {
@@ -85,6 +97,9 @@ public record OrderDto(
 				order.getTotalAmount(),
 				order.getPayments().stream().map(OrderPaymentDto::from).toList(),
 				order.getPaidAmount(),
-				Math.max(0, order.getTotalAmount() - order.getPaidAmount()));
+				Math.max(0, order.getTotalAmount() - order.getPaidAmount()),
+				order.getStays().stream()
+						.map(s -> new Stay(s.getRoom().getRoomNumber(), s.getRoom().getName(), s.getStartAt(), s.getEndAt()))
+						.toList());
 	}
 }

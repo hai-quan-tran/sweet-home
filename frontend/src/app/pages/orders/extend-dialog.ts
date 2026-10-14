@@ -11,8 +11,8 @@ import { OrderService } from '../../core/order.service';
 
 /**
  * Dialog Gia hạn: thêm giờ/ngày tại phòng đang ở, giờ trả mới phải cách đơn kế tiếp ≥ 1 tiếng
- * (backend tính, dialog chỉ hiển thị xem trước). Không gia hạn được thì khoá nút và gợi ý thêm giờ
- * tối đa còn được.
+ * (backend tính, dialog chỉ hiển thị xem trước). Không giữ được phòng thì chọn phòng cùng giá để chuyển
+ * khách; không có phòng nào thì khoá nút và gợi ý thêm giờ tối đa còn được.
  */
 @Component({
   selector: 'app-extend-dialog',
@@ -38,10 +38,23 @@ export class ExtendDialog {
   protected readonly quantity = signal(1);
   protected readonly collectNow = signal(false);
   protected readonly paymentMethod = signal<PaymentMethod>('CASH');
+  /** Phòng chuyển khách sang khi không giữ được phòng đang ở. */
+  protected readonly targetRoomId = signal<number | null>(null);
   protected readonly preview = signal<ExtendPreviewResponse | null>(null);
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  /** Phòng đang chọn để chuyển sang (chỉ khi không gia hạn được tại phòng). */
+  protected readonly targetRoom = computed(() => this.preview()?.moveOptions.find((o) => o.roomId === this.targetRoomId()) ?? null);
+  protected readonly canConfirm = computed(() => !!this.preview()?.available || this.targetRoom() !== null);
+  protected readonly confirmLabel = computed(() => {
+    const p = this.preview();
+    const target = this.targetRoom();
+    if (p?.available) {
+      return `Xác nhận gia hạn đến ${when(p.newCheckOutAt)}`;
+    }
+    return p && target ? `Chuyển sang ${target.roomNumber} & gia hạn đến ${when(p.newCheckOutAt)}` : 'Gia hạn';
+  });
   protected readonly unitLabel = computed(() => (this.type() === 'HOUR' ? 'giờ' : 'ngày'));
   /** Giờ nên báo gia hạn: trước giờ trả hiện tại 1 tiếng. */
   protected readonly noticeBy = computed(() => {
@@ -62,6 +75,7 @@ export class ExtendDialog {
           this.quantity.set(1);
           this.collectNow.set(false);
           this.paymentMethod.set('CASH');
+          this.targetRoomId.set(null);
           this.error.set(null);
           this.preview.set(null);
           this.refresh();
@@ -99,6 +113,9 @@ export class ExtendDialog {
       next: (p) => {
         this.preview.set(p);
         this.error.set(null);
+        // Giữ phòng đang chọn nếu vẫn chuyển được, không thì chọn sẵn phòng đầu tiên.
+        const keep = p.moveOptions.some((o) => o.roomId === this.targetRoomId());
+        this.targetRoomId.set(p.available ? null : keep ? this.targetRoomId() : (p.moveOptions[0]?.roomId ?? null));
       },
       error: (err) => this.error.set(err?.error?.detail ?? 'Không tính được gia hạn, thử lại sau.'),
     });
@@ -106,7 +123,7 @@ export class ExtendDialog {
 
   /** Xác nhận gia hạn. */
   confirm(): void {
-    if (this.saving() || !this.preview()?.available) {
+    if (this.saving() || !this.canConfirm()) {
       return;
     }
     this.saving.set(true);
@@ -127,6 +144,7 @@ export class ExtendDialog {
       quantity: this.quantity(),
       collectNow: this.collectNow(),
       paymentMethod: this.collectNow() ? this.paymentMethod() : null,
+      targetRoomId: this.targetRoomId(),
     };
   }
 }

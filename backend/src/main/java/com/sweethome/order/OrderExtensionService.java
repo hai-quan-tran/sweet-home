@@ -1,7 +1,10 @@
 package com.sweethome.order;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
@@ -10,10 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sweethome.common.error.BusinessException;
+import com.sweethome.room.Room;
+import com.sweethome.room.RoomRepository;
 
 /**
  * Gia hạn đơn đang ở: thêm giờ (giá mỗi giờ thêm) hoặc thêm ngày (giá ngày), giờ trả mới phải cách
- * đơn kế tiếp của phòng ít nhất 1 tiếng (xem {@code business-rules.md} mục Gia hạn).
+ * đơn kế tiếp của phòng ít nhất 1 tiếng. Không giữ được phòng thì chuyển khách sang phòng cùng giá,
+ * đã dọn, trống suốt thời gian gia hạn — đơn thêm chặng mới (xem {@code business-rules.md} mục Gia hạn).
  */
 @Service
 public class OrderExtensionService {
@@ -25,13 +31,18 @@ public class OrderExtensionService {
 			OrderStatus.PENDING_CHECKOUT);
 
 	private final RentalOrderRepository orderRepository;
+	private final RoomRepository roomRepository;
+	private final Clock clock;
 
-	public OrderExtensionService(RentalOrderRepository orderRepository) {
+	public OrderExtensionService(RentalOrderRepository orderRepository, RoomRepository roomRepository, Clock clock) {
 		this.orderRepository = orderRepository;
+		this.roomRepository = roomRepository;
+		this.clock = clock;
 	}
 
 	/**
-	 * Xem trước gia hạn: giờ trả mới, phí, đơn kế tiếp và giới hạn giữ phòng. Không lưu DB.
+	 * Xem trước gia hạn: giờ trả mới, phí, đơn kế tiếp, giới hạn giữ phòng và (khi không giữ được)
+	 * các phòng có thể chuyển sang. Không lưu DB.
 	 *
 	 * @param orderId id đơn
 	 * @param request kiểu và số lượng gia hạn
@@ -43,26 +54,35 @@ public class OrderExtensionService {
 	}
 
 	/**
-	 * Gia hạn tại phòng đang ở: dời giờ trả, thêm dòng phí "Gia hạn +…" vào đơn, thu ngay nếu chọn;
-	 * đơn Quá giờ/Chờ xác nhận trả quay về Đang ở.
+	 * Gia hạn: tại phòng đang ở nếu giữ được, không thì chuyển sang {@code targetRoomId} (phải nằm trong
+	 * danh sách phòng chuyển được). Thêm dòng phí "Gia hạn +…", thu ngay nếu chọn; đơn Quá giờ/Chờ xác
+	 * nhận trả quay về Đang ở.
 	 *
 	 * @param orderId id đơn
-	 * @param request kiểu, số lượng, cách thu tiền
+	 * @param request kiểu, số lượng, cách thu tiền, phòng chuyển sang
 	 * @return đơn sau khi gia hạn
 	 */
 	@Transactional
 	public OrderDto extend(Long orderId, ExtendRequest request) {
 		RentalOrder order = findStayingOrder(orderId);
 		ExtendPreviewResponse preview = compute(order, request);
-		if (!preview.available()) {
-			throw new BusinessException(HttpStatus.CONFLICT, "Phòng chỉ giữ được đến %s vì đơn %s nhận phòng lúc %s"
-					.formatted(preview.maxCheckOutAt().toLocalTime(), preview.nextOrder().code(),
-							preview.nextOrder().checkInAt().toLocalTime()));
-		}
 		if (request.collectNow() && request.paymentMethod() == null) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chọn hình thức thu phí gia hạn");
 		}
-		order.extendTo(preview.newCheckOutAt());
+		if (preview.available()) {
+			order.extendTo(preview.newCheckOutAt());
+		} else {
+			if (request.targetRoomId() == null) {
+				throw new BusinessException(HttpStatus.CONFLICT, "Phòng chỉ giữ được đến %s vì đơn %s nhận phòng lúc %s"
+						.formatted(preview.maxCheckOutAt().toLocalTime(), preview.nextOrder().code(),
+								preview.nextOrder().checkInAt().toLocalTime()));
+			}
+			boolean allowed = preview.moveOptions().stream().anyMatch(o -> o.roomId().equals(request.targetRoomId()));
+			if (!allowed) {
+				throw new BusinessException(HttpStatus.CONFLICT, "Phòng được chọn không chuyển sang được");
+			}
+			order.moveTo(roomRepository.getReferenceById(request.targetRoomId()), preview.newCheckOutAt());
+		}
 		OrderSurcharge fee = new OrderSurcharge();
 		fee.setName("Gia hạn +%d %s".formatted(request.quantity(), request.type() == ExtendType.HOUR ? "giờ" : "ngày"));
 		fee.setAmount(preview.fee());
@@ -80,15 +100,29 @@ public class OrderExtensionService {
 		return OrderDto.from(orderRepository.saveAndFlush(order));
 	}
 
-	/** Tính giờ trả mới, phí và giới hạn theo đơn kế tiếp ở phòng đang ở. */
+	/**
+	 * Tác vụ mỗi phút: chặng khách đã chuyển đi kết thúc thì phòng của chặng đó sang Chờ dọn (một lần).
+	 *
+	 * @return số phòng vừa chuyển Chờ dọn
+	 */
+	@Transactional
+	public int releaseMovedOutRooms() {
+		List<OrderStay> stays = orderRepository.findMovedOutStaysToRelease(LocalDateTime.now(clock));
+		for (OrderStay stay : stays) {
+			stay.getRoom().setNeedsCleaning(true);
+			stay.setCleaningRequested(true);
+		}
+		return stays.size();
+	}
+
+	/** Tính giờ trả mới, phí, giới hạn theo đơn kế tiếp ở phòng đang ở và phòng chuyển được nếu cần. */
 	private ExtendPreviewResponse compute(RentalOrder order, ExtendRequest request) {
 		LocalDateTime currentOut = order.getCheckOutAt();
 		boolean hourly = request.type() == ExtendType.HOUR;
 		LocalDateTime newOut = hourly ? currentOut.plusHours(request.quantity()) : currentOut.plusDays(request.quantity());
 		long unitPrice = hourly ? order.getExtraHourPriceSnapshot() : order.getDailyPriceSnapshot();
 
-		OrderStay next = orderRepository.findStaysStartingFrom(order.getRoom().getId(), order.getId(), currentOut,
-				PageRequest.of(0, 1)).stream().findFirst().orElse(null);
+		OrderStay next = nextStay(order.getRoom(), order.getId(), currentOut);
 		ExtendPreviewResponse.NextOrder nextOrder = null;
 		LocalDateTime maxOut = null;
 		Integer maxExtraHours = null;
@@ -98,9 +132,36 @@ public class OrderExtensionService {
 			maxOut = next.getStartAt().minus(GAP_BEFORE_NEXT);
 			maxExtraHours = (int) Math.max(0, Duration.between(currentOut, maxOut).toHours());
 		}
+		boolean available = maxOut == null || !newOut.isAfter(maxOut);
 		return new ExtendPreviewResponse(order.getExtraHourPriceSnapshot(), order.getDailyPriceSnapshot(), currentOut,
-				newOut, unitPrice * request.quantity(), nextOrder, maxOut, maxExtraHours,
-				maxOut == null || !newOut.isAfter(maxOut));
+				newOut, unitPrice * request.quantity(), nextOrder, maxOut, maxExtraHours, available,
+				available ? List.of() : moveOptions(order, currentOut, newOut));
+	}
+
+	/**
+	 * Phòng chuyển khách sang được: khác phòng đang ở, cùng 4 mức giá, đang nhận đặt, đã dọn, không có
+	 * đơn nào từ giờ trả hiện tại đến giờ trả mới + 1 tiếng.
+	 */
+	private List<ExtendPreviewResponse.MoveOption> moveOptions(RentalOrder order, LocalDateTime from, LocalDateTime to) {
+		Room current = order.getRoom();
+		List<Long> prices = current.effectivePrices();
+		return roomRepository.findAll().stream()
+				.filter(r -> !r.getId().equals(current.getId()) && r.isAcceptingBookings() && !r.isNeedsCleaning()
+						&& r.effectivePrices().equals(prices))
+				.filter(r -> orderRepository.findOverlapping(r.getId(), from, to.plus(GAP_BEFORE_NEXT)).isEmpty())
+				.sorted(Comparator.comparing(Room::getRoomNumber))
+				.map(r -> {
+					OrderStay next = nextStay(r, order.getId(), from);
+					return new ExtendPreviewResponse.MoveOption(r.getId(), r.getRoomNumber(), r.getName(), r.getMaxGuests(),
+							next == null ? null : next.getStartAt());
+				})
+				.toList();
+	}
+
+	/** Chặng sớm nhất của đơn khác ở phòng bắt đầu từ {@code from} trở đi, null nếu không có. */
+	private OrderStay nextStay(Room room, Long orderId, LocalDateTime from) {
+		return orderRepository.findStaysStartingFrom(room.getId(), orderId, from, PageRequest.of(0, 1)).stream()
+				.findFirst().orElse(null);
 	}
 
 	private RentalOrder findStayingOrder(Long orderId) {

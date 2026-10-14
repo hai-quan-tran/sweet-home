@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: đang làm GĐ 6 (6.1–6.3 xong, tiếp theo 6.4).
+Trạng thái: GĐ 6 xong. Tiếp theo: GĐ 7.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -132,7 +132,7 @@ Trạng thái: đang làm GĐ 6 (6.1–6.3 xong, tiếp theo 6.4).
   đơn chỉ có cọc.
 - [x] 5.5 Sửa đơn: chỉ khi Đã đặt, tính lại giá theo bảng giá hiện hành, kiểm tra trùng lịch.
 
-### GĐ 6: Lịch đặt phòng & gia hạn
+### GĐ 6: Lịch đặt phòng & gia hạn ✅
 - API timeline theo ngày/tuần/tháng; bấm ô trống tạo đơn.
 - Gia hạn: thêm giờ/ngày, cách đơn sau ≥ 1 tiếng, chuyển phòng cùng giá đã dọn và trống (đơn có nhiều chặng), không có phòng thì khoá và gợi ý thêm giờ.
 - Frontend: màn Lịch đặt phòng, dialog Gia hạn (3 trường hợp).
@@ -147,7 +147,7 @@ Trạng thái: đang làm GĐ 6 (6.1–6.3 xong, tiếp theo 6.4).
   chung cho màn Đơn thuê và Lịch.
 - [x] 6.3 Gia hạn tại phòng: thêm giờ/ngày (đơn Đang ở, Quá giờ, Chờ xác nhận trả), giờ trả mới
   cách đơn sau ≥ 1 tiếng, thu ngay hoặc cộng lúc trả, gia hạn xong về Đang ở.
-- [ ] 6.4 Chuyển phòng: trùng đơn sau → chọn phòng cùng giá, đã dọn, đang nhận đặt, trống suốt
+- [x] 6.4 Chuyển phòng: trùng đơn sau → chọn phòng cùng giá, đã dọn, đang nhận đặt, trống suốt
   thời gian gia hạn (+1 tiếng trước đơn sau); thêm chặng mới; không có phòng → khoá, gợi ý thêm giờ.
 
 ### GĐ 7: Nhân viên & nhật ký
