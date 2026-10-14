@@ -219,10 +219,8 @@ public class OrderService {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Tiền cọc không được vượt tổng tiền");
 		}
 
-		order.setRoom(room);
+		order.scheduleSingleStay(room, schedule.checkInAt(), schedule.checkOutAt());
 		order.setRentalType(request.rentalType());
-		order.setCheckInAt(schedule.checkInAt());
-		order.setCheckOutAt(schedule.checkOutAt());
 		order.setGuestName(request.guestName());
 		order.setGuestPhone(request.guestPhone());
 		if (!isBlank(request.guestIdNumber())) {

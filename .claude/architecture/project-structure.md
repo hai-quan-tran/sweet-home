@@ -275,3 +275,14 @@
 - **Lưu ý đặt tên**: getter/setter cọc của `RentalOrder` là `getDepositMethod/setDepositMethod` (kiểu
   `PaymentMethod`). Lần đổi tên enum bằng `sed` ở 5.1 từng đổi nhầm thành `getPaymentMethod`, đã sửa
   lại ở 5.5 — khi đổi tên hàng loạt cần giới hạn theo từ nguyên (`\bDepositMethod\b`).
+
+## Chặng của đơn (GĐ6.1)
+- `OrderStay` (bảng `order_stay`, changelog `008-order-stay.yaml`): phòng + `startAt`/`endAt`, con của
+  `RentalOrder` (`@OneToMany` cascade + orphanRemoval, sắp theo `startAt`). Đơn thường 1 chặng; gia
+  hạn phải chuyển phòng (6.4) thêm chặng mới. Changelog tự tạo 1 chặng cho mỗi đơn có sẵn.
+- `RentalOrder` vẫn giữ `room` (phòng hiện tại = chặng cuối), `checkInAt` (đầu chặng đầu),
+  `checkOutAt` (cuối chặng cuối) để các truy vấn/màn cũ không đổi. Tạo/sửa đơn đặt lịch qua
+  `scheduleSingleStay(room, in, out)` để 3 cột này và chặng luôn khớp — không gọi riêng
+  `setRoom/setCheckInAt/setCheckOutAt` trong code nghiệp vụ (chỉ test dùng).
+- Kiểm tra trùng lịch (`RentalOrderRepository.findOverlapping`) xét theo chặng ở phòng đó
+  (`exists` trên `OrderStay`), không theo `room/checkInAt/checkOutAt` của đơn.

@@ -96,6 +96,13 @@ class OrderServiceTest {
 		// 2 giờ đầu 150.000 + 1 giờ thêm x 50.000 = 200.000
 		assertThat(dto.roomPriceAmount()).isEqualTo(200000);
 		assertThat(dto.totalAmount()).isEqualTo(200000);
+		ArgumentCaptor<RentalOrder> saved = ArgumentCaptor.forClass(RentalOrder.class);
+		verify(orderRepository).save(saved.capture());
+		assertThat(saved.getValue().getStays()).singleElement().satisfies(stay -> {
+			assertThat(stay.getRoom()).isSameAs(room);
+			assertThat(stay.getStartAt()).isEqualTo(dto.checkInAt());
+			assertThat(stay.getEndAt()).isEqualTo(dto.checkOutAt());
+		});
 	}
 
 	@Test
@@ -281,6 +288,8 @@ class OrderServiceTest {
 		assertThat(dto.roomPriceAmount()).isEqualTo(250000);
 		assertThat(dto.guestName()).isEqualTo("Nguyễn Văn B");
 		assertThat(order.getDoorCodeEncrypted()).isEqualTo(doorCode);
+		assertThat(order.getStays()).singleElement()
+				.satisfies(stay -> assertThat(stay.getEndAt()).isEqualTo(LocalDateTime.of(2026, 10, 7, 19, 0)));
 	}
 
 	@Test

@@ -14,3 +14,5 @@ databaseChangeLog:
       file: db/changelog/006-order-payment.yaml
   - include:
       file: db/changelog/007-order-lifecycle.yaml
+  - include:
+      file: db/changelog/008-order-stay.yaml

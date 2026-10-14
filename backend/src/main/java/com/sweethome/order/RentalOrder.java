@@ -149,6 +149,10 @@ public class RentalOrder extends Auditable {
 	@OrderBy("id asc")
 	private List<OrderPayment> payments = new ArrayList<>();
 
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("startAt asc")
+	private List<OrderStay> stays = new ArrayList<>();
+
 	public Long getId() {
 		return id;
 	}
@@ -422,6 +426,28 @@ public class RentalOrder extends Auditable {
 	public void addPayment(OrderPayment payment) {
 		payment.setOrder(this);
 		payments.add(payment);
+	}
+
+	public List<OrderStay> getStays() {
+		return stays;
+	}
+
+	/**
+	 * Đặt lịch đơn ở đúng 1 phòng (tạo/sửa đơn): ghi phòng, giờ nhận/trả và thay mọi chặng bằng 1
+	 * chặng tương ứng, giữ phòng/giờ của đơn luôn khớp với chặng.
+	 *
+	 * @param room       phòng
+	 * @param checkInAt  giờ nhận
+	 * @param checkOutAt giờ trả
+	 */
+	public void scheduleSingleStay(Room room, LocalDateTime checkInAt, LocalDateTime checkOutAt) {
+		this.room = room;
+		this.checkInAt = checkInAt;
+		this.checkOutAt = checkOutAt;
+		stays.clear();
+		OrderStay stay = new OrderStay(room, checkInAt, checkOutAt);
+		stay.setOrder(this);
+		stays.add(stay);
 	}
 
 	/** Tổng đã thu = tiền cọc + các khoản thu thêm. */

@@ -165,6 +165,26 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void movingOrderToAnotherTimeFreesTheOldSlot() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+
+		mvc.perform(put("/orders/" + orderId).cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("\"15:00\"", "\"19:00\"")))
+				.andExpect(status().isOk());
+
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk());
+	}
+
+	@Test
 	void staffCanCollectPaymentButOnlyManagerCanEditOrDeleteIt() throws Exception {
 		MvcResult createResult = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
 						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))

@@ -15,16 +15,17 @@ import org.springframework.data.repository.query.Param;
 public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> {
 
 	/**
-	 * Các đơn (chưa huỷ) của một phòng có khung giờ chồng lấn khung giờ cho trước, dùng kiểm tra
-	 * trùng lịch trước khi tạo đơn mới.
+	 * Các đơn (chưa huỷ) có chặng ở phòng cho trước chồng lấn khung giờ cho trước, dùng kiểm tra
+	 * trùng lịch trước khi tạo/sửa đơn.
 	 *
 	 * @param roomId     id phòng
-	 * @param checkInAt  giờ nhận của đơn đang xét
-	 * @param checkOutAt giờ trả của đơn đang xét
+	 * @param checkInAt  giờ bắt đầu khung giờ đang xét
+	 * @param checkOutAt giờ kết thúc khung giờ đang xét
 	 * @return danh sách đơn chồng lấn
 	 */
-	@Query("select o from RentalOrder o where o.room.id = :roomId and o.status <> com.sweethome.order.OrderStatus.CANCELLED "
-			+ "and o.checkInAt < :checkOutAt and o.checkOutAt > :checkInAt order by o.checkInAt asc")
+	@Query("select o from RentalOrder o where o.status <> com.sweethome.order.OrderStatus.CANCELLED "
+			+ "and exists (select s from OrderStay s where s.order = o and s.room.id = :roomId "
+			+ "and s.startAt < :checkOutAt and s.endAt > :checkInAt) order by o.checkInAt asc")
 	List<RentalOrder> findOverlapping(@Param("roomId") Long roomId, @Param("checkInAt") LocalDateTime checkInAt,
 			@Param("checkOutAt") LocalDateTime checkOutAt);
 
