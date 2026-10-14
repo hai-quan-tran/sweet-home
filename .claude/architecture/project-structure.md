@@ -304,3 +304,24 @@
 - Style dùng chung chuyển lên `styles.scss` (nút `.btn-p/.btn-s`, `.card`, `.tag` + `.t-*` có màu
   riêng cho dark mode, `.sel/.inp`, `.muted/.num/.hint`); nhãn trạng thái/loại thuê ở
   `core/order-labels.ts`. Màn mới dùng lại, không chép style vào từng component.
+
+## Gia hạn tại phòng (GĐ6.3)
+- `OrderExtensionService` (tách khỏi `OrderLifecycleService`, 6.4 thêm chuyển phòng vào đây). Đơn
+  Đang ở / Quá giờ / Chờ xác nhận trả; thêm giờ = giá mỗi giờ thêm, thêm ngày = giá ngày, đều lấy
+  **snapshot của đơn** (cùng nguyên tắc phụ thu quá giờ ở 5.3). Đơn kế tiếp tìm qua
+  `RentalOrderRepository.findStaysStartingFrom` (chặng đầu tiên ở phòng đó từ giờ trả hiện tại trở đi);
+  giờ trả mới phải ≤ giờ nhận của chặng đó − 1 tiếng (`GAP_BEFORE_NEXT`), không thì 409.
+- Xác nhận: `RentalOrder.extendTo` dời `checkOutAt` + `endAt` chặng cuối; thêm dòng `OrderSurcharge`
+  "Gia hạn +N giờ/ngày" (quyết định với người dùng: dòng riêng, không cộng vào tiền phòng); thu ngay thì
+  thêm `OrderPayment` ghi chú "Thu khi gia hạn"; trạng thái về `CHECKED_IN` (tác vụ mỗi phút tự chuyển
+  lại nếu giờ trả mới vẫn đã qua). Phụ thu quá giờ khi trả phòng tính từ giờ trả mới.
+- API `POST /orders/{id}/extend/preview`, `POST /orders/{id}/extend` (mọi vai trò). Preview trả giá
+  giờ/ngày, giờ trả mới, phí, đơn kế tiếp, `maxCheckOutAt`, `maxExtraHours` (để gợi ý "Đổi sang thêm
+  N giờ"), `available`.
+- **Lưu ý Jackson 3** (Spring Boot 4): mặc định báo lỗi 400 khi request thiếu trường kiểu nguyên thuỷ
+  (`FAIL_ON_NULL_FOR_PRIMITIVES` bật sẵn) — `ExtendRequest.collectNow` (`boolean`) phải luôn gửi.
+  Trường không bắt buộc nên khai báo kiểu đối tượng (`Boolean`, `Long`…).
+- Frontend `pages/orders/extend-dialog` (p-dialog, `visible` dùng `model()`): mỗi lần đổi kiểu/số
+  lượng gọi preview, không tự tính ở Angular. Mở từ nút "Gia hạn" trong `OrderDetail` (đơn đang ở),
+  nên có ở cả màn Đơn thuê và Lịch. Chưa vẽ thanh thời gian minh hoạ như bản thiết kế (chỉ các ô
+  thông tin + cảnh báo giới hạn).

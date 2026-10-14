@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: đang làm GĐ 6 (6.1, 6.2 xong, tiếp theo 6.3).
+Trạng thái: đang làm GĐ 6 (6.1–6.3 xong, tiếp theo 6.4).
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -145,7 +145,7 @@ Trạng thái: đang làm GĐ 6 (6.1, 6.2 xong, tiếp theo 6.3).
 - [x] 6.2 Lịch đặt phòng: API timeline ngày/tuần/tháng; màn Lịch (phòng × thời gian, vạch bây giờ,
   chú thích); bấm ô trống → Tạo đơn điền sẵn phòng + giờ; tách chi tiết đơn thành component dùng
   chung cho màn Đơn thuê và Lịch.
-- [ ] 6.3 Gia hạn tại phòng: thêm giờ/ngày (đơn Đang ở, Quá giờ, Chờ xác nhận trả), giờ trả mới
+- [x] 6.3 Gia hạn tại phòng: thêm giờ/ngày (đơn Đang ở, Quá giờ, Chờ xác nhận trả), giờ trả mới
   cách đơn sau ≥ 1 tiếng, thu ngay hoặc cộng lúc trả, gia hạn xong về Đang ở.
 - [ ] 6.4 Chuyển phòng: trùng đơn sau → chọn phòng cùng giá, đã dọn, đang nhận đặt, trống suốt
   thời gian gia hạn (+1 tiếng trước đơn sau); thêm chặng mới; không có phòng → khoá, gợi ý thêm giờ.

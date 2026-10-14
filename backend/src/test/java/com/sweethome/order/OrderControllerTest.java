@@ -31,12 +31,14 @@ class OrderControllerTest {
 	private OrderPaymentService paymentService;
 	@Mock
 	private OrderLifecycleService lifecycleService;
+	@Mock
+	private OrderExtensionService extensionService;
 
 	private MockMvc mvc;
 
 	@BeforeEach
 	void setUp() {
-		mvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, paymentService, lifecycleService))
+		mvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, paymentService, lifecycleService, extensionService))
 				.setControllerAdvice(new GlobalExceptionHandler()).build();
 	}
 

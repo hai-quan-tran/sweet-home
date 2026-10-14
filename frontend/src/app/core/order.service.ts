@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 
 import {
   DoorCodeResponse,
+  ExtendPreviewResponse,
+  ExtendRequest,
   OrderDto,
   OrderListResponse,
   CancelPreviewResponse,
@@ -87,6 +89,16 @@ export class OrderService {
   /** Trả phòng. */
   checkout(orderId: number, request: CheckoutRequest): Observable<OrderDto> {
     return this.http.post<OrderDto>(`${BASE}/${orderId}/checkout`, request);
+  }
+
+  /** Xem trước gia hạn tại phòng đang ở. */
+  previewExtend(orderId: number, request: ExtendRequest): Observable<ExtendPreviewResponse> {
+    return this.http.post<ExtendPreviewResponse>(`${BASE}/${orderId}/extend/preview`, request);
+  }
+
+  /** Gia hạn tại phòng đang ở. */
+  extend(orderId: number, request: ExtendRequest): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${BASE}/${orderId}/extend`, request);
   }
 
   /** Mức hoàn cọc mặc định nếu huỷ ngay bây giờ. */

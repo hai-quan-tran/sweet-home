@@ -1,0 +1,105 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [header]="'Gia hạn · ' + order().code + ' · ' + order().guestName"
+>
+  <p class="sub">
+    Phòng {{ order().roomNumber }} · {{ order().roomName }} · {{ rentalTypeLabel[order().rentalType] }} ·
+    {{ order().checkInMode === 'SELF' ? 'khách tự check-in' : 'nhân viên check-in' }}
+  </p>
+
+  @if (preview(); as p) {
+    <div class="facts">
+      <div class="fact"><span>Giờ trả hiện tại</span><b class="num">{{ when(p.currentCheckOutAt) }}</b></div>
+      <div class="fact"><span>Nên báo gia hạn trước</span><b class="num">{{ noticeBy() }}</b><small>muộn hơn vẫn được nếu không trùng đơn sau</small></div>
+      <div class="fact">
+        <span>Đơn kế tiếp của phòng</span>
+        @if (p.nextOrder; as n) {
+          <b class="num">{{ when(n.checkInAt) }}</b><small>{{ n.code }} · {{ n.guestName }}</small>
+        } @else {
+          <b>Chưa có</b>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="flab" id="ext-type">Kiểu gia hạn</span>
+      <div class="seg" role="radiogroup" aria-labelledby="ext-type">
+        <button type="button" role="radio" [attr.aria-checked]="type() === 'HOUR'" (click)="setType('HOUR')">Thêm giờ · {{ formatMoney(p.hourPrice) }}/giờ</button>
+        <button type="button" role="radio" [attr.aria-checked]="type() === 'DAY'" (click)="setType('DAY')">Thêm ngày · {{ formatMoney(p.dayPrice) }}/ngày</button>
+      </div>
+    </div>
+
+    <div class="ext-row">
+      <div class="field">
+        <span class="flab" id="ext-qty">Gia hạn thêm</span>
+        <div class="stepper" role="group" aria-labelledby="ext-qty">
+          <button type="button" [attr.aria-label]="'Bớt 1 ' + unitLabel()" [disabled]="quantity() <= 1" (click)="step(-1)"><i class="pi pi-minus"></i></button>
+          <output class="num">{{ quantity() }} {{ unitLabel() }}</output>
+          <button type="button" [attr.aria-label]="'Thêm 1 ' + unitLabel()" (click)="step(1)"><i class="pi pi-plus"></i></button>
+        </div>
+      </div>
+      <div class="field"><span class="flab">Giờ trả mới</span><span class="newout num">{{ when(p.newCheckOutAt) }}</span></div>
+    </div>
+
+    @if (p.nextOrder && p.maxCheckOutAt) {
+      @if (p.available) {
+        <div class="limit" role="status">
+          <i class="pi pi-info-circle"></i>
+          <span>Ở phòng {{ order().roomNumber }} chỉ gia hạn được đến {{ when(p.maxCheckOutAt) }}, vì đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }} và cần cách 1 tiếng.</span>
+        </div>
+      } @else {
+        <div class="limit c" role="alert">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Không gia hạn thêm {{ quantity() }} {{ unitLabel() }} được. Phòng {{ order().roomNumber }} có đơn {{ p.nextOrder.code }} nhận phòng {{ when(p.nextOrder.checkInAt) }}, chỉ giữ được đến {{ when(p.maxCheckOutAt) }}.</span>
+        </div>
+        @if (suggestHours(); as h) {
+          <div class="alt">
+            <i class="pi pi-clock"></i>
+            <div><b>Vẫn có thể gia hạn theo giờ, tối đa đến {{ when(p.maxCheckOutAt) }}</b><small>Giờ trả mới phải cách giờ nhận phòng của {{ p.nextOrder.code }} ít nhất 1 tiếng.</small></div>
+            <button class="btn-s" type="button" (click)="useSuggestedHours()">Đổi sang thêm {{ h }} giờ</button>
+          </div>
+        }
+      }
+    }
+
+    <div class="fee"><span class="muted">Phí gia hạn · {{ quantity() }} {{ unitLabel() }} × {{ formatMoney(type() === 'HOUR' ? p.hourPrice : p.dayPrice) }}</span><b class="num">{{ formatMoney(p.fee) }}</b></div>
+
+    <div class="field">
+      <span class="flab" id="ext-pay">Thu tiền</span>
+      <div class="radios" role="radiogroup" aria-labelledby="ext-pay">
+        <label class="radio" [class.on]="!collectNow()"><input type="radio" name="ext-pay" [checked]="!collectNow()" (change)="collectNow.set(false)" />Cộng vào lúc trả phòng</label>
+        <label class="radio" [class.on]="collectNow()"><input type="radio" name="ext-pay" [checked]="collectNow()" (change)="collectNow.set(true)" />Thu ngay</label>
+        @if (collectNow()) {
+          <select class="sel" aria-label="Hình thức thu" [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+            <option value="CASH">Tiền mặt</option>
+            <option value="TRANSFER">Chuyển khoản</option>
+          </select>
+        }
+      </div>
+    </div>
+
+    <ul class="rules">
+      <li>Nên báo trước giờ trả ít nhất 1 tiếng. Báo muộn vẫn gia hạn được nếu không trùng đơn sau.</li>
+      <li>Giờ trả mới phải cách giờ nhận phòng của đơn sau ít nhất 1 tiếng.</li>
+      <li>Thêm giờ tính theo giá mỗi giờ thêm, thêm ngày tính theo giá ngày của phòng.</li>
+    </ul>
+  }
+
+  @if (error()) {
+    <p class="err">{{ error() }}</p>
+  }
+
+  <ng-template #footer>
+    <p-button label="Huỷ" severity="secondary" [outlined]="true" (onClick)="visible.set(false)" />
+    <p-button
+      [label]="preview()?.available ? 'Xác nhận gia hạn đến ' + when(preview()!.newCheckOutAt) : 'Gia hạn'"
+      [disabled]="!preview()?.available"
+      [loading]="saving()"
+      (onClick)="confirm()"
+    />
+  </ng-template>
+</p-dialog>

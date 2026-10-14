@@ -165,3 +165,26 @@ export interface OrderStayDto {
   startAt: string;
   endAt: string;
 }
+
+export type ExtendType = 'HOUR' | 'DAY';
+
+/** Dữ liệu gia hạn (dùng cả cho xem trước). */
+export interface ExtendRequest {
+  type: ExtendType;
+  quantity: number;
+  collectNow: boolean;
+  paymentMethod: PaymentMethod | null;
+}
+
+/** Kết quả xem trước gia hạn tại phòng đang ở. */
+export interface ExtendPreviewResponse {
+  hourPrice: number;
+  dayPrice: number;
+  currentCheckOutAt: string;
+  newCheckOutAt: string;
+  fee: number;
+  nextOrder: { code: string; guestName: string; checkInAt: string } | null;
+  maxCheckOutAt: string | null;
+  maxExtraHours: number | null;
+  available: boolean;
+}

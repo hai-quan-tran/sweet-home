@@ -450,6 +450,16 @@ public class RentalOrder extends Auditable {
 		stays.add(stay);
 	}
 
+	/**
+	 * Gia hạn tại phòng đang ở: dời giờ trả của đơn và của chặng cuối.
+	 *
+	 * @param newCheckOutAt giờ trả mới
+	 */
+	public void extendTo(LocalDateTime newCheckOutAt) {
+		this.checkOutAt = newCheckOutAt;
+		stays.getLast().setEndAt(newCheckOutAt);
+	}
+
 	/** Tổng đã thu = tiền cọc + các khoản thu thêm. */
 	public long getPaidAmount() {
 		return deposit + payments.stream().mapToLong(OrderPayment::getAmount).sum();

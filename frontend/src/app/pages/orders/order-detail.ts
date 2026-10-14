@@ -20,6 +20,7 @@ import { OrderService } from '../../core/order.service';
 import { RoomService } from '../../core/room.service';
 import { HomestayInfoDto, MessageTemplateDto } from '../../core/settings.models';
 import { SettingsService } from '../../core/settings.service';
+import { ExtendDialog } from './extend-dialog';
 
 const CLOSED_STATUSES: OrderStatus[] = ['CHECKED_OUT', 'CANCELLED'];
 const STAYING_STATUSES: OrderStatus[] = ['CHECKED_IN', 'OVERSTAY', 'PENDING_CHECKOUT'];
@@ -31,7 +32,7 @@ const STAYING_STATUSES: OrderStatus[] = ['CHECKED_IN', 'OVERSTAY', 'PENDING_CHEC
  */
 @Component({
   selector: 'app-order-detail',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, ExtendDialog],
   templateUrl: './order-detail.html',
   styleUrl: './order-detail.scss',
   host: { class: 'card', role: 'complementary', 'aria-label': 'Chi tiết đơn' },
@@ -88,6 +89,9 @@ export class OrderDetail {
   protected readonly cancelPreview = signal<CancelPreviewResponse | null>(null);
   protected readonly cancelRefund = signal(0);
   protected readonly cancelReason = signal('');
+
+  /** Dialog Gia hạn đang mở. */
+  protected readonly extendOpen = signal(false);
 
   protected readonly selectedTemplate = computed(() => this.templates().find((t) => t.id === this.selectedTemplateId()) ?? null);
   protected readonly isStaying = computed(() => STAYING_STATUSES.includes(this.order()?.status as OrderStatus));
@@ -347,6 +351,12 @@ export class OrderDetail {
       return;
     }
     this.runAction(this.orderService.cancel(order.id, { refundAmount: this.cancelRefund(), reason: reason || null }));
+  }
+
+  /** Gia hạn xong: cập nhật đơn đang xem và báo màn cha tải lại. */
+  onExtended(order: OrderDto): void {
+    this.order.set(order);
+    this.changed.emit(order);
   }
 
   private buildCheckoutRequest(): CheckoutRequest | null {

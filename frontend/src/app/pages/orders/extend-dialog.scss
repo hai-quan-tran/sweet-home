@@ -1,0 +1,244 @@
+:host ::ng-deep .p-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sub {
+  margin: 0;
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fact {
+  background: var(--p-content-hover-background);
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.35;
+
+  span,
+  small {
+    display: block;
+    font-size: 12px;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.flab {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seg {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  overflow: hidden;
+
+  button {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    background: var(--p-content-background);
+    color: var(--p-text-muted-color);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+
+    & + button {
+      border-left: 1px solid var(--p-content-border-color);
+    }
+
+    &[aria-checked='true'] {
+      background: var(--p-highlight-background);
+      color: var(--p-primary-color);
+      font-weight: 600;
+    }
+  }
+}
+
+.ext-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: end;
+}
+
+.stepper {
+  display: inline-flex;
+  height: 44px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  overflow: hidden;
+
+  button {
+    width: 44px;
+    border: 0;
+    background: var(--p-content-hover-background);
+    color: var(--p-text-color);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  output {
+    min-width: 88px;
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    border-left: 1px solid var(--p-content-border-color);
+    border-right: 1px solid var(--p-content-border-color);
+  }
+}
+
+.newout {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 44px;
+}
+
+.limit {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--p-orange-100);
+  color: var(--p-orange-800);
+  font-size: 13px;
+  font-weight: 500;
+
+  &.c {
+    background: var(--p-red-100);
+    color: var(--p-red-800);
+  }
+
+  i {
+    margin-top: 3px;
+  }
+}
+
+.alt {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--p-highlight-background);
+
+  > i {
+    color: var(--p-primary-color);
+  }
+
+  b {
+    display: block;
+  }
+
+  small {
+    color: var(--p-text-muted-color);
+    font-size: 12px;
+  }
+}
+
+.fee {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 14px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+
+  b {
+    font-size: 18px;
+  }
+}
+
+.radios {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--p-primary-color);
+  }
+
+  &.on {
+    border-color: var(--p-primary-color);
+    background: var(--p-highlight-background);
+  }
+}
+
+.rules {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.err {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--p-red-100);
+  color: var(--p-red-700);
+  font-size: 13px;
+}
+
+:host-context(.app-dark) {
+  .limit {
+    background: rgba(251, 146, 60, 0.16);
+    color: #fdba74;
+
+    &.c {
+      background: rgba(248, 113, 113, 0.14);
+      color: #fca5a5;
+    }
+  }
+
+  .err {
+    background: rgba(248, 113, 113, 0.14);
+    color: #fca5a5;
+  }
+}
+
+@media (max-width: 720px) {
+  .facts {
+    grid-template-columns: 1fr;
+  }
+}

@@ -42,6 +42,21 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 	List<OrderStay> findStaysBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
 	/**
+	 * Các chặng (của đơn khác, chưa huỷ) ở một phòng bắt đầu từ một thời điểm trở đi, sớm nhất trước —
+	 * dùng tìm đơn kế tiếp khi gia hạn.
+	 *
+	 * @param roomId   id phòng
+	 * @param orderId  đơn đang gia hạn (bỏ qua)
+	 * @param from     thời điểm bắt đầu tìm
+	 * @param pageable số dòng cần lấy
+	 * @return danh sách chặng
+	 */
+	@Query("select s from OrderStay s join fetch s.order o where s.room.id = :roomId and o.id <> :orderId "
+			+ "and o.status <> com.sweethome.order.OrderStatus.CANCELLED and s.startAt >= :from order by s.startAt asc")
+	List<OrderStay> findStaysStartingFrom(@Param("roomId") Long roomId, @Param("orderId") Long orderId,
+			@Param("from") LocalDateTime from, Pageable pageable);
+
+	/**
 	 * Đơn cần tự chuyển trạng thái theo giờ: đơn khách tự check-in đã tới giờ nhận, hoặc đơn đang ở
 	 * đã tới giờ trả.
 	 *

@@ -45,6 +45,17 @@ describe('OrderService', () => {
     req.flush([]);
   });
 
+  it('previewExtend và extend gọi POST /api/orders/:id/extend[/preview] kèm body', () => {
+    const body = { type: 'HOUR' as const, quantity: 2, collectNow: false, paymentMethod: null };
+    service.previewExtend(5, body).subscribe();
+    service.extend(5, body).subscribe();
+
+    const preview = httpMock.expectOne({ url: '/api/orders/5/extend/preview', method: 'POST' });
+    expect(preview.request.body).toEqual(body);
+    preview.flush({});
+    httpMock.expectOne({ url: '/api/orders/5/extend', method: 'POST' }).flush({});
+  });
+
   it('get gọi GET /api/orders/:id', () => {
     service.get(5).subscribe();
     httpMock.expectOne({ url: '/api/orders/5', method: 'GET' }).flush({});

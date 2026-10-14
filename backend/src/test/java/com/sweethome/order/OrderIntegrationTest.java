@@ -172,6 +172,46 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void staffExtendsStayUntilOneHourBeforeNextOrder() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+		// Đơn sau nhận phòng 20:00 → đơn 15:00–18:00 chỉ gia hạn được đến 19:00
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("\"15:00\"", "\"20:00\"")))
+				.andExpect(status().isOk());
+		mvc.perform(post("/orders/" + orderId + "/check-in").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk());
+
+		mvc.perform(post("/orders/" + orderId + "/extend/preview").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"HOUR\",\"quantity\":2,\"collectNow\":false}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.available").value(false))
+				.andExpect(jsonPath("$.maxCheckOutAt").value("2026-10-07T19:00:00"));
+		mvc.perform(post("/orders/" + orderId + "/extend").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"HOUR\",\"quantity\":2,\"collectNow\":false}"))
+				.andExpect(status().isConflict());
+		mvc.perform(post("/orders/" + orderId + "/extend").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"type\":\"HOUR\",\"quantity\":1,\"collectNow\":true,\"paymentMethod\":\"CASH\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.checkOutAt").value("2026-10-07T19:00:00"))
+				.andExpect(jsonPath("$.surcharges[0].name").value("Gia hạn +1 giờ"))
+				.andExpect(jsonPath("$.payments[0].amount").value(50000));
+		mvc.perform(get("/orders/stays").param("from", "2026-10-07T00:00:00").param("to", "2026-10-08T00:00:00")
+						.cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(jsonPath("$[?(@.orderId == %d)].endAt".formatted(orderId)).value("2026-10-07T19:00:00"));
+	}
+
+	@Test
 	void secondOverlappingOrderIsRejectedWithConflict() throws Exception {
 		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

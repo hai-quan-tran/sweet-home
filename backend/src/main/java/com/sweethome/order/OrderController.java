@@ -32,12 +32,14 @@ public class OrderController {
 	private final OrderService orderService;
 	private final OrderPaymentService paymentService;
 	private final OrderLifecycleService lifecycleService;
+	private final OrderExtensionService extensionService;
 
 	public OrderController(OrderService orderService, OrderPaymentService paymentService,
-			OrderLifecycleService lifecycleService) {
+			OrderLifecycleService lifecycleService, OrderExtensionService extensionService) {
 		this.orderService = orderService;
 		this.paymentService = paymentService;
 		this.lifecycleService = lifecycleService;
+		this.extensionService = extensionService;
 	}
 
 	/** Danh sách đơn có lọc/tìm kiếm/phân trang. */
@@ -106,6 +108,18 @@ public class OrderController {
 	@PostMapping("/{id}/checkout")
 	public OrderDto checkout(@PathVariable Long id, @Valid @RequestBody CheckoutRequest request) {
 		return lifecycleService.checkout(id, request);
+	}
+
+	/** Xem trước gia hạn tại phòng đang ở. */
+	@PostMapping("/{id}/extend/preview")
+	public ExtendPreviewResponse previewExtend(@PathVariable Long id, @Valid @RequestBody ExtendRequest request) {
+		return extensionService.preview(id, request);
+	}
+
+	/** Gia hạn tại phòng đang ở. */
+	@PostMapping("/{id}/extend")
+	public OrderDto extend(@PathVariable Long id, @Valid @RequestBody ExtendRequest request) {
+		return extensionService.extend(id, request);
 	}
 
 	/** Mức hoàn cọc mặc định nếu huỷ ngay bây giờ. */

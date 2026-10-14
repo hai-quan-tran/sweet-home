@@ -226,6 +226,23 @@ describe('OrderDetail', () => {
     expect(fixture.componentInstance['actionError']()).toContain('lý do');
   });
 
+  it('đơn đang ở có nút Gia hạn; gia hạn xong cập nhật đơn và báo changed', async () => {
+    const staying = { ...sampleOrder, status: 'CHECKED_IN' };
+    const { fixture, changed } = await render(staying);
+    const button = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find((b) => b.textContent?.includes('Gia hạn'));
+    expect(button).toBeTruthy();
+
+    fixture.componentInstance.onExtended({ ...staying, checkOutAt: '2026-10-08T14:00:00' } as any);
+
+    expect(fixture.componentInstance['order']()?.checkOutAt).toBe('2026-10-08T14:00:00');
+    expect(changed).toHaveBeenCalled();
+  });
+
+  it('đơn Đã đặt không có nút Gia hạn', async () => {
+    const { fixture } = await render();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Gia hạn');
+  });
+
   it('Nhân viên không thấy Huỷ đơn khi đơn đã thu tiền ngoài cọc', async () => {
     const paid = { ...sampleOrder, payments: [{ id: 1, amount: 1000, method: 'CASH', note: null, createdAt: '2026-10-07T14:00:00Z', createdBy: 'a' }] };
     const { fixture } = await render(paid);
