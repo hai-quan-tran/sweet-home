@@ -14,6 +14,7 @@ import {
   OrderPreviewRequest,
   OrderPreviewResponse,
   OrderStatus,
+  OrderStayDto,
   OrderUpsertRequest,
 } from './order.models';
 
@@ -41,6 +42,11 @@ export class OrderService {
     if (query.search) params = params.set('search', query.search);
     params = params.set('page', query.page ?? 0).set('size', query.size ?? 10);
     return this.http.get<OrderListResponse>(BASE, { params });
+  }
+
+  /** Các chặng giao với khoảng [from, to), giờ dạng "2026-10-07T00:00:00" — dùng vẽ lịch đặt phòng. */
+  stays(from: string, to: string): Observable<OrderStayDto[]> {
+    return this.http.get<OrderStayDto[]>(`${BASE}/stays`, { params: { from, to } });
   }
 
   /** Chi tiết một đơn. */

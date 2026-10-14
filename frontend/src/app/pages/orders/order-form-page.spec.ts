@@ -49,6 +49,29 @@ describe('OrderFormPage', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('mở từ Lịch đặt phòng: điền sẵn phòng, ngày và giờ nhận theo query param', async () => {
+    await TestBed.configureTestingModule({
+      imports: [OrderFormPage],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({}), queryParamMap: convertToParamMap({ roomId: '2', date: '2026-10-09', time: '19:00' }) } },
+        },
+      ],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(OrderFormPage);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/rooms').flush([sampleRoom, { ...sampleRoom, id: 2, roomNumber: '102', defaultCheckInMode: 'SELF' }]);
+    const form = fixture.componentInstance['form'];
+
+    expect(form.controls.roomId.value).toBe(2);
+    expect(form.controls.checkInMode.value).toBe('SELF');
+    expect(form.controls.checkInDate.value).toBe('2026-10-09');
+    expect(form.controls.checkInTime.value).toBe('19:00');
+  });
+
   it('nạp danh sách phòng, mặc định chọn phòng đầu và hình thức check-in của phòng đó', async () => {
     const fixture = await render();
     const component = fixture.componentInstance;
@@ -190,7 +213,7 @@ describe('OrderFormPage', () => {
       imports: [OrderFormPage],
       providers: [
         provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '36' }) } } },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '36' }), queryParamMap: convertToParamMap({}) } } },
       ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);

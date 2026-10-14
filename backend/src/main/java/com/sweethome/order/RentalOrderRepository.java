@@ -30,6 +30,18 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 			@Param("checkOutAt") LocalDateTime checkOutAt);
 
 	/**
+	 * Các chặng (của đơn chưa huỷ) giao với khoảng thời gian cho trước, nạp sẵn đơn — dùng cho lịch
+	 * đặt phòng.
+	 *
+	 * @param from đầu khoảng
+	 * @param to   cuối khoảng (không tính)
+	 * @return danh sách chặng theo giờ bắt đầu
+	 */
+	@Query("select s from OrderStay s join fetch s.order o where o.status <> com.sweethome.order.OrderStatus.CANCELLED "
+			+ "and s.startAt < :to and s.endAt > :from order by s.startAt asc")
+	List<OrderStay> findStaysBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+	/**
 	 * Đơn cần tự chuyển trạng thái theo giờ: đơn khách tự check-in đã tới giờ nhận, hoặc đơn đang ở
 	 * đã tới giờ trả.
 	 *

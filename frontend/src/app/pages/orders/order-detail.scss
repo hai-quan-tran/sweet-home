@@ -1,0 +1,227 @@
+:host {
+  display: block;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+// Khung rộng (chi tiết đặt dưới Lịch đặt phòng): chia các mục thành 3 cột thay vì xếp dọc.
+@container (min-width: 900px) {
+  .body {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dp-h {
+    grid-column: 1 / -1;
+  }
+
+  .sec,
+  .dp-a {
+    border-right: 1px solid var(--p-content-border-color);
+  }
+
+  // Mục ở cột cuối (con thứ 1 là .dp-h chiếm trọn hàng đầu) không cần viền phải.
+  .body > :nth-child(3n + 1) {
+    border-right: 0;
+  }
+}
+
+.dp-h {
+  padding: 20px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+.dp-t {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+}
+
+.sec {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--p-text-muted-color);
+    font-weight: 600;
+  }
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+
+  span:first-child {
+    color: var(--p-text-muted-color);
+  }
+
+  a {
+    color: var(--p-primary-color);
+    text-decoration: none;
+  }
+
+  &.tot {
+    border-top: 1px dashed var(--p-content-border-color);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-weight: 700;
+    font-size: 16px;
+
+    span:first-child {
+      color: var(--p-text-color);
+    }
+  }
+
+  &.due {
+    font-weight: 700;
+    color: var(--p-orange-700);
+  }
+}
+
+.code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+  margin-top: 8px;
+
+  b {
+    display: block;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+  }
+}
+
+.dp-a {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.msg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+
+  select {
+    width: 100%;
+  }
+}
+
+.kv.pay {
+  align-items: flex-start;
+
+  small {
+    display: block;
+    font-size: 12px;
+  }
+
+  .num {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+  }
+}
+
+.ib {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--p-content-hover-background);
+    color: var(--p-text-color);
+  }
+}
+
+.pay-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .sel {
+    width: 100%;
+  }
+}
+
+.pf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pf-a {
+  display: flex;
+  gap: 8px;
+}
+
+.add-pay {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.pay-err {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--p-red-600);
+}
+
+.manual {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .flab {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .chk {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    min-height: 32px;
+  }
+}
+
+.btn-s.danger {
+  color: var(--p-red-600);
+}
+
+.btn-p.danger-p {
+  background: var(--p-red-600);
+  color: #fff;
+}

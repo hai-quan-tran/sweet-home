@@ -5,7 +5,7 @@
 |---|---|
 | Đăng nhập | Tên đăng nhập, mật khẩu, ghi nhớ thiết bị |
 | Tổng quan | Chỉ số trong ngày, tình trạng từng phòng, việc cần làm hôm nay, doanh thu 7 ngày |
-| Lịch đặt phòng | Timeline phòng × giờ; bấm ô trống để tạo đơn; chi tiết đơn đang chọn |
+| Lịch đặt phòng | Timeline phòng × thời gian (ngày 00–24h / tuần / tháng); bấm ô trống để tạo đơn; chi tiết đơn đang chọn hiện bên dưới |
 | Đơn thuê | Danh sách lọc theo trạng thái (có tab "Chờ xác nhận") + chi tiết đơn |
 | Tạo đơn thuê | Phòng & thời gian · Thông tin khách · Đặt cọc; giờ trả tự tính; báo phòng trống |
 | Phòng & bảng giá | Thẻ phòng, bảng giá theo hạng, danh sách phụ thu |

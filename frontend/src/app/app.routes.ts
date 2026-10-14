@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard, authenticatedGuard, guestGuard, managerGuard } from './core/auth.guard';
 import { Shell } from './layout/shell';
+import { CalendarPage } from './pages/calendar/calendar-page';
 import { ChangePasswordPage } from './pages/change-password/change-password-page';
 import { LoginPage } from './pages/login/login-page';
 import { OrderFormPage } from './pages/orders/order-form-page';
@@ -28,7 +29,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'tong-quan' },
       page('tong-quan', 'Tổng quan'),
-      page('lich', 'Lịch đặt phòng'),
+      { path: 'lich', component: CalendarPage, title: 'Lịch đặt phòng · Sweet Home' },
       { path: 'don-thue', component: OrdersPage, title: 'Đơn thuê · Sweet Home' },
       { path: 'don-thue/tao-moi', component: OrderFormPage, title: 'Tạo đơn thuê · Sweet Home' },
       { path: 'don-thue/:id/sua', component: OrderFormPage, title: 'Sửa đơn thuê · Sweet Home' },

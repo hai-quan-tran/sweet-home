@@ -34,3 +34,111 @@ body {
   margin: 4px 0 0;
   color: var(--p-text-muted-color);
 }
+
+/* Thành phần dùng chung giữa các màn (Đơn thuê, Chi tiết đơn, Lịch đặt phòng). */
+.muted {
+  color: var(--p-text-muted-color);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+}
+
+.card {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.btn-p,
+.btn-s {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: 0;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btn-p {
+  background: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
+}
+
+.btn-s {
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+}
+
+.sel,
+.inp {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  font: inherit;
+}
+
+.sel {
+  cursor: pointer;
+}
+
+.inp {
+  width: 100%;
+
+  &:focus {
+    outline: 0;
+    border-color: var(--p-primary-color);
+  }
+}
+
+/* Tag trạng thái đơn: Đã đặt · Đang ở · Đã trả · Đã huỷ · Quá giờ · Chờ xác nhận trả. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.t-b { background: var(--p-blue-100); color: var(--p-blue-700); }
+.t-i { background: var(--p-green-100); color: var(--p-green-700); }
+.t-o { background: var(--p-surface-200); color: var(--p-surface-700); }
+.t-c { background: var(--p-red-100); color: var(--p-red-700); }
+.t-w { background: var(--p-orange-100); color: var(--p-orange-700); }
+.t-p { background: var(--p-purple-100); color: var(--p-purple-700); }
+
+/* Tag ở giao diện tối: nền trong suốt, chữ sáng (theo design/theme.css). */
+.app-dark {
+  .t-b { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
+  .t-i { background: rgba(74, 222, 128, 0.14); color: #86efac; }
+  .t-o { background: #27272a; color: #d4d4d8; }
+  .t-c { background: rgba(248, 113, 113, 0.14); color: #fca5a5; }
+  .t-w { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+  .t-p { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
+}

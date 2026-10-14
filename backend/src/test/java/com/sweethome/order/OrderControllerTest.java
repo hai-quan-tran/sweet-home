@@ -80,6 +80,16 @@ class OrderControllerTest {
 	}
 
 	@Test
+	void staysParsesRangeParams() throws Exception {
+		when(orderService.stays(java.time.LocalDateTime.of(2026, 10, 7, 0, 0), java.time.LocalDateTime.of(2026, 10, 8, 0, 0)))
+				.thenReturn(List.of());
+
+		mvc.perform(get("/orders/stays").param("from", "2026-10-07T00:00:00").param("to", "2026-10-08T00:00:00"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isEmpty());
+	}
+
+	@Test
 	void previewRejectsMissingRentalType() throws Exception {
 		mvc.perform(post("/orders/preview").contentType(MediaType.APPLICATION_JSON)
 						.content("""

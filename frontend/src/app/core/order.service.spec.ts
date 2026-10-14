@@ -36,6 +36,15 @@ describe('OrderService', () => {
     req.flush({ items: [], total: 0, countByStatus: {} });
   });
 
+  it('stays gọi GET /api/orders/stays kèm khoảng thời gian', () => {
+    service.stays('2026-10-07T00:00:00', '2026-10-08T00:00:00').subscribe();
+    const req = httpMock.expectOne(
+      (r) => r.url === '/api/orders/stays' && r.params.get('from') === '2026-10-07T00:00:00' && r.params.get('to') === '2026-10-08T00:00:00',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
   it('get gọi GET /api/orders/:id', () => {
     service.get(5).subscribe();
     httpMock.expectOne({ url: '/api/orders/5', method: 'GET' }).flush({});

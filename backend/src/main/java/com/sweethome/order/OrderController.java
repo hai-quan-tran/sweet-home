@@ -1,7 +1,11 @@
 package com.sweethome.order;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.validation.Valid;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,6 +49,14 @@ public class OrderController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
 		return orderService.list(status, roomId, search, page, size);
+	}
+
+	/** Các chặng giao với khoảng thời gian, dùng vẽ lịch đặt phòng. */
+	@GetMapping("/stays")
+	public List<OrderStayDto> stays(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
+		return orderService.stays(from, to);
 	}
 
 	/** Chi tiết một đơn. */

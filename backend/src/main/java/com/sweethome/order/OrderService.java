@@ -42,6 +42,8 @@ import com.sweethome.surcharge.SurchargeRepository;
 public class OrderService {
 
 	private static final Pattern CODE_PATTERN = Pattern.compile("(?i)^SH-(\\d+)$");
+	/** Khoảng dài nhất của lịch đặt phòng (xem theo tháng). */
+	static final int MAX_CALENDAR_DAYS = 31;
 
 	private final RentalOrderRepository orderRepository;
 	private final RoomRepository roomRepository;
@@ -86,6 +88,22 @@ public class OrderService {
 		}
 		return new OrderListResponse(result.getContent().stream().map(OrderDto::from).toList(),
 				result.getTotalElements(), counts);
+	}
+
+	/**
+	 * Các chặng giao với khoảng thời gian, dùng vẽ lịch đặt phòng theo ngày/tuần/tháng.
+	 *
+	 * @param from đầu khoảng
+	 * @param to   cuối khoảng (không tính), sau {@code from} và không quá {@value #MAX_CALENDAR_DAYS} ngày
+	 * @return danh sách chặng
+	 */
+	@Transactional(readOnly = true)
+	public List<OrderStayDto> stays(LocalDateTime from, LocalDateTime to) {
+		if (!to.isAfter(from) || to.isAfter(from.plusDays(MAX_CALENDAR_DAYS))) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST,
+					"Khoảng thời gian phải hợp lệ và không quá %d ngày".formatted(MAX_CALENDAR_DAYS));
+		}
+		return orderRepository.findStaysBetween(from, to).stream().map(OrderStayDto::from).toList();
 	}
 
 	/**

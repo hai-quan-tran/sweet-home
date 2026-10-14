@@ -286,3 +286,21 @@
   `setRoom/setCheckInAt/setCheckOutAt` trong code nghiệp vụ (chỉ test dùng).
 - Kiểm tra trùng lịch (`RentalOrderRepository.findOverlapping`) xét theo chặng ở phòng đó
   (`exists` trên `OrderStay`), không theo `room/checkInAt/checkOutAt` của đơn.
+
+## Lịch đặt phòng (GĐ6.2)
+- API `GET /orders/stays?from=…&to=…` (giờ dạng `2026-10-07T00:00:00`, khoảng ≤ 31 ngày): các chặng
+  của đơn chưa huỷ giao với khoảng, `join fetch` đơn, trả `OrderStayDto` phẳng (mã đơn, phòng, trạng
+  thái, khách, giờ chặng). Danh sách phòng lấy từ `GET /rooms` có sẵn.
+- Frontend `pages/calendar/calendar-page`: 3 kiểu xem (ngày 24 cột giờ 00–23, tuần từ thứ Hai, tháng
+  theo số ngày), vị trí khối = % trong khoảng đang xem (tính ở frontend, không cần backend chia ô).
+  Khối cắt ở mép có góc vuông (`cont-l/cont-r`), đơn Quá giờ có phần nét đứt đến bây giờ, vạch "bây
+  giờ"; tự tải lại mỗi phút. Cột phòng `position: sticky` khi cuộn ngang; vào màn/đổi khoảng tự cuộn
+  tới giờ hiện tại. Bấm ô trống → `/don-thue/tao-moi?roomId=&date=&time=` (xem theo ngày mới có giờ
+  tròn), Tạo đơn đọc query param điền sẵn; phòng tắt nhận đặt không bấm được.
+- Chi tiết đơn tách thành component dùng chung `pages/orders/order-detail` (input `orderId`,
+  `autoCopy`; output `changed` sau nhận/trả phòng, huỷ để màn cha tải lại). Màn Đơn thuê đặt ở cột
+  phải; màn Lịch đặt dưới timeline (không thu hẹp lịch) — component dùng container query: khung
+  ≥ 900px chia các mục thành 3 cột.
+- Style dùng chung chuyển lên `styles.scss` (nút `.btn-p/.btn-s`, `.card`, `.tag` + `.t-*` có màu
+  riêng cho dark mode, `.sel/.inp`, `.muted/.num/.hint`); nhãn trạng thái/loại thuê ở
+  `core/order-labels.ts`. Màn mới dùng lại, không chép style vào từng component.

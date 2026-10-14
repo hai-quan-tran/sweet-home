@@ -339,6 +339,34 @@ class OrderServiceTest {
 		assertThatThrownBy(() -> service.update(42L, request, true)).isInstanceOf(BusinessException.class);
 	}
 
+	@Test
+	void staysMapsOrderInfoOfEachStay() {
+		service.create(requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3));
+		ArgumentCaptor<RentalOrder> saved = ArgumentCaptor.forClass(RentalOrder.class);
+		verify(orderRepository).save(saved.capture());
+		RentalOrder order = saved.getValue();
+		LocalDateTime from = LocalDateTime.of(2026, 10, 7, 0, 0);
+		when(orderRepository.findStaysBetween(from, from.plusDays(1))).thenReturn(order.getStays());
+
+		var stays = service.stays(from, from.plusDays(1));
+
+		assertThat(stays).singleElement().satisfies(s -> {
+			assertThat(s.orderId()).isEqualTo(42L);
+			assertThat(s.code()).isEqualTo("SH-1042");
+			assertThat(s.roomId()).isEqualTo(10L);
+			assertThat(s.guestName()).isEqualTo(order.getGuestName());
+			assertThat(s.endAt()).isEqualTo(LocalDateTime.of(2026, 10, 7, 18, 0));
+		});
+	}
+
+	@Test
+	void staysRejectsEmptyOrTooLongRange() {
+		LocalDateTime from = LocalDateTime.of(2026, 10, 1, 0, 0);
+
+		assertThatThrownBy(() -> service.stays(from, from)).isInstanceOf(BusinessException.class);
+		assertThatThrownBy(() -> service.stays(from, from.plusDays(32))).isInstanceOf(BusinessException.class);
+	}
+
 	private void setId(RentalOrder order, long id) {
 		try {
 			var field = RentalOrder.class.getDeclaredField("id");

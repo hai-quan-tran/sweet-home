@@ -1,0 +1,77 @@
+<div class="ph">
+  <div><h1 class="page-title">Lịch đặt phòng</h1><p class="page-desc">Bấm vào ô trống để tạo đơn mới cho phòng và giờ đó</p></div>
+</div>
+
+<section class="card">
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="Kiểu xem">
+      @for (v of views; track v.value) {
+        <button type="button" [attr.aria-pressed]="view() === v.value" (click)="setView(v.value)">{{ v.label }}</button>
+      }
+    </div>
+    <div class="dnav">
+      <button class="ibtn" type="button" aria-label="Trước" (click)="shift(-1)"><i class="pi pi-angle-left"></i></button>
+      <button class="btn-s" type="button" (click)="goToday()">Hôm nay</button>
+      <button class="ibtn" type="button" aria-label="Sau" (click)="shift(1)"><i class="pi pi-angle-right"></i></button>
+      <strong>{{ title() }}</strong>
+    </div>
+    <div class="legend">
+      @for (s of legend; track s) {
+        <span class="tag" [class]="statusTag[s].cls">{{ statusTag[s].label }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="tl-wrap" #wrap>
+    <div class="tl" [style.min-width.px]="minWidth()" [style.--cols]="columns().length">
+      <div class="tl-head">
+        <span>Phòng</span>
+        <div class="cols">
+          @for (c of columns(); track $index) {
+            <span>{{ c }}</span>
+          }
+        </div>
+      </div>
+
+      @for (row of rows(); track row.room.id) {
+        <div class="tl-row">
+          <div class="tl-room">
+            <b>{{ row.room.roomNumber }} · {{ row.room.name }}</b>
+            <span class="mode">
+              <i class="pi" [class.pi-key]="row.room.defaultCheckInMode === 'SELF'" [class.pi-user]="row.room.defaultCheckInMode === 'STAFF'"></i>
+              {{ row.room.defaultCheckInMode === 'SELF' ? 'Tự check-in' : 'Nhân viên' }}
+            </span>
+            @if (row.room.needsCleaning) {
+              <span class="tag t-w">Chờ dọn</span>
+            } @else if (!row.room.acceptingBookings) {
+              <span class="tag t-o">Tắt nhận đặt</span>
+            }
+          </div>
+          <div class="track" [class.off]="!row.room.acceptingBookings" (click)="createAt(row.room, $event)"
+            [title]="row.room.acceptingBookings ? 'Bấm để tạo đơn cho phòng ' + row.room.roomNumber : 'Phòng đang tắt nhận đặt'">
+            @for (b of row.blocks; track b.key) {
+              <button type="button" class="bk" [class]="b.cls" [class.sel]="b.orderId === selectedId()"
+                [class.cont-l]="b.contL" [class.cont-r]="b.contR" [style.left.%]="b.left" [style.width.%]="b.width"
+                [title]="b.title" (click)="$event.stopPropagation(); select(b.orderId)">
+                <strong>{{ b.guestName }}</strong><span>{{ b.label }}</span>
+              </button>
+              @if (b.over; as o) {
+                <span class="over" [style.left.%]="o.left" [style.width.%]="o.width" aria-label="Quá giờ"></span>
+              }
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="muted empty">Chưa có phòng nào.</p>
+      }
+
+      @if (nowPercent(); as p) {
+        <div class="now" [style.left]="'calc(168px + (100% - 168px) * ' + p / 100 + ')'" aria-hidden="true"><span>{{ nowLabel() }}</span></div>
+      }
+    </div>
+  </div>
+</section>
+
+@if (selectedId(); as id) {
+  <app-order-detail [orderId]="id" (changed)="load()" />
+}

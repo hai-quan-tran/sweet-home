@@ -152,3 +152,16 @@ export interface CancelRequest {
   refundAmount: number;
   reason: string | null;
 }
+
+/** Một chặng hiển thị trên lịch đặt phòng. */
+export interface OrderStayDto {
+  orderId: number;
+  code: string;
+  roomId: number;
+  status: OrderStatus;
+  rentalType: RentalType;
+  checkInMode: CheckInMode;
+  guestName: string;
+  startAt: string;
+  endAt: string;
+}

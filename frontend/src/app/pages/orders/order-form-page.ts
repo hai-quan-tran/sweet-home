@@ -78,14 +78,21 @@ export class OrderFormPage {
 
   constructor() {
     const editId = Number(this.route.snapshot.paramMap.get('id')) || null;
+    // Mở từ ô trống của Lịch đặt phòng: điền sẵn phòng, ngày, giờ nhận.
+    const query = this.route.snapshot.queryParamMap;
+    this.form.patchValue({
+      checkInDate: query.get('date') ?? this.form.controls.checkInDate.value,
+      checkInTime: query.get('time') ?? this.form.controls.checkInTime.value,
+    });
     forkJoin({ rooms: this.roomService.list(), order: editId ? this.orderService.get(editId) : of(null) }).subscribe(({ rooms, order }) => {
       const available = rooms.filter((r) => r.acceptingBookings || r.id === order?.roomId);
       this.rooms.set(available);
       if (order) {
         this.loadOrder(order);
       } else if (available.length > 0 && this.form.controls.roomId.value === null) {
-        this.form.controls.roomId.setValue(available[0].id);
-        this.form.controls.checkInMode.setValue(available[0].defaultCheckInMode);
+        const room = available.find((r) => r.id === Number(query.get('roomId'))) ?? available[0];
+        this.form.controls.roomId.setValue(room.id);
+        this.form.controls.checkInMode.setValue(room.defaultCheckInMode);
       }
     });
 

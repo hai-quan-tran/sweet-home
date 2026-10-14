@@ -45,11 +45,17 @@ describe('OrdersPage', () => {
     const fixture = TestBed.createComponent(OrdersPage);
     fixture.detectChanges();
     httpMock.expectOne('/api/rooms').flush([sampleRoom]);
-    httpMock.expectOne('/api/message-templates').flush([sampleTemplate]);
-    httpMock.expectOne('/api/settings/homestay').flush(sampleHomestay);
     httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [sampleOrder], total: 1, countByStatus: { BOOKED: 1 } });
     fixture.detectChanges();
     return fixture;
+  }
+
+  /** Trả các request mà chi tiết đơn (OrderDetail) gọi khi mở đơn 36. */
+  function flushDetail() {
+    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
+    httpMock.expectOne('/api/message-templates').flush([sampleTemplate]);
+    httpMock.expectOne('/api/settings/homestay').flush(sampleHomestay);
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
   }
 
   afterEach(() => httpMock.verify());
@@ -67,226 +73,32 @@ describe('OrdersPage', () => {
     req.flush({ items: [], total: 0, countByStatus: {} });
   });
 
-  it('chọn một đơn thì tải chi tiết và hướng dẫn phòng hiện hành', async () => {
+  it('chọn một đơn thì hiện chi tiết đơn đó', async () => {
     const fixture = await render();
 
     fixture.componentInstance.selectOrder(sampleOrder as any);
-
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
+    fixture.detectChanges();
+    flushDetail();
     fixture.detectChanges();
 
-    expect(fixture.componentInstance['selectedOrder']()?.code).toBe('SH-1036');
-    expect(fixture.componentInstance['selectedRoomGuide']()).toBe('Đi thang bộ lên tầng 1.');
+    expect(fixture.componentInstance['selectedId']()).toBe(36);
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-order-detail')?.textContent).toContain('SH-1036');
   });
 
-  it('mở màn kèm query param id thì tự tải chi tiết đơn đó', async () => {
-    const fixture = await render({ id: '36' });
-
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance['selectedOrder']()?.id).toBe(36);
-  });
-
-  it('hiện mã cửa khi bấm Hiện', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.revealDoorCode();
+  it('mở màn kèm query param id thì tự mở chi tiết đơn đó, copy=1 thì bật tự sao chép', async () => {
+    const fixture = await render({ id: '36', copy: '1' });
+    flushDetail();
     httpMock.expectOne('/api/orders/36/door-code').flush({ doorCode: '482915' });
 
-    expect(fixture.componentInstance['doorCode']()).toBe('482915');
+    expect(fixture.componentInstance['selectedId']()).toBe(36);
+    expect(fixture.componentInstance['autoCopy']()).toBe(true);
   });
 
-  it('sao chép tin nhắn: tự lấy mã cửa nếu mẫu có {ma_cua} và chưa lấy', async () => {
+  it('chi tiết đơn báo đổi trạng thái thì tải lại danh sách', async () => {
     const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
-
-    fixture.componentInstance.copyMessage();
-    httpMock.expectOne('/api/orders/36/door-code').flush({ doorCode: '482915' });
-    await Promise.resolve();
-
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));
-  });
-  it('thu tiền: mặc định số còn phải thu, lưu xong cập nhật đơn và đóng form', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.openPaymentForm();
-    expect(fixture.componentInstance['paymentAmount']()).toBe(250000);
-    fixture.componentInstance.savePayment();
-
-    const req = httpMock.expectOne({ url: '/api/orders/36/payments', method: 'POST' });
-    expect(req.request.body).toEqual({ amount: 250000, method: 'CASH', note: null });
-    req.flush({ ...sampleOrder, paidAmount: 350000, dueAmount: 0 });
-
-    expect(fixture.componentInstance['selectedOrder']()?.dueAmount).toBe(0);
-    expect(fixture.componentInstance['paymentFormId']()).toBeNull();
-  });
-
-  it('thu tiền: số tiền <= 0 thì báo lỗi, không gọi API', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.openPaymentForm();
-    fixture.componentInstance['paymentAmount'].set(0);
-    fixture.componentInstance.savePayment();
-
-    expect(fixture.componentInstance['paymentError']()).toContain('lớn hơn 0');
-  });
-
-  it('sửa và xoá khoản đã thu gọi PUT/DELETE, lỗi từ server hiện ra', async () => {
-    const payment = { id: 7, amount: 50000, method: 'CASH', note: null, createdAt: '2026-10-07T14:00:00Z', createdBy: 'admin' };
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush({ ...sampleOrder, payments: [payment] });
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.openPaymentForm(payment as any);
-    fixture.componentInstance.savePayment();
-    httpMock.expectOne({ url: '/api/orders/36/payments/7', method: 'PUT' })
-      .flush({ detail: 'Tổng đã thu vượt tổng tiền của đơn' }, { status: 400, statusText: 'Bad Request' });
-    expect(fixture.componentInstance['paymentError']()).toBe('Tổng đã thu vượt tổng tiền của đơn');
-
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    fixture.componentInstance.deletePayment(payment as any);
-    httpMock.expectOne({ url: '/api/orders/36/payments/7', method: 'DELETE' }).flush(sampleOrder);
-    expect(fixture.componentInstance['selectedOrder']()?.payments.length).toBe(0);
-  });
-
-  it('formatTime hiển thị giờ:phút, ngày/tháng', async () => {
-    const fixture = await render();
-    const iso = new Date(2026, 9, 7, 9, 5).toISOString();
-    expect(fixture.componentInstance.formatTime(iso)).toBe('09:05, 07/10');
-  });
-  it('nhận phòng: hỏi lại, gọi API, cập nhật đơn và tải lại danh sách', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-
-    fixture.componentInstance.checkIn();
-    httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
-      .flush({ ...sampleOrder, status: 'CHECKED_IN', actualCheckInAt: '2026-10-07T21:05:00' });
+    fixture.componentInstance.reload();
     httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [], total: 0, countByStatus: {} });
 
-    expect(fixture.componentInstance['selectedOrder']()?.status).toBe('CHECKED_IN');
-  });
-
-  it('nhận phòng lỗi thì hiện thông báo từ server', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-
-    fixture.componentInstance.checkIn();
-    httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
-      .flush({ detail: 'Chỉ nhận phòng được đơn ở trạng thái Đã đặt' }, { status: 400, statusText: 'Bad Request' });
-
-    expect(fixture.componentInstance['actionError']()).toContain('Đã đặt');
-  });
-  it('trả phòng: mở form tính trước, chọn phụ thu thêm tay, xác nhận thu số còn lại', async () => {
-    const pending = { ...sampleOrder, status: 'PENDING_CHECKOUT', actualCheckInAt: '2026-10-07T21:00:00' };
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(pending as any);
-    httpMock.expectOne('/api/orders/36').flush(pending);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.openCheckout();
-    const preview = httpMock.expectOne({ url: '/api/orders/36/checkout/preview', method: 'POST' });
-    expect(preview.request.body).toEqual({
-      actualCheckInAt: '2026-10-07T21:00', actualCheckOutAt: '2026-10-08T12:00', manualSurchargeIds: [], paymentMethod: 'CASH',
-    });
-    preview.flush({ newSurcharges: [], totalAmount: 350000, paidAmount: 100000, dueAmount: 250000, manualOptions: [{ id: 5, name: 'Dọn thêm', amount: 30000 }] });
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Dọn thêm');
-
-    fixture.componentInstance.toggleManualSurcharge(5);
-    const second = httpMock.expectOne({ url: '/api/orders/36/checkout/preview', method: 'POST' });
-    expect(second.request.body.manualSurchargeIds).toEqual([5]);
-    second.flush({ newSurcharges: [{ name: 'Dọn thêm', amount: 30000 }], totalAmount: 380000, paidAmount: 100000, dueAmount: 280000, manualOptions: [] });
-
-    fixture.componentInstance.confirmCheckout();
-    httpMock.expectOne({ url: '/api/orders/36/checkout', method: 'POST' }).flush({ ...pending, status: 'CHECKED_OUT' });
-    httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [], total: 0, countByStatus: {} });
-
-    expect(fixture.componentInstance['selectedOrder']()?.status).toBe('CHECKED_OUT');
-    expect(fixture.componentInstance['checkoutOpen']()).toBe(false);
-  });
-
-  it('trả phòng: lỗi tính trước (giờ trả trước giờ nhận) hiện thông báo', async () => {
-    const staying = { ...sampleOrder, status: 'CHECKED_IN' };
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(staying as any);
-    httpMock.expectOne('/api/orders/36').flush(staying);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    fixture.componentInstance.openCheckout();
-    httpMock.expectOne({ url: '/api/orders/36/checkout/preview', method: 'POST' })
-      .flush({ detail: 'Giờ trả thực tế phải sau giờ nhận thực tế' }, { status: 400, statusText: 'Bad Request' });
-
-    expect(fixture.componentInstance['actionError']()).toContain('Giờ trả');
-    fixture.componentInstance.closeCheckout();
-    expect(fixture.componentInstance['checkoutOpen']()).toBe(false);
-  });
-  it('huỷ đơn: lấy mức hoàn tự tính, xác nhận gửi đúng số tiền', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    expect(fixture.componentInstance['canCancel']()).toBe(true);
-
-    fixture.componentInstance.openCancel();
-    httpMock.expectOne({ url: '/api/orders/36/cancel/preview', method: 'GET' })
-      .flush({ refundPercent: 50, defaultRefundAmount: 50000, paidAmount: 100000 });
-    expect(fixture.componentInstance['cancelRefund']()).toBe(50000);
-
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    fixture.componentInstance.confirmCancel();
-    const req = httpMock.expectOne({ url: '/api/orders/36/cancel', method: 'POST' });
-    expect(req.request.body).toEqual({ refundAmount: 50000, reason: null });
-    req.flush({ ...sampleOrder, status: 'CANCELLED', refundAmount: 50000 });
-    httpMock.expectOne((r) => r.url === '/api/orders').flush({ items: [], total: 0, countByStatus: {} });
-
-    expect(fixture.componentInstance['selectedOrder']()?.status).toBe('CANCELLED');
-    expect(fixture.componentInstance['cancelPreview']()).toBeNull();
-  });
-
-  it('huỷ đơn: sửa số hoàn mà không có lý do thì báo lỗi, không gọi API', async () => {
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(sampleOrder as any);
-    httpMock.expectOne('/api/orders/36').flush(sampleOrder);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-    fixture.componentInstance.openCancel();
-    httpMock.expectOne('/api/orders/36/cancel/preview').flush({ refundPercent: 100, defaultRefundAmount: 100000, paidAmount: 100000 });
-
-    fixture.componentInstance['cancelRefund'].set(20000);
-    fixture.componentInstance.confirmCancel();
-
-    expect(fixture.componentInstance['actionError']()).toContain('lý do');
-  });
-
-  it('Nhân viên không thấy Huỷ đơn khi đơn đã thu tiền ngoài cọc', async () => {
-    const paid = { ...sampleOrder, payments: [{ id: 1, amount: 1000, method: 'CASH', note: null, createdAt: '2026-10-07T14:00:00Z', createdBy: 'a' }] };
-    const fixture = await render();
-    fixture.componentInstance.selectOrder(paid as any);
-    httpMock.expectOne('/api/orders/36').flush(paid);
-    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
-
-    expect(fixture.componentInstance['canCancel']()).toBe(false);
+    expect(fixture.componentInstance['listResponse']()?.total).toBe(0);
   });
 });

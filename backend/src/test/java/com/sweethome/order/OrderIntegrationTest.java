@@ -152,6 +152,26 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void staysOfDayIncludeCreatedOrderOnItsRoom() throws Exception {
+		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk())
+				.andReturn();
+		long orderId = ((Number) JsonPath.read(created.getResponse().getContentAsString(), "$.id")).longValue();
+
+		mvc.perform(get("/orders/stays").param("from", "2026-10-07T00:00:00").param("to", "2026-10-08T00:00:00")
+						.cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[?(@.orderId == %d)].roomId".formatted(orderId)).value((int) roomId))
+				.andExpect(jsonPath("$[?(@.orderId == %d)].startAt".formatted(orderId)).value("2026-10-07T15:00:00"));
+		mvc.perform(get("/orders/stays").param("from", "2026-10-08T00:00:00").param("to", "2026-10-09T00:00:00")
+						.cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[?(@.orderId == %d)]".formatted(orderId)).isEmpty());
+	}
+
+	@Test
 	void secondOverlappingOrderIsRejectedWithConflict() throws Exception {
 		mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

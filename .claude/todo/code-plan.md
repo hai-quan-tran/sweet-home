@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: đang làm GĐ 6 (6.1 xong, tiếp theo 6.2).
+Trạng thái: đang làm GĐ 6 (6.1, 6.2 xong, tiếp theo 6.3).
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -142,7 +142,7 @@ Trạng thái: đang làm GĐ 6 (6.1 xong, tiếp theo 6.2).
 - Chia 4 phần, mỗi phần xong → xác nhận → commit:
 - [x] 6.1 Chặng của đơn: bảng `order_stay` (phòng, từ, đến), mọi đơn ≥ 1 chặng, chuyển dữ liệu
   đơn cũ; kiểm tra trùng lịch theo chặng. Không đổi hành vi.
-- [ ] 6.2 Lịch đặt phòng: API timeline ngày/tuần/tháng; màn Lịch (phòng × thời gian, vạch bây giờ,
+- [x] 6.2 Lịch đặt phòng: API timeline ngày/tuần/tháng; màn Lịch (phòng × thời gian, vạch bây giờ,
   chú thích); bấm ô trống → Tạo đơn điền sẵn phòng + giờ; tách chi tiết đơn thành component dùng
   chung cho màn Đơn thuê và Lịch.
 - [ ] 6.3 Gia hạn tại phòng: thêm giờ/ngày (đơn Đang ở, Quá giờ, Chờ xác nhận trả), giờ trả mới
