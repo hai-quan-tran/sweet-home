@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.Room;
 import com.sweethome.room.RoomRepository;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra gia hạn tại phòng: phí theo giờ/ngày, giới hạn cách đơn kế tiếp 1 tiếng, ghi phí và thu
@@ -29,6 +32,9 @@ import com.sweethome.room.RoomRepository;
  */
 @ExtendWith(MockitoExtension.class)
 class OrderExtensionServiceTest {
+
+	@Mock
+	private ActivityLogService activityLog;
 
 	private static final LocalDateTime CHECK_OUT = LocalDateTime.of(2026, 10, 8, 12, 0);
 	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -45,7 +51,7 @@ class OrderExtensionServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new OrderExtensionService(orderRepository, roomRepository,
-				Clock.fixed(LocalDateTime.of(2026, 10, 8, 12, 30).atZone(ZONE).toInstant(), ZONE));
+				Clock.fixed(LocalDateTime.of(2026, 10, 8, 12, 30).atZone(ZONE).toInstant(), ZONE), activityLog);
 		room = OrderTestFactory.room(10L, "201", OrderTestFactory.roomType(1L, "A", 150000, 60000, 350000, 650000), 2);
 		order = order(1L, "Hoàng Yến", CHECK_OUT.minusDays(2).withHour(14), CHECK_OUT);
 		order.setStatus(OrderStatus.CHECKED_IN);
@@ -111,6 +117,7 @@ class OrderExtensionServiceTest {
 			assertThat(p.getAmount()).isEqualTo(120000);
 			assertThat(p.getMethod()).isEqualTo(PaymentMethod.CASH);
 		});
+		verify(activityLog).log(ActivityAction.ORDER_EXTENDED, 1L, "201", "Gia hạn +2 giờ, thu 120.000đ tiền mặt");
 	}
 
 	@Test
@@ -193,6 +200,7 @@ class OrderExtensionServiceTest {
 		assertThat(dto.stays()).extracting(OrderDto.Stay::roomNumber).containsExactly("201", "202");
 		assertThat(order.getStays().getFirst().getEndAt()).isEqualTo(CHECK_OUT);
 		assertThat(order.getStays().getLast().getStartAt()).isEqualTo(CHECK_OUT);
+		verify(activityLog).log(ActivityAction.ORDER_EXTENDED, 1L, "202", "Gia hạn +1 ngày, chuyển sang phòng 202");
 		assertThat(dto.surcharges()).extracting(OrderSurchargeDto::name).containsExactly("Gia hạn +1 ngày");
 	}
 

@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.common.crypto.CryptoService;
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.CheckInMode;
@@ -51,16 +53,18 @@ public class OrderService {
 	private final SurchargeRepository surchargeRepository;
 	private final SurchargeCalculator surchargeCalculator;
 	private final CryptoService cryptoService;
+	private final ActivityLogService activityLog;
 
 	public OrderService(RentalOrderRepository orderRepository, RoomRepository roomRepository,
 			PricingSettingsRepository pricingSettingsRepository, SurchargeRepository surchargeRepository,
-			SurchargeCalculator surchargeCalculator, CryptoService cryptoService) {
+			SurchargeCalculator surchargeCalculator, CryptoService cryptoService, ActivityLogService activityLog) {
 		this.orderRepository = orderRepository;
 		this.roomRepository = roomRepository;
 		this.pricingSettingsRepository = pricingSettingsRepository;
 		this.surchargeRepository = surchargeRepository;
 		this.surchargeCalculator = surchargeCalculator;
 		this.cryptoService = cryptoService;
+		this.activityLog = activityLog;
 	}
 
 	/**
@@ -118,14 +122,21 @@ public class OrderService {
 	}
 
 	/**
-	 * Mã cửa đã giải mã của một đơn, dùng cho nút "Hiện" và chèn vào tin nhắn gửi khách.
+	 * Mã cửa đã giải mã của một đơn, dùng cho nút "Hiện" và chèn vào tin nhắn gửi khách. Mỗi lần lấy đều
+	 * ghi nhật ký: xem mã cửa, hoặc sao chép tin nhắn có mã cửa (đơn được tính là đã gửi mã).
 	 *
-	 * @param id id đơn
+	 * @param id         id đơn
+	 * @param forMessage true nếu lấy để sao chép tin nhắn gửi khách
 	 * @return mã cửa, null nếu đơn không có
 	 */
-	@Transactional(readOnly = true)
-	public DoorCodeResponse getDoorCode(Long id) {
+	@Transactional
+	public DoorCodeResponse getDoorCode(Long id, boolean forMessage) {
 		RentalOrder order = findOrder(id);
+		if (forMessage) {
+			activityLog.log(ActivityAction.DOOR_CODE_COPIED, id, order.getRoom().getRoomNumber(), "Sao chép tin nhắn có mã cửa");
+		} else {
+			activityLog.log(ActivityAction.DOOR_CODE_VIEWED, id, order.getRoom().getRoomNumber(), "Xem mã cửa");
+		}
 		return new DoorCodeResponse(cryptoService.decrypt(order.getDoorCodeEncrypted()));
 	}
 
@@ -171,7 +182,9 @@ public class OrderService {
 		}
 		RentalOrder order = new RentalOrder();
 		fill(order, room, request);
-		return OrderDto.from(orderRepository.save(order));
+		RentalOrder saved = orderRepository.save(order);
+		activityLog.log(ActivityAction.ORDER_CREATED, saved.getId(), room.getRoomNumber(), "Tạo đơn");
+		return OrderDto.from(saved);
 	}
 
 	/**
@@ -201,6 +214,7 @@ public class OrderService {
 		if (order.getPaidAmount() > order.getTotalAmount()) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Tổng tiền mới thấp hơn số đã thu");
 		}
+		activityLog.log(ActivityAction.ORDER_UPDATED, id, room.getRoomNumber(), "Sửa đơn");
 		return OrderDto.from(orderRepository.save(order));
 	}
 

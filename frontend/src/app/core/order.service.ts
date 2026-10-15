@@ -56,9 +56,9 @@ export class OrderService {
     return this.http.get<OrderDto>(`${BASE}/${id}`);
   }
 
-  /** Mã cửa đã giải mã của một đơn. */
-  doorCode(id: number): Observable<DoorCodeResponse> {
-    return this.http.get<DoorCodeResponse>(`${BASE}/${id}/door-code`);
+  /** Mã cửa đã giải mã của một đơn; `forMessage` khi lấy để sao chép tin nhắn (backend ghi nhật ký "đã gửi mã"). */
+  doorCode(id: number, forMessage = false): Observable<DoorCodeResponse> {
+    return this.http.get<DoorCodeResponse>(`${BASE}/${id}/door-code`, forMessage ? { params: { forMessage: true } } : {});
   }
 
   /** Xem trước giờ nhận/trả, phòng trống và tiền tạm tính. */

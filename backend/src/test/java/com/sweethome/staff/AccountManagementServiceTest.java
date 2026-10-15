@@ -26,12 +26,17 @@ import com.sweethome.auth.AccountStatus;
 import com.sweethome.auth.RefreshTokenRepository;
 import com.sweethome.common.crypto.CryptoService;
 import com.sweethome.common.error.BusinessException;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra thêm/sửa/khoá tài khoản nhân viên.
  */
 @ExtendWith(MockitoExtension.class)
 class AccountManagementServiceTest {
+
+	@Mock
+	private ActivityLogService activityLog;
 
 	@Mock
 	private AccountRepository accountRepository;
@@ -45,7 +50,7 @@ class AccountManagementServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new AccountManagementService(accountRepository, refreshTokenRepository, passwordEncoder, cryptoService);
+		service = new AccountManagementService(accountRepository, refreshTokenRepository, passwordEncoder, cryptoService, activityLog);
 	}
 
 	@Test
@@ -73,6 +78,7 @@ class AccountManagementServiceTest {
 		assertThat(dto.idNumberMasked()).isEqualTo("•••••••• 7302");
 		assertThat(dto.status()).isEqualTo(AccountStatus.ACTIVE);
 		assertThat(dto.phone()).isEqualTo("0978345120");
+		verify(activityLog).log(ActivityAction.ACCOUNT_CREATED, null, null, "Thêm tài khoản Nguyễn Thảo Vy (vy.nguyen), vai trò Nhân viên");
 		verify(accountRepository).save(org.mockito.ArgumentMatchers.argThat(a -> a.getPasswordHash().equals("hashed")
 				&& a.isMustChangePassword()
 				&& cryptoService.decrypt(a.getIdNumberEncrypted()).equals("079201007302")));
@@ -108,6 +114,7 @@ class AccountManagementServiceTest {
 		assertThat(dto.idNumberMasked()).isEqualTo("•••••••• 1111");
 		assertThat(dto.role()).isEqualTo(AccountRole.MANAGER);
 		assertThat(dto.username()).isEqualTo("hong");
+		verify(activityLog).log(ActivityAction.ACCOUNT_UPDATED, null, null, "Sửa tài khoản Nguyễn Thảo Vy (hong): đổi vai trò sang Quản lý");
 		verify(refreshTokenRepository, never()).revokeAllByAccountId(anyLong());
 	}
 
@@ -122,6 +129,7 @@ class AccountManagementServiceTest {
 
 		assertThat(account.getPasswordHash()).isEqualTo("new-hash");
 		assertThat(account.isMustChangePassword()).isTrue();
+		verify(activityLog).log(ActivityAction.ACCOUNT_UPDATED, null, null, "Sửa tài khoản Nguyễn Thảo Vy (hong): đặt lại mật khẩu");
 		verify(refreshTokenRepository).revokeAllByAccountId(5L);
 	}
 
@@ -134,6 +142,7 @@ class AccountManagementServiceTest {
 		AccountDto dto = service.update(5L, request("hong", null, null, AccountRole.STAFF, false), 1L);
 
 		assertThat(dto.status()).isEqualTo(AccountStatus.LOCKED);
+		verify(activityLog).log(ActivityAction.ACCOUNT_UPDATED, null, null, "Sửa tài khoản Nguyễn Thảo Vy (hong): khoá tài khoản");
 		verify(refreshTokenRepository).revokeAllByAccountId(5L);
 	}
 

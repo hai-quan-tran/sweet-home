@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 7.1 xong. Tiếp theo: GĐ 7.2.
+Trạng thái: GĐ 7 xong. Tiếp theo: GĐ 8.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -150,7 +150,7 @@ Trạng thái: GĐ 7.1 xong. Tiếp theo: GĐ 7.2.
 - [x] 6.4 Chuyển phòng: trùng đơn sau → chọn phòng cùng giá, đã dọn, đang nhận đặt, trống suốt
   thời gian gia hạn (+1 tiếng trước đơn sau); thêm chặng mới; không có phòng → khoá, gợi ý thêm giờ.
 
-### GĐ 7: Nhân viên & nhật ký
+### GĐ 7: Nhân viên & nhật ký ✅
 - Thêm/sửa/khoá tài khoản nhân viên (Quản lý), nhật ký thao tác có lọc.
 - Frontend: màn Nhân viên, Thêm nhân viên.
 - Đã chốt với người dùng: nhật ký ghi thao tác đơn (tạo/sửa, nhận/trả phòng, thu/sửa/xoá tiền, huỷ,
@@ -163,12 +163,14 @@ Trạng thái: GĐ 7.1 xong. Tiếp theo: GĐ 7.2.
 - [x] 7.1 Tài khoản nhân viên: thêm SĐT, CCCD (mã hoá), ngày bắt đầu làm; API danh sách / thêm / sửa /
   khoá-mở / đặt lại mật khẩu tạm; khoá hoặc đổi vai trò có hiệu lực ngay; màn Nhân viên (Tài khoản +
   Quyền) và Thêm/Sửa nhân viên.
-- [ ] 7.2 Nhật ký thao tác: bảng `activity_log`, ghi từ các thao tác trên; API lọc theo thời gian /
+- [x] 7.2 Nhật ký thao tác: bảng `activity_log`, ghi từ các thao tác trên; API lọc theo thời gian /
   người, phân trang (chỉ Quản lý); card Nhật ký ở màn Nhân viên.
 
 ### GĐ 8: Lịch làm
 - Ca mẫu (thêm/sửa/xoá), xếp ca theo mẫu (lưu bản sao giờ) hoặc ca lẻ, không trùng giờ, sao chép tuần trước.
 - Cảnh báo đơn cần nhân viên đón nhưng không ai trực.
+- Chuyển từ GĐ7: tag "Đang trong ca" / "Vào ca HH:mm" ở danh sách tài khoản màn Nhân viên; mã cửa cho Nhân
+  viên chỉ xem được đơn trong ca mình trực (GĐ4 để mở); cân nhắc ghi nhật ký xếp/sửa ca.
 - Frontend: màn Lịch làm (Nhân viên chỉ xem).
 
 ### GĐ 9: Tổng quan & thông báo

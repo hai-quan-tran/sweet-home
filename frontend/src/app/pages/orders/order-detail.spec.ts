@@ -65,7 +65,7 @@ describe('OrderDetail', () => {
     Object.assign(navigator, { clipboard: { writeText } });
     await render(sampleOrder, true);
 
-    httpMock.expectOne('/api/orders/36/door-code').flush({ doorCode: '482915' });
+    httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush({ doorCode: '482915' });
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));
   });
@@ -78,13 +78,13 @@ describe('OrderDetail', () => {
     expect(fixture.componentInstance['doorCode']()).toBe('482915');
   });
 
-  it('sao chép tin nhắn: tự lấy mã cửa nếu mẫu có {ma_cua} và chưa lấy', async () => {
+  it('sao chép tin nhắn: mẫu có {ma_cua} thì lấy mã cửa kèm forMessage để ghi nhật ký', async () => {
     const { fixture } = await render(sampleOrder);
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });
 
     fixture.componentInstance.copyMessage();
-    httpMock.expectOne('/api/orders/36/door-code').flush({ doorCode: '482915' });
+    httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush({ doorCode: '482915' });
     await Promise.resolve();
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));

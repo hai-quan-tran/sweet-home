@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.Room;
 import com.sweethome.room.RoomRepository;
@@ -33,11 +35,14 @@ public class OrderExtensionService {
 	private final RentalOrderRepository orderRepository;
 	private final RoomRepository roomRepository;
 	private final Clock clock;
+	private final ActivityLogService activityLog;
 
-	public OrderExtensionService(RentalOrderRepository orderRepository, RoomRepository roomRepository, Clock clock) {
+	public OrderExtensionService(RentalOrderRepository orderRepository, RoomRepository roomRepository, Clock clock,
+			ActivityLogService activityLog) {
 		this.orderRepository = orderRepository;
 		this.roomRepository = roomRepository;
 		this.clock = clock;
+		this.activityLog = activityLog;
 	}
 
 	/**
@@ -95,6 +100,9 @@ public class OrderExtensionService {
 			payment.setNote("Thu khi gia hạn");
 			order.addPayment(payment);
 		}
+		String detail = fee.getName() + (preview.available() ? "" : ", chuyển sang phòng " + order.getRoom().getRoomNumber())
+				+ (request.collectNow() ? ", thu %s %s".formatted(ActivityLogService.money(preview.fee()), request.paymentMethod().label()) : "");
+		activityLog.log(ActivityAction.ORDER_EXTENDED, orderId, order.getRoom().getRoomNumber(), detail);
 		// Tác vụ mỗi phút sẽ chuyển lại Quá giờ/Chờ xác nhận nếu giờ trả mới vẫn đã qua.
 		order.setStatus(OrderStatus.CHECKED_IN);
 		return OrderDto.from(orderRepository.saveAndFlush(order));

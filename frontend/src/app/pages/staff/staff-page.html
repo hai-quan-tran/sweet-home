@@ -1,7 +1,7 @@
 <div class="ph">
   <div>
     <h1 class="page-title">Nhân viên</h1>
-    <p class="page-desc">Tài khoản, quyền và nhật ký thao tác. Xếp ca ở mục Lịch làm.</p>
+    <p class="page-desc">Tài khoản, quyền{{ isManager() ? ' và nhật ký thao tác' : '' }}. Xếp ca ở mục Lịch làm.</p>
   </div>
   @if (isManager()) {
     <a pButton severity="secondary" [outlined]="true" routerLink="/nhan-vien/them">
@@ -10,8 +10,8 @@
   }
 </div>
 
-<div class="grid">
-  <section class="card">
+<div class="grid" [class.with-log]="isManager()">
+  <section class="card acc">
     <div class="ch"><h2>Tài khoản</h2><span class="muted num">{{ accounts().length }} người</span></div>
     @if (loading()) {
       <p class="muted pad">Đang tải...</p>
@@ -37,7 +37,68 @@
     }
   </section>
 
-  <section class="card">
+  @if (isManager()) {
+    <section class="card log-card">
+      <div class="ch">
+        <h2>Nhật ký thao tác</h2>
+        <div class="filters">
+          <select class="sel" aria-label="Thời gian" [value]="period()" (change)="setPeriod($any($event.target).value)">
+            <option value="today">Hôm nay</option>
+            <option value="week">7 ngày</option>
+            <option value="month">Tháng này</option>
+          </select>
+          <select class="sel" aria-label="Người thao tác" (change)="setActor($any($event.target).value)">
+            <option value="">Mọi người</option>
+            @for (a of accounts(); track a.id) {
+              <option [value]="a.username">{{ a.fullName }}</option>
+            }
+            <option [value]="systemActor">Hệ thống</option>
+          </select>
+        </div>
+      </div>
+      <div class="tbl-w">
+        <table class="log">
+          <thead>
+            <tr><th scope="col">Giờ</th><th scope="col">Người</th><th scope="col">Thao tác</th><th scope="col">Đơn</th></tr>
+          </thead>
+          <tbody>
+            @for (l of logs(); track l.id) {
+              <tr>
+                <td class="t num">{{ logTime(l.createdAt) }}</td>
+                @if (l.actor === systemActor) {
+                  <td class="sys">Hệ thống</td>
+                } @else {
+                  <td>{{ l.actorName ?? l.actor }}</td>
+                }
+                <td>{{ l.detail }}</td>
+                <td class="ord">
+                  @if (l.orderId) {
+                    <a routerLink="/don-thue" [queryParams]="{ id: l.orderId }">{{ l.orderCode }}</a>
+                    @if (l.roomNumber) { · P{{ l.roomNumber }} }
+                  } @else if (l.roomNumber) {
+                    P{{ l.roomNumber }}
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="muted empty">{{ loadingLogs() ? 'Đang tải...' : 'Chưa có thao tác nào trong khoảng này.' }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (logs().length < logTotal()) {
+        <div class="more">
+          <button class="btn-s" type="button" [disabled]="loadingLogs()" (click)="loadLogs(false)">
+            Xem thêm ({{ logTotal() - logs().length }})
+          </button>
+        </div>
+      }
+    </section>
+  }
+
+  <section class="card perm-card">
     <div class="ch"><h2>Quyền của nhân viên</h2></div>
     <ul class="perm">
       @for (p of permissions; track p.label) {

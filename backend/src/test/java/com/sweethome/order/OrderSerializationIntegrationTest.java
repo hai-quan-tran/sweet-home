@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,6 +44,8 @@ class OrderSerializationIntegrationTest {
 	@Autowired
 	private MockMvc mvc;
 	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	@Autowired
 	private AccountRepository accountRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -64,6 +67,7 @@ class OrderSerializationIntegrationTest {
 	@AfterEach
 	void cleanup() {
 		if (orderId != null) {
+			jdbcTemplate.update("delete from activity_log where order_id = ?", orderId);
 			orderRepository.deleteById(orderId);
 		}
 		if (surchargeId != null) {

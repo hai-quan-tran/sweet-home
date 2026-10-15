@@ -94,6 +94,27 @@ class AccountIntegrationTest {
 				.andExpect(status().isForbidden());
 	}
 
+	@Test
+	void accountChangesAreLoggedAndOnlyManagerSeesLog() throws Exception {
+		Account staffAccount = saveAccount("stf_log_" + suffix, AccountRole.STAFF);
+		mvc.perform(withSession(put("/accounts/" + staffAccount.getId()), manager).contentType(MediaType.APPLICATION_JSON)
+						.content(payload(staffAccount.getUsername(), "STAFF", false, null)))
+				.andExpect(status().isOk());
+
+		mvc.perform(withSession(get("/activity-logs"), manager).param("from", "2000-01-01T00:00:00")
+						.param("actor", "mgr_acc_" + suffix))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(1))
+				.andExpect(jsonPath("$.items[0].action").value("ACCOUNT_UPDATED"))
+				.andExpect(jsonPath("$.items[0].actorName").value("Test MANAGER"))
+				.andExpect(jsonPath("$.items[0].detail").value("Sửa tài khoản Nguyễn Thảo Vy (%s): khoá tài khoản"
+						.formatted(staffAccount.getUsername())));
+
+		Session staff = login(saveAccount("stf_view_" + suffix, AccountRole.STAFF));
+		mvc.perform(withSession(get("/activity-logs"), staff).param("from", "2000-01-01T00:00:00"))
+				.andExpect(status().isForbidden());
+	}
+
 	private String payload(String username, String role, boolean active, String password) {
 		return """
 				{"fullName":"Nguyễn Thảo Vy","phone":"0978345120","idNumber":"079201007302","startDate":"2026-10-12",

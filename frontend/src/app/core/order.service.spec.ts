@@ -66,6 +66,11 @@ describe('OrderService', () => {
     httpMock.expectOne({ url: '/api/orders/5/door-code', method: 'GET' }).flush({ doorCode: '123456' });
   });
 
+  it('doorCode khi sao chép tin nhắn gửi kèm forMessage=true', () => {
+    service.doorCode(5, true).subscribe();
+    httpMock.expectOne('/api/orders/5/door-code?forMessage=true').flush({ doorCode: '123456' });
+  });
+
   it('preview gọi POST /api/orders/preview kèm body', () => {
     const body = {} as OrderPreviewRequest;
     service.preview(body).subscribe();

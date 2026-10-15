@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.common.error.BusinessException;
 
 /**
@@ -18,9 +20,11 @@ public class OrderPaymentService {
 	private static final Set<OrderStatus> CLOSED = Set.of(OrderStatus.CHECKED_OUT, OrderStatus.CANCELLED);
 
 	private final RentalOrderRepository orderRepository;
+	private final ActivityLogService activityLog;
 
-	public OrderPaymentService(RentalOrderRepository orderRepository) {
+	public OrderPaymentService(RentalOrderRepository orderRepository, ActivityLogService activityLog) {
 		this.orderRepository = orderRepository;
+		this.activityLog = activityLog;
 	}
 
 	/**
@@ -37,6 +41,7 @@ public class OrderPaymentService {
 		apply(payment, request);
 		order.addPayment(payment);
 		ensureNotOverpaid(order);
+		log(order, ActivityAction.PAYMENT_ADDED, "Thu " + describe(payment));
 		return OrderDto.from(orderRepository.saveAndFlush(order));
 	}
 
@@ -51,8 +56,11 @@ public class OrderPaymentService {
 	@Transactional
 	public OrderDto update(Long orderId, Long paymentId, OrderPaymentRequest request) {
 		RentalOrder order = findOpenOrder(orderId);
-		apply(findPayment(order, paymentId), request);
+		OrderPayment payment = findPayment(order, paymentId);
+		String before = describe(payment);
+		apply(payment, request);
 		ensureNotOverpaid(order);
+		log(order, ActivityAction.PAYMENT_UPDATED, "Sửa khoản thu %s thành %s".formatted(before, describe(payment)));
 		return OrderDto.from(orderRepository.saveAndFlush(order));
 	}
 
@@ -66,8 +74,19 @@ public class OrderPaymentService {
 	@Transactional
 	public OrderDto delete(Long orderId, Long paymentId) {
 		RentalOrder order = findOpenOrder(orderId);
-		order.getPayments().remove(findPayment(order, paymentId));
+		OrderPayment payment = findPayment(order, paymentId);
+		order.getPayments().remove(payment);
+		log(order, ActivityAction.PAYMENT_DELETED, "Xoá khoản thu " + describe(payment));
 		return OrderDto.from(orderRepository.saveAndFlush(order));
+	}
+
+	/** "300.000đ tiền mặt" — mô tả khoản thu trong nhật ký. */
+	private static String describe(OrderPayment payment) {
+		return ActivityLogService.money(payment.getAmount()) + " " + payment.getMethod().label();
+	}
+
+	private void log(RentalOrder order, ActivityAction action, String detail) {
+		activityLog.log(action, order.getId(), order.getRoom().getRoomNumber(), detail);
 	}
 
 	private void apply(OrderPayment payment, OrderPaymentRequest request) {

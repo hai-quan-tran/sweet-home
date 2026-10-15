@@ -52,6 +52,10 @@
 - Khoá tài khoản hoặc đổi vai trò có hiệu lực ngay (đang đăng nhập cũng bị đăng xuất / mất quyền ngay).
   Đặt lại mật khẩu hoặc khoá thì mọi phiên đăng nhập của tài khoản đó bị thu hồi.
 - Quản lý không tự khoá và không tự đổi vai trò của chính mình.
+- Nhật ký thao tác (chỉ Quản lý xem, lọc theo thời gian và người): tạo/sửa đơn, nhận/trả phòng, thu/sửa/xoá
+  khoản thu, huỷ đơn, gia hạn/chuyển phòng, đã dọn phòng, tự chuyển trạng thái (người = "Hệ thống"), xem mã
+  cửa, sao chép tin nhắn có mã cửa, thêm/sửa/khoá tài khoản. Không ghi sửa cấu hình (phòng, giá, phụ thu,
+  cài đặt). Nhật ký không sửa, không xoá được.
 
 ## Lịch làm
 - Ca làm không cố định → không cài ở màn nhân viên, quản lý ở mục riêng "Lịch làm".

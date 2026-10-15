@@ -362,3 +362,29 @@
   style form của Thêm phòng (`styleUrls` trỏ `../rooms/room-form-page.scss`) + phần riêng; nút "Tạo ngẫu
   nhiên" sinh mật khẩu bằng `crypto.getRandomValues`. Danh sách quyền ở `staff-permissions.ts`, style
   `.perm` dùng chung đặt ở `styles.scss`. `managerGuard` chặn thì về màn cha (đoạn đầu URL).
+
+## Nhật ký thao tác (GĐ7.2, package `com.sweethome.activity`)
+- Bảng `activity_log` (changelog `011-activity-log.yaml`): `created_at`, `actor` (tên đăng nhập, lấy qua
+  `AuditorAware` giống cột audit — tác vụ nền là `system`), `action` (enum `ActivityAction`, để lọc/truy
+  vấn), `detail` (câu hiển thị tiếng Việt, tối đa 255 ký tự, cắt nếu dài hơn), `order_id`, `room_number`
+  (chuỗi, giữ đúng phòng lúc thao tác). Không kế thừa `Auditable`; chỉ thêm, không sửa/xoá.
+- `ActivityLogService.log(action, orderId, roomNumber, detail)` gọi trong cùng transaction của thao tác
+  nghiệp vụ (lỗi → rollback cả dòng nhật ký). Nơi gọi: `OrderService` (tạo, sửa, mã cửa),
+  `OrderLifecycleService` (nhận/trả phòng, huỷ, tự chuyển trạng thái), `OrderPaymentService` (thu/sửa/xoá),
+  `OrderExtensionService` (gia hạn, chuyển phòng), `RoomService.markCleaned`, `AccountManagementService`
+  (thêm; sửa ghi kèm khoá/mở, đổi vai trò, đặt lại mật khẩu). Tiền định dạng `ActivityLogService.money`
+  ("300.000đ"); nhãn tiếng Việt ở `PaymentMethod.label()` và `OrderStatus.label()`.
+- Mã cửa: `GET /orders/{id}/door-code?forMessage=true` ghi `DOOR_CODE_COPIED` ("Sao chép tin nhắn có mã
+  cửa"), không có tham số thì ghi `DOOR_CODE_VIEWED`. Vì có ghi DB nên `getDoorCode` là `@Transactional`
+  thường (không `readOnly`). Frontend `OrderDetail.copyMessage` với mẫu có `{ma_cua}` luôn gọi lại API kèm
+  `forMessage` (kể cả khi đã bấm Hiện) — GĐ9 dựa vào `DOOR_CODE_COPIED` để biết đơn "đã gửi mã" (đã có
+  index `order_id, action`).
+- API `GET /activity-logs?from=…&actor=…&page=…&size=…` (`@PreAuthorize` MANAGER; mới nhất trước; size
+  tối đa 100). DTO kèm `actorName` (họ tên hiện tại, tra từ `account`) và `orderCode`.
+- Frontend: card "Nhật ký thao tác" ở `StaffPage` chỉ với Quản lý (lưới: nhật ký bên trái, tài khoản +
+  quyền bên phải; ≤ 1100px xếp dọc). Lọc Hôm nay / 7 ngày / Tháng này (`periodStart` trong
+  `core/activity-log.service.ts` tính mốc giờ địa phương) và theo người (+ "Hệ thống"); "Xem thêm" nối
+  trang kế tiếp; mã đơn link tới `/don-thue?id=`.
+- **Test không `@Transactional`** (`OrderSerializationIntegrationTest`) tạo đơn thật nên sinh dòng nhật
+  ký thật — phần `@AfterEach` phải xoá `activity_log` theo `order_id` (qua `JdbcTemplate`), không thì rác
+  lại trong DB dev. Áp dụng cho test tương tự ở các phase sau.

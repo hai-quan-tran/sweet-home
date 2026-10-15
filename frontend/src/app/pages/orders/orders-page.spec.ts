@@ -88,7 +88,7 @@ describe('OrdersPage', () => {
   it('mở màn kèm query param id thì tự mở chi tiết đơn đó, copy=1 thì bật tự sao chép', async () => {
     const fixture = await render({ id: '36', copy: '1' });
     flushDetail();
-    httpMock.expectOne('/api/orders/36/door-code').flush({ doorCode: '482915' });
+    httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush({ doorCode: '482915' });
 
     expect(fixture.componentInstance['selectedId']()).toBe(36);
     expect(fixture.componentInstance['autoCopy']()).toBe(true);

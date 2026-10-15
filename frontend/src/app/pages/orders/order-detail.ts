@@ -157,7 +157,10 @@ export class OrderDetail {
     });
   }
 
-  /** Sao chép tin nhắn theo mẫu đang chọn vào clipboard (tự lấy mã cửa nếu mẫu cần). */
+  /**
+   * Sao chép tin nhắn theo mẫu đang chọn vào clipboard. Mẫu có {ma_cua} thì luôn lấy mã cửa qua API
+   * (kể cả khi đã hiện) để backend ghi nhật ký "sao chép tin nhắn có mã cửa" — đơn được tính là đã gửi mã.
+   */
   copyMessage(): void {
     const order = this.order();
     const template = this.selectedTemplate();
@@ -173,8 +176,8 @@ export class OrderDetail {
         () => this.copyFeedback.set('Không sao chép được, hãy thử lại.'),
       );
     };
-    if (template.containsDoorCode && order.hasDoorCode && this.doorCode() === null) {
-      this.orderService.doorCode(order.id).subscribe((res) => {
+    if (template.containsDoorCode && order.hasDoorCode) {
+      this.orderService.doorCode(order.id, true).subscribe((res) => {
         this.doorCode.set(res.doorCode);
         render(res.doorCode);
       });

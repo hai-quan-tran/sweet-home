@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.common.error.BusinessException;
 
 /**
@@ -19,9 +21,11 @@ public class RoomService {
 	private final RoomTypeRepository roomTypeRepository;
 	private final RoomPhotoRepository roomPhotoRepository;
 	private final RoomPhotoStorageService storageService;
+	private final ActivityLogService activityLog;
 
 	public RoomService(RoomRepository roomRepository, RoomTypeRepository roomTypeRepository,
-			RoomPhotoRepository roomPhotoRepository, RoomPhotoStorageService storageService) {
+			RoomPhotoRepository roomPhotoRepository, RoomPhotoStorageService storageService, ActivityLogService activityLog) {
+		this.activityLog = activityLog;
 		this.roomRepository = roomRepository;
 		this.roomTypeRepository = roomTypeRepository;
 		this.roomPhotoRepository = roomPhotoRepository;
@@ -100,6 +104,7 @@ public class RoomService {
 	public RoomDto markCleaned(Long id) {
 		Room room = findRoom(id);
 		room.setNeedsCleaning(false);
+		activityLog.log(ActivityAction.ROOM_CLEANED, null, room.getRoomNumber(), "Đã dọn phòng");
 		return RoomDto.from(roomRepository.save(room));
 	}
 

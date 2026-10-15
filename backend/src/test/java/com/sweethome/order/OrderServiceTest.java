@@ -32,6 +32,8 @@ import com.sweethome.room.RoomRepository;
 import com.sweethome.room.RoomType;
 import com.sweethome.surcharge.SurchargeCalculator;
 import com.sweethome.surcharge.SurchargeRepository;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra tạo đơn: tính giờ nhận/trả và tiền phòng theo từng loại thuê, kiểm tra trùng lịch,
@@ -39,6 +41,9 @@ import com.sweethome.surcharge.SurchargeRepository;
  */
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+
+	@Mock
+	private ActivityLogService activityLog;
 
 	@Mock
 	private RentalOrderRepository orderRepository;
@@ -57,7 +62,7 @@ class OrderServiceTest {
 	void setUp() {
 		CryptoService cryptoService = new CryptoService(Base64.getEncoder().encodeToString(new byte[32]));
 		service = new OrderService(orderRepository, roomRepository, pricingSettingsRepository, surchargeRepository,
-				new SurchargeCalculator(), cryptoService);
+				new SurchargeCalculator(), cryptoService, activityLog);
 
 		RoomType type = OrderTestFactory.roomType(1L, "Tiêu chuẩn", 150000, 50000, 350000, 500000);
 		room = OrderTestFactory.room(10L, "101", type, 2);
@@ -271,6 +276,18 @@ class OrderServiceTest {
 		RentalOrder order = captor.getValue();
 		when(orderRepository.findById(42L)).thenReturn(Optional.of(order));
 		return order;
+	}
+
+	@Test
+	void createLogsAndDoorCodeAccessIsLoggedByPurpose() {
+		RentalOrder order = existingOrder();
+		verify(activityLog).log(ActivityAction.ORDER_CREATED, 42L, "101", "Tạo đơn");
+
+		assertThat(service.getDoorCode(42L, false).doorCode()).isEqualTo("123456");
+		service.getDoorCode(42L, true);
+
+		verify(activityLog).log(ActivityAction.DOOR_CODE_VIEWED, 42L, order.getRoom().getRoomNumber(), "Xem mã cửa");
+		verify(activityLog).log(ActivityAction.DOOR_CODE_COPIED, 42L, order.getRoom().getRoomNumber(), "Sao chép tin nhắn có mã cửa");
 	}
 
 	@Test

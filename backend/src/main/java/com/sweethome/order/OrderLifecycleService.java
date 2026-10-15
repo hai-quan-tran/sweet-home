@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.CheckInMode;
 import com.sweethome.surcharge.Surcharge;
@@ -32,13 +34,15 @@ public class OrderLifecycleService {
 	private final SurchargeRepository surchargeRepository;
 	private final SurchargeCalculator surchargeCalculator;
 	private final Clock clock;
+	private final ActivityLogService activityLog;
 
 	public OrderLifecycleService(RentalOrderRepository orderRepository, SurchargeRepository surchargeRepository,
-			SurchargeCalculator surchargeCalculator, Clock clock) {
+			SurchargeCalculator surchargeCalculator, Clock clock, ActivityLogService activityLog) {
 		this.orderRepository = orderRepository;
 		this.surchargeRepository = surchargeRepository;
 		this.surchargeCalculator = surchargeCalculator;
 		this.clock = clock;
+		this.activityLog = activityLog;
 	}
 
 	/**
@@ -55,6 +59,7 @@ public class OrderLifecycleService {
 		}
 		order.setStatus(OrderStatus.CHECKED_IN);
 		order.setActualCheckInAt(LocalDateTime.now(clock));
+		activityLog.log(ActivityAction.CHECK_IN, orderId, order.getRoom().getRoomNumber(), "Nhận phòng");
 		return OrderDto.from(orderRepository.save(order));
 	}
 
@@ -104,6 +109,10 @@ public class OrderLifecycleService {
 		}
 		order.setStatus(OrderStatus.CHECKED_OUT);
 		order.getRoom().setNeedsCleaning(true);
+		String collected = result.dueAmount() > 0
+				? ", thu %s %s".formatted(ActivityLogService.money(result.dueAmount()), request.paymentMethod().label())
+				: "";
+		activityLog.log(ActivityAction.CHECK_OUT, orderId, order.getRoom().getRoomNumber(), "Trả phòng" + collected);
 		return OrderDto.from(orderRepository.saveAndFlush(order));
 	}
 
@@ -175,6 +184,8 @@ public class OrderLifecycleService {
 		order.setCancelledAt(now);
 		order.setRefundAmount(refund);
 		order.setCancelReason(reason);
+		activityLog.log(ActivityAction.ORDER_CANCELLED, orderId, order.getRoom().getRoomNumber(),
+				"Huỷ đơn, hoàn " + ActivityLogService.money(refund) + (reason == null ? "" : " — " + reason));
 		return OrderDto.from(orderRepository.save(order));
 	}
 
@@ -224,6 +235,8 @@ public class OrderLifecycleService {
 		int changed = 0;
 		for (RentalOrder order : orderRepository.findDueForAutoTransition(now)) {
 			if (advance(order, now)) {
+				activityLog.log(ActivityAction.STATUS_AUTO, order.getId(), order.getRoom().getRoomNumber(),
+						"Tự chuyển sang " + order.getStatus().label());
 				changed++;
 			}
 		}

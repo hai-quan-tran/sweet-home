@@ -17,12 +17,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
 import com.sweethome.common.error.BusinessException;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra nghiệp vụ thêm/sửa phòng, bật-tắt nhận đặt, thêm/xoá ảnh.
  */
 @ExtendWith(MockitoExtension.class)
 class RoomServiceTest {
+
+	@Mock
+	private ActivityLogService activityLog;
 
 	@Mock
 	private RoomRepository roomRepository;
@@ -38,7 +43,7 @@ class RoomServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new RoomService(roomRepository, roomTypeRepository, roomPhotoRepository, storageService);
+		service = new RoomService(roomRepository, roomTypeRepository, roomPhotoRepository, storageService, activityLog);
 		standard = RoomTestFactory.roomType(1L, "Tiêu chuẩn", 150000, 50000, 350000, 500000);
 	}
 
@@ -160,6 +165,7 @@ class RoomServiceTest {
 		RoomDto dto = service.markCleaned(5L);
 
 		assertThat(dto.needsCleaning()).isFalse();
+		verify(activityLog).log(ActivityAction.ROOM_CLEANED, null, "101", "Đã dọn phòng");
 	}
 
 	@Test

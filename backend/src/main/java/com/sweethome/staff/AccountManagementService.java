@@ -1,5 +1,6 @@
 package com.sweethome.staff;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 import com.sweethome.auth.Account;
 import com.sweethome.auth.AccountRepository;
 import com.sweethome.auth.AccountRole;
@@ -26,13 +29,15 @@ public class AccountManagementService {
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final CryptoService cryptoService;
+	private final ActivityLogService activityLog;
 
 	public AccountManagementService(AccountRepository accountRepository, RefreshTokenRepository refreshTokenRepository,
-			PasswordEncoder passwordEncoder, CryptoService cryptoService) {
+			PasswordEncoder passwordEncoder, CryptoService cryptoService, ActivityLogService activityLog) {
 		this.accountRepository = accountRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.cryptoService = cryptoService;
+		this.activityLog = activityLog;
 	}
 
 	/**
@@ -71,6 +76,8 @@ public class AccountManagementService {
 		account.setUsername(request.username());
 		applyProfile(account, request);
 		setPassword(account, request);
+		activityLog.log(ActivityAction.ACCOUNT_CREATED, null, null, "Thêm tài khoản %s (%s), vai trò %s"
+				.formatted(account.getFullName(), account.getUsername(), roleLabel(account.getRole())));
 		return AccountDto.from(accountRepository.save(account));
 	}
 
@@ -90,6 +97,8 @@ public class AccountManagementService {
 		if (id.equals(currentAccountId) && (request.role() != AccountRole.MANAGER || !request.active())) {
 			throw new BusinessException(HttpStatus.BAD_REQUEST, "Không thể tự khoá hoặc tự đổi vai trò của chính mình");
 		}
+		AccountRole oldRole = account.getRole();
+		AccountStatus oldStatus = account.getStatus();
 		applyProfile(account, request);
 		boolean passwordReset = !isBlank(request.password());
 		if (passwordReset) {
@@ -98,7 +107,23 @@ public class AccountManagementService {
 		if (passwordReset || !request.active()) {
 			refreshTokenRepository.revokeAllByAccountId(id);
 		}
+		List<String> changes = new ArrayList<>();
+		if (oldStatus != account.getStatus()) {
+			changes.add(request.active() ? "mở khoá" : "khoá tài khoản");
+		}
+		if (oldRole != account.getRole()) {
+			changes.add("đổi vai trò sang " + roleLabel(account.getRole()));
+		}
+		if (passwordReset) {
+			changes.add("đặt lại mật khẩu");
+		}
+		activityLog.log(ActivityAction.ACCOUNT_UPDATED, null, null, "Sửa tài khoản %s (%s)%s".formatted(account.getFullName(),
+				account.getUsername(), changes.isEmpty() ? "" : ": " + String.join(", ", changes)));
 		return AccountDto.from(accountRepository.save(account));
+	}
+
+	private static String roleLabel(AccountRole role) {
+		return role == AccountRole.MANAGER ? "Quản lý" : "Nhân viên";
 	}
 
 	/** Ghi thông tin cá nhân, vai trò, trạng thái; CCCD bỏ trống thì giữ giá trị cũ. */

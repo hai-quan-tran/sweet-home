@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-activity-log
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: activity_log
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: actor, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: action, type: VARCHAR(30), constraints: { nullable: false } }
+              - column: { name: detail, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: order_id, type: BIGINT }
+              - column: { name: room_number, type: VARCHAR(20) }
+        - createIndex:
+            tableName: activity_log
+            indexName: idx_activity_log_created_at
+            columns:
+              - column: { name: created_at }
+        - createIndex:
+            tableName: activity_log
+            indexName: idx_activity_log_actor_created_at
+            columns:
+              - column: { name: actor }
+              - column: { name: created_at }
+        - createIndex:
+            tableName: activity_log
+            indexName: idx_activity_log_order_action
+            columns:
+              - column: { name: order_id }
+              - column: { name: action }

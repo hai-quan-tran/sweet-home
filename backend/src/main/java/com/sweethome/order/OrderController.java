@@ -67,10 +67,10 @@ public class OrderController {
 		return orderService.get(id);
 	}
 
-	/** Mã cửa đã giải mã của một đơn. */
+	/** Mã cửa đã giải mã của một đơn; {@code forMessage=true} khi lấy để sao chép tin nhắn gửi khách (ghi nhật ký riêng). */
 	@GetMapping("/{id}/door-code")
-	public DoorCodeResponse doorCode(@PathVariable Long id) {
-		return orderService.getDoorCode(id);
+	public DoorCodeResponse doorCode(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean forMessage) {
+		return orderService.getDoorCode(id, forMessage);
 	}
 
 	/** Xem trước giờ nhận/trả, phòng trống và tiền tạm tính trong lúc điền form Tạo đơn. */

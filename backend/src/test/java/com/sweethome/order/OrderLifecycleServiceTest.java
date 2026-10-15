@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -25,12 +27,17 @@ import com.sweethome.surcharge.Surcharge;
 import com.sweethome.surcharge.SurchargeCalculator;
 import com.sweethome.surcharge.SurchargeRepository;
 import com.sweethome.surcharge.SurchargeWhenType;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra nhận phòng, tự chuyển trạng thái theo giờ cho 2 hình thức check-in, và trả phòng.
  */
 @ExtendWith(MockitoExtension.class)
 class OrderLifecycleServiceTest {
+
+	@Mock
+	private ActivityLogService activityLog;
 
 	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 	private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 7, 16, 0);
@@ -45,7 +52,7 @@ class OrderLifecycleServiceTest {
 	@BeforeEach
 	void setUp() {
 		Clock clock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
-		service = new OrderLifecycleService(orderRepository, surchargeRepository, new SurchargeCalculator(), clock);
+		service = new OrderLifecycleService(orderRepository, surchargeRepository, new SurchargeCalculator(), clock, activityLog);
 		lenient().when(orderRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 		lenient().when(orderRepository.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));
 	}
@@ -59,6 +66,7 @@ class OrderLifecycleServiceTest {
 
 		assertThat(dto.status()).isEqualTo(OrderStatus.CHECKED_IN);
 		assertThat(dto.actualCheckInAt()).isEqualTo(NOW);
+		verify(activityLog).log(eq(ActivityAction.CHECK_IN), eq(1L), any(), eq("Nhận phòng"));
 	}
 
 	@Test
@@ -125,6 +133,8 @@ class OrderLifecycleServiceTest {
 				order(CheckInMode.STAFF, OrderStatus.CHECKED_IN, 12, 16)));
 
 		assertThat(service.advanceStatuses()).isEqualTo(2);
+		verify(activityLog).log(eq(ActivityAction.STATUS_AUTO), eq(1L), any(), eq("Tự chuyển sang Đang ở"));
+		verify(activityLog).log(eq(ActivityAction.STATUS_AUTO), eq(1L), any(), eq("Tự chuyển sang Quá giờ"));
 	}
 
 	@Test
@@ -143,6 +153,7 @@ class OrderLifecycleServiceTest {
 		assertThat(dto.payments().get(0).amount()).isEqualTo(250000);
 		assertThat(dto.dueAmount()).isZero();
 		assertThat(order.getRoom().isNeedsCleaning()).isTrue();
+		verify(activityLog).log(eq(ActivityAction.CHECK_OUT), eq(1L), any(), eq("Trả phòng, thu 250.000đ tiền mặt"));
 	}
 
 	@Test
@@ -226,6 +237,7 @@ class OrderLifecycleServiceTest {
 		assertThat(dto.status()).isEqualTo(OrderStatus.CANCELLED);
 		assertThat(dto.refundAmount()).isEqualTo(50000);
 		assertThat(dto.cancelledAt()).isEqualTo(NOW);
+		verify(activityLog).log(eq(ActivityAction.ORDER_CANCELLED), eq(1L), any(), eq("Huỷ đơn, hoàn 50.000đ"));
 	}
 
 	@Test

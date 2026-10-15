@@ -106,8 +106,82 @@
   color: var(--p-text-muted-color);
 }
 
+.grid.with-log {
+  grid-template-areas: "log acc" "log perm";
+
+  .acc { grid-area: acc; }
+  .log-card { grid-area: log; }
+  .perm-card { grid-area: perm; }
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+
+  .sel {
+    height: 40px;
+  }
+}
+
+.tbl-w {
+  overflow-x: auto;
+}
+
+.log {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+    padding: 10px 20px;
+    background: var(--p-content-hover-background);
+  }
+
+  td {
+    padding: 11px 20px;
+    border-top: 1px solid var(--p-content-border-color);
+    vertical-align: middle;
+  }
+
+  td.t {
+    width: 72px;
+    color: var(--p-text-muted-color);
+    white-space: nowrap;
+  }
+
+  td.ord {
+    white-space: nowrap;
+  }
+
+  .sys {
+    color: var(--p-text-muted-color);
+    font-style: italic;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 24px 20px;
+  }
+
+  a {
+    color: var(--p-primary-color);
+  }
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--p-content-border-color);
+}
+
 @media (max-width: 1100px) {
-  .grid {
+  .grid,
+  .grid.with-log {
     grid-template-columns: 1fr;
+    grid-template-areas: "acc" "log" "perm";
   }
 }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 
@@ -16,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sweethome.common.error.BusinessException;
 import com.sweethome.room.CheckInMode;
+import com.sweethome.activity.ActivityAction;
+import com.sweethome.activity.ActivityLogService;
 
 /**
  * Kiểm tra thu tiền: cộng vào tổng đã thu, không vượt tổng tiền, sửa/xoá khoản thu, chặn đơn đã
@@ -25,6 +28,9 @@ import com.sweethome.room.CheckInMode;
 class OrderPaymentServiceTest {
 
 	@Mock
+	private ActivityLogService activityLog;
+
+	@Mock
 	private RentalOrderRepository orderRepository;
 
 	private OrderPaymentService service;
@@ -32,7 +38,7 @@ class OrderPaymentServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new OrderPaymentService(orderRepository);
+		service = new OrderPaymentService(orderRepository, activityLog);
 		order = new RentalOrder();
 		setField(RentalOrder.class, order, 1L);
 		order.setRoom(OrderTestFactory.room(10L, "101", OrderTestFactory.roomType(1L, "A", 1, 1, 1, 1), 2));
@@ -52,6 +58,7 @@ class OrderPaymentServiceTest {
 		assertThat(dto.payments().get(0).note()).isNull();
 		assertThat(dto.paidAmount()).isEqualTo(250000);
 		assertThat(dto.dueAmount()).isEqualTo(50000);
+		verify(activityLog).log(ActivityAction.PAYMENT_ADDED, 1L, "101", "Thu 150.000đ tiền mặt");
 	}
 
 	@Test
@@ -86,6 +93,7 @@ class OrderPaymentServiceTest {
 		assertThat(payment.getAmount()).isEqualTo(80000);
 		assertThat(payment.getMethod()).isEqualTo(PaymentMethod.TRANSFER);
 		assertThat(dto.paidAmount()).isEqualTo(180000);
+		verify(activityLog).log(ActivityAction.PAYMENT_UPDATED, 1L, "101", "Sửa khoản thu 50.000đ tiền mặt thành 80.000đ chuyển khoản");
 	}
 
 	@Test
@@ -112,6 +120,7 @@ class OrderPaymentServiceTest {
 
 		assertThat(dto.payments()).isEmpty();
 		assertThat(dto.paidAmount()).isEqualTo(100000);
+		verify(activityLog).log(ActivityAction.PAYMENT_DELETED, 1L, "101", "Xoá khoản thu 50.000đ tiền mặt");
 	}
 
 	private OrderPayment existingPayment(long id, long amount) {

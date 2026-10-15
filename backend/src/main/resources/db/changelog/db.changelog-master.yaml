@@ -20,3 +20,5 @@ databaseChangeLog:
       file: db/changelog/009-order-stay-release.yaml
   - include:
       file: db/changelog/010-account-profile.yaml
+  - include:
+      file: db/changelog/011-activity-log.yaml
