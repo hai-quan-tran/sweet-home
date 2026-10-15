@@ -80,6 +80,18 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 	List<RentalOrder> findDueForAutoTransition(@Param("now") LocalDateTime now);
 
 	/**
+	 * Đơn cần nhân viên đón (chưa huỷ, hình thức nhân viên check-in) có giờ nhận phòng trong khoảng, kèm phòng.
+	 *
+	 * @param from từ thời điểm
+	 * @param to   đến thời điểm (không gồm)
+	 * @return đơn theo giờ nhận phòng
+	 */
+	@Query("select o from RentalOrder o join fetch o.room where o.status <> com.sweethome.order.OrderStatus.CANCELLED "
+			+ "and o.checkInMode = com.sweethome.room.CheckInMode.STAFF and o.checkInAt >= :from and o.checkInAt < :to "
+			+ "order by o.checkInAt")
+	List<RentalOrder> findStaffPickupsBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+	/**
 	 * Danh sách đơn có lọc, mới nhất ở trên, dùng cho màn Đơn thuê.
 	 *
 	 * @param status    trạng thái, null nghĩa là mọi trạng thái

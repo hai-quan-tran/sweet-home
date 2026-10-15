@@ -1,12 +1,18 @@
 package com.sweethome.schedule;
 
+import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +22,9 @@ import com.sweethome.auth.Account;
 import com.sweethome.auth.AccountRepository;
 import com.sweethome.auth.AccountStatus;
 import com.sweethome.common.error.BusinessException;
+import com.sweethome.order.OrderDto;
+import com.sweethome.order.RentalOrder;
+import com.sweethome.order.RentalOrderRepository;
 
 /**
  * Lịch làm: ca mẫu và xếp ca (business-rules.md mục Lịch làm). Ca đã xếp lưu bản sao giờ/tên/màu nên sửa
@@ -31,12 +40,16 @@ public class ScheduleService {
 	private final ShiftTemplateRepository templateRepository;
 	private final WorkShiftRepository shiftRepository;
 	private final AccountRepository accountRepository;
+	private final RentalOrderRepository orderRepository;
+	private final Clock clock;
 
 	public ScheduleService(ShiftTemplateRepository templateRepository, WorkShiftRepository shiftRepository,
-			AccountRepository accountRepository) {
+			AccountRepository accountRepository, RentalOrderRepository orderRepository, Clock clock) {
 		this.templateRepository = templateRepository;
 		this.shiftRepository = shiftRepository;
 		this.accountRepository = accountRepository;
+		this.orderRepository = orderRepository;
+		this.clock = clock;
 	}
 
 	/**
@@ -93,12 +106,57 @@ public class ScheduleService {
 	 */
 	@Transactional(readOnly = true)
 	public List<WorkShiftDto> listShifts(LocalDate from, LocalDate to) {
-		long days = ChronoUnit.DAYS.between(from, to);
-		if (days <= 0 || days > MAX_RANGE_DAYS) {
-			throw new BusinessException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ (tối đa 31 ngày)");
-		}
+		checkRange(from, to);
 		return shiftRepository.findByStartAtGreaterThanEqualAndStartAtLessThan(from.atStartOfDay(), to.atStartOfDay())
 				.stream().map(WorkShiftDto::from).toList();
+	}
+
+	/**
+	 * Đơn cần nhân viên đón có giờ nhận phòng trong {@code [from, to)} và đơn nào không có ai trực lúc đó
+	 * (giờ nhận phòng không nằm trong ca nào của tài khoản đang hoạt động).
+	 *
+	 * @param from ngày đầu
+	 * @param to   ngày cuối (không gồm), tối đa 31 ngày
+	 * @return số đơn / số đơn không ai trực theo ngày, kèm danh sách đơn không ai trực
+	 */
+	@Transactional(readOnly = true)
+	public CoverageDto coverage(LocalDate from, LocalDate to) {
+		checkRange(from, to);
+		Set<Long> active = accountRepository.findAll().stream().filter(a -> a.getStatus() == AccountStatus.ACTIVE)
+				.map(Account::getId).collect(Collectors.toSet());
+		List<WorkShift> shifts = shiftRepository.findOverlapping(from.atStartOfDay(), to.atStartOfDay()).stream()
+				.filter(s -> active.contains(s.getAccountId())).toList();
+		Map<LocalDate, int[]> perDay = new TreeMap<>();
+		from.datesUntil(to).forEach(d -> perDay.put(d, new int[2]));
+		List<CoverageDto.UncoveredOrder> uncovered = new ArrayList<>();
+		for (RentalOrder order : orderRepository.findStaffPickupsBetween(from.atStartOfDay(), to.atStartOfDay())) {
+			int[] counts = perDay.get(order.getCheckInAt().toLocalDate());
+			counts[0]++;
+			boolean covered = shifts.stream().anyMatch(s -> !s.getStartAt().isAfter(order.getCheckInAt())
+					&& s.getEndAt().isAfter(order.getCheckInAt()));
+			if (!covered) {
+				counts[1]++;
+				uncovered.add(new CoverageDto.UncoveredOrder(order.getId(), OrderDto.codeOf(order.getId()),
+						order.getRoom().getRoomNumber(), order.getCheckInAt()));
+			}
+		}
+		return new CoverageDto(perDay.entrySet().stream()
+				.map(e -> new CoverageDto.Day(e.getKey(), e.getValue()[0], e.getValue()[1])).toList(), uncovered);
+	}
+
+	/**
+	 * Nhân viên được xem mã cửa của đơn khi đang trong ca, hoặc thời gian ở của đơn giao với một ca của mình.
+	 *
+	 * @param accountId tài khoản Nhân viên
+	 * @param stayFrom  giờ nhận phòng của đơn
+	 * @param stayTo    giờ trả phòng của đơn
+	 * @return true nếu được xem
+	 */
+	@Transactional(readOnly = true)
+	public boolean canSeeDoorCode(Long accountId, LocalDateTime stayFrom, LocalDateTime stayTo) {
+		LocalDateTime now = LocalDateTime.now(clock);
+		return shiftRepository.existsForAccountBetween(accountId, now, now.plusSeconds(1))
+				|| shiftRepository.existsForAccountBetween(accountId, stayFrom, stayTo);
 	}
 
 	/**
@@ -204,6 +262,14 @@ public class ScheduleService {
 		shift.setEndAt(endAt);
 		shift.setNote(request.note() == null || request.note().isBlank() ? null : request.note().trim());
 		return WorkShiftDto.from(shiftRepository.save(shift));
+	}
+
+	/** Khoảng ngày hợp lệ: to sau from, tối đa 31 ngày. */
+	private static void checkRange(LocalDate from, LocalDate to) {
+		long days = ChronoUnit.DAYS.between(from, to);
+		if (days <= 0 || days > MAX_RANGE_DAYS) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Khoảng ngày không hợp lệ (tối đa 31 ngày)");
+		}
 	}
 
 	/** Lý do không xếp ca được cho tài khoản vào ngày đó, null nếu được. */

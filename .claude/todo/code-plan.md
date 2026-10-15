@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 8.1 xong, đang làm GĐ 8.2.
+Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -166,7 +166,7 @@ Trạng thái: GĐ 8.1 xong, đang làm GĐ 8.2.
 - [x] 7.2 Nhật ký thao tác: bảng `activity_log`, ghi từ các thao tác trên; API lọc theo thời gian /
   người, phân trang (chỉ Quản lý); card Nhật ký ở màn Nhân viên.
 
-### GĐ 8: Lịch làm
+### GĐ 8: Lịch làm ✅
 - Ca mẫu (thêm/sửa/xoá), xếp ca theo mẫu (lưu bản sao giờ) hoặc ca lẻ, không trùng giờ, sao chép tuần trước.
 - Cảnh báo đơn cần nhân viên đón nhưng không ai trực.
 - Chuyển từ GĐ7: tag "Đang trong ca" / "Vào ca HH:mm" ở danh sách tài khoản màn Nhân viên; mã cửa cho Nhân
@@ -185,7 +185,7 @@ Trạng thái: GĐ 8.1 xong, đang làm GĐ 8.2.
 - Chia 2 phần, mỗi phần xong → commit:
 - [x] 8.1 Ca mẫu & xếp ca: ca mẫu CRUD (mặc định sáng/chiều/đêm), xếp ca theo mẫu hoặc ca lẻ, sửa giờ,
   ghi chú, xoá, không trùng giờ, sao chép tuần trước; màn Lịch làm theo tuần, tổng giờ; NV chỉ xem.
-- [ ] 8.2 Độ phủ ca: dòng "Đơn cần NV đón" + cảnh báo đơn không ai trực; mã cửa cho NV theo ca; tag
+- [x] 8.2 Độ phủ ca: dòng "Đơn cần NV đón" + cảnh báo đơn không ai trực; mã cửa cho NV theo ca; tag
   "Đang trong ca" / "Vào ca HH:mm" ở màn Nhân viên.
 
 ### GĐ 9: Tổng quan & thông báo

@@ -410,3 +410,21 @@
   điền giờ, gợi ý "Đã sửa · ca mẫu …", "Đặt lại theo mẫu", "Thêm ca khác trong ngày", "Xoá ca"); card Ca
   mẫu sửa/thêm/xoá ngay trong card (màu mới mặc định màu chưa dùng). Màu ca `.s0`–`.s6` trong scss của màn,
   dark mode qua `:host-context(.app-dark)`. Nhân viên: không có nút thêm/sao chép, ca `disabled`.
+
+## Độ phủ ca & ràng buộc theo ca (GĐ8.2)
+- `ScheduleService.coverage(from, to)` / `GET /shifts/coverage` (chỉ Quản lý): đơn chưa huỷ, hình thức
+  `STAFF`, giờ nhận trong khoảng (`RentalOrderRepository.findStaffPickupsBetween`, `join fetch room`);
+  "không ai trực" = giờ nhận không nằm trong `[start, end)` của ca nào thuộc tài khoản đang hoạt động. Trả
+  số đơn / số đơn thiếu theo ngày + danh sách đơn thiếu. GĐ9 (thông báo "không ai trực") dùng lại hàm này.
+- Mã cửa cho Nhân viên: `OrderService.getDoorCode(id, forMessage, staffAccountId)` — controller truyền
+  `null` nếu Quản lý; Nhân viên phải qua `ScheduleService.canSeeDoorCode`: đang trong ca (ca giao
+  `[now, now+1s)`) hoặc thời gian ở của đơn giao với một ca của mình (`existsForAccountBetween`), không thì
+  403 (không ghi nhật ký). Frontend `OrderDetail` hiện lý do ở nút Hiện (`actionError`) và khi sao chép
+  (`copyFeedback`), không kẹt trạng thái đang tải.
+- Màn Lịch làm (Quản lý): dòng "Đơn cần NV đón" cuối bảng ("4 · đủ" / "3 · thiếu 1") và hộp cảnh báo cho
+  từng đơn thiếu người có giờ nhận từ bây giờ trở đi, nút "Xem đơn".
+- Màn Nhân viên: tag "Đang trong ca" / "Vào ca HH:mm" (ca kế tiếp trong hôm nay) tính ở frontend từ
+  `GET /shifts` hôm qua → hết hôm nay (ca đêm hôm qua có thể kéo sang hôm nay). Thứ tự tag: Đã khoá → tag ca
+  → Quản lý.
+- `ScheduleService` phụ thuộc `RentalOrderRepository` và `OrderService` phụ thuộc `ScheduleService` (không
+  vòng bean vì Schedule chỉ dùng repository của đơn).

@@ -89,6 +89,24 @@ describe('OrderDetail', () => {
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));
   });
+
+  it('Nhân viên ngoài ca: hiện mã cửa và sao chép tin nhắn báo lý do bị từ chối, không kẹt nút', async () => {
+    const { fixture } = await render(sampleOrder);
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const denied = { detail: 'Chỉ xem được mã cửa khi đang trong ca hoặc đơn thuộc ca trực của bạn' };
+
+    fixture.componentInstance.revealDoorCode();
+    httpMock.expectOne('/api/orders/36/door-code').flush(denied, { status: 403, statusText: 'Forbidden' });
+    expect(fixture.componentInstance['actionError']()).toBe(denied.detail);
+    expect(fixture.componentInstance['revealingDoorCode']()).toBe(false);
+
+    fixture.componentInstance.copyMessage();
+    httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush(denied, { status: 403, statusText: 'Forbidden' });
+    expect(writeText).not.toHaveBeenCalled();
+    expect(fixture.componentInstance['copyFeedback']()).toContain('Chỉ xem được mã cửa');
+  });
+
   it('thu tiền: mặc định số còn phải thu, lưu xong cập nhật đơn và đóng form', async () => {
     const { fixture } = await render(sampleOrder);
 

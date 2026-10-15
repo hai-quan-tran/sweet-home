@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { CopyWeekResult, ShiftTemplateDto, ShiftTemplateRequest, WorkShiftDto, WorkShiftRequest } from './schedule.models';
+import { CopyWeekResult, CoverageDto, ShiftTemplateDto, ShiftTemplateRequest, WorkShiftDto, WorkShiftRequest } from './schedule.models';
 
 const TEMPLATES = '/api/shift-templates';
 const SHIFTS = '/api/shifts';
@@ -35,6 +35,11 @@ export class ScheduleService {
   /** Các ca có ngày trong khoảng [from, to) ("YYYY-MM-DD"). */
   listShifts(from: string, to: string): Observable<WorkShiftDto[]> {
     return this.http.get<WorkShiftDto[]>(SHIFTS, { params: { from, to } });
+  }
+
+  /** Đơn cần nhân viên đón trong khoảng ngày [from, to) và đơn không ai trực (chỉ Quản lý). */
+  coverage(from: string, to: string): Observable<CoverageDto> {
+    return this.http.get<CoverageDto>(`${SHIFTS}/coverage`, { params: { from, to } });
   }
 
   /** Xếp một ca. */

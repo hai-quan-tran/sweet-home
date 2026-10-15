@@ -156,6 +156,21 @@ class OrderIntegrationTest {
 		mvc.perform(get("/orders/" + orderId + "/door-code").cookie(new MockCookie("access_token", managerAccessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.doorCode").value("482915"));
+
+		// Nhân viên chưa có ca giao với đơn (và không đang trong ca) → không xem được mã cửa
+		mvc.perform(get("/orders/" + orderId + "/door-code").cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(status().isForbidden());
+		MvcResult me = mvc.perform(get("/auth/me").cookie(new MockCookie("access_token", staffAccessToken))).andReturn();
+		long staffId = ((Number) JsonPath.read(me.getResponse().getContentAsString(), "$.id")).longValue();
+		mvc.perform(post("/shifts")
+						.cookie(new MockCookie("access_token", managerAccessToken))
+						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"accountId\":%d,\"date\":\"2026-10-07\",\"startTime\":\"14:00\",\"endTime\":\"22:00\"}".formatted(staffId)))
+				.andExpect(status().isOk());
+		mvc.perform(get("/orders/" + orderId + "/door-code").cookie(new MockCookie("access_token", staffAccessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.doorCode").value("482915"));
 	}
 
 	@Test

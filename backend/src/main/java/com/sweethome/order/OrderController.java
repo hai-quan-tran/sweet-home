@@ -67,10 +67,15 @@ public class OrderController {
 		return orderService.get(id);
 	}
 
-	/** Mã cửa đã giải mã của một đơn; {@code forMessage=true} khi lấy để sao chép tin nhắn gửi khách (ghi nhật ký riêng). */
+	/**
+	 * Mã cửa đã giải mã của một đơn; {@code forMessage=true} khi lấy để sao chép tin nhắn gửi khách (ghi nhật ký
+	 * riêng). Nhân viên bị giới hạn theo ca trực, Quản lý không.
+	 */
 	@GetMapping("/{id}/door-code")
-	public DoorCodeResponse doorCode(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean forMessage) {
-		return orderService.getDoorCode(id, forMessage);
+	public DoorCodeResponse doorCode(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean forMessage,
+			@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
+		Long staffAccountId = principal.role() == AccountRole.MANAGER ? null : principal.accountId();
+		return orderService.getDoorCode(id, forMessage, staffAccountId);
 	}
 
 	/** Xem trước giờ nhận/trả, phòng trống và tiền tạm tính trong lúc điền form Tạo đơn. */

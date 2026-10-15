@@ -2,10 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { AccountDto } from '../../core/account.models';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
-import { ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
+import { CoverageDto, ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
 import { SchedulePage, dayIso, mondayOf, shiftHours } from './schedule-page';
 
 describe('SchedulePage', () => {
@@ -37,18 +38,34 @@ describe('SchedulePage', () => {
     { id: 10, accountId: 5, templateId: 3, name: 'Đêm', color: 3, startAt: monday + 'T22:00:00', endAt: sunday + 'T06:00:00', edited: false, note: null },
   ];
 
+  /** Trả lời các request tải tuần đang xem: ca, và độ phủ nếu là Quản lý. */
+  function flushWeek(list: WorkShiftDto[], cov: CoverageDto | null = { days: [], uncovered: [] }) {
+    httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush(list);
+    if (cov) {
+      httpMock.expectOne(`/api/shifts/coverage?from=${monday}&to=${nextMonday}`).flush(cov);
+    }
+  }
+
+  const coverage: CoverageDto = {
+    days: [{ date: monday, total: 3, uncovered: 1 }, { date: sunday, total: 2, uncovered: 0 }],
+    uncovered: [
+      { orderId: 41, orderCode: 'SH-1041', roomNumber: '201', checkInAt: '2099-01-09T22:30:00' },
+      { orderId: 40, orderCode: 'SH-1040', roomNumber: '101', checkInAt: '2000-01-01T10:00:00' },
+    ],
+  };
+
   async function render(role: 'MANAGER' | 'STAFF') {
     const user: AccountSummary = { id: 1, username: 'u', fullName: 'Người dùng', role, mustChangePassword: false };
     await TestBed.configureTestingModule({
       imports: [SchedulePage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: AuthService, useValue: { currentUser: signal(user).asReadonly() } }],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), { provide: AuthService, useValue: { currentUser: signal(user).asReadonly() } }],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(SchedulePage);
     fixture.detectChanges();
     httpMock.expectOne('/api/accounts').flush(accounts);
     httpMock.expectOne('/api/shift-templates').flush(templates);
-    httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush(shifts);
+    flushWeek(shifts, role === 'MANAGER' ? coverage : null);
     fixture.detectChanges();
     return fixture;
   }
@@ -64,6 +81,22 @@ describe('SchedulePage', () => {
     expect(rows[0].querySelector('.sft .pi-pencil')).not.toBeNull();
     expect(rows[1].querySelectorAll('.na').length).toBe(7);
     expect(rows[1].textContent).toContain('Bắt đầu làm từ');
+  });
+
+  it('Quản lý thấy dòng Đơn cần NV đón và cảnh báo chỉ cho đơn sắp tới không ai trực', async () => {
+    const el = (await render('MANAGER')).nativeElement as HTMLElement;
+    const foot = el.querySelector('tfoot')!.textContent!;
+    expect(foot).toContain('3 · thiếu 1');
+    expect(foot).toContain('2 · đủ');
+    const alerts = el.querySelectorAll('.alert');
+    expect(alerts.length).toBe(1);
+    expect(alerts[0].textContent).toContain('Thứ Sáu 09/01: đơn SH-1041 (P201) nhận phòng lúc 22:30');
+    expect(alerts[0].querySelector('a')?.getAttribute('href')).toBe('/don-thue?id=41');
+  });
+
+  it('Nhân viên không tải độ phủ, không có dòng Đơn cần NV đón', async () => {
+    const el = (await render('STAFF')).nativeElement as HTMLElement;
+    expect(el.querySelector('tfoot')).toBeNull();
   });
 
   it('tổng giờ tính cả ca đêm sang hôm sau', async () => {
@@ -93,7 +126,7 @@ describe('SchedulePage', () => {
     const req = httpMock.expectOne({ url: '/api/shifts', method: 'POST' });
     expect(req.request.body).toEqual({ accountId: 5, date: monday, templateId: 3, startTime: '22:00', endTime: '06:00', note: null });
     req.flush({});
-    httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush(shifts);
+    flushWeek(shifts);
     expect(page['editing']()).toBeNull();
   });
 
@@ -117,11 +150,11 @@ describe('SchedulePage', () => {
     page.openShift(shifts[0]);
     page.deleteShift();
     httpMock.expectOne({ url: '/api/shifts/9', method: 'DELETE' }).flush(null);
-    httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush([]);
+    flushWeek([]);
 
     page.copyPreviousWeek();
     httpMock.expectOne('/api/shifts/copy-week').flush({ copied: 3, skipped: 1 });
-    httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush([]);
+    flushWeek([]);
     expect(page['info']()).toContain('Đã chép 3 ca, bỏ qua 1 ca');
   });
 
@@ -131,6 +164,7 @@ describe('SchedulePage', () => {
     const after = new Date(mondayOf(new Date()));
     after.setDate(after.getDate() + 14);
     httpMock.expectOne(`/api/shifts?from=${nextMonday}&to=${dayIso(after)}`).flush([]);
+    httpMock.expectOne(`/api/shifts/coverage?from=${nextMonday}&to=${dayIso(after)}`).flush({ days: [], uncovered: [] });
   });
 
   it('ca mẫu: thêm mới chọn màu chưa dùng, sửa và xoá', async () => {

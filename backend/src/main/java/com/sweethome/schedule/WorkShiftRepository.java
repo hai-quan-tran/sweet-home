@@ -47,6 +47,18 @@ public interface WorkShiftRepository extends JpaRepository<WorkShift, Long> {
 			@Param("endAt") LocalDateTime endAt, @Param("excludeId") Long excludeId);
 
 	/**
+	 * Tài khoản có ca giao với khoảng {@code [from, to)} không (đang trong ca: from = bây giờ, to = bây giờ + 1 giây).
+	 *
+	 * @param accountId tài khoản
+	 * @param from      từ thời điểm
+	 * @param to        đến thời điểm (không gồm)
+	 * @return true nếu có
+	 */
+	@Query("select count(s) > 0 from WorkShift s where s.accountId = :accountId and s.startAt < :to and s.endAt > :from")
+	boolean existsForAccountBetween(@Param("accountId") Long accountId, @Param("from") LocalDateTime from,
+			@Param("to") LocalDateTime to);
+
+	/**
 	 * Gỡ liên kết ca mẫu khỏi các ca đã xếp trước khi xoá ca mẫu (ca giữ nguyên bản sao tên/màu/giờ).
 	 *
 	 * @param templateId ca mẫu sắp xoá

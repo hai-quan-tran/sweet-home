@@ -8,6 +8,8 @@ import { ActivityLogDto } from '../../core/activity-log.models';
 import { periodStart } from '../../core/activity-log.service';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
+import { WorkShiftDto } from '../../core/schedule.models';
+import { dayIso } from '../schedule/schedule-page';
 import { StaffPage } from './staff-page';
 import { initials } from './staff-permissions';
 
@@ -26,6 +28,17 @@ describe('StaffPage', () => {
     { id: 1, createdAt: '2026-01-05T07:00:00', actor: 'system', actorName: null, action: 'STATUS_AUTO', detail: 'Tự chuyển sang Đang ở', orderId: null, orderCode: null, roomNumber: '302' },
   ];
 
+  /** Giờ máy lệch `offsetMinutes` phút so với bây giờ, dạng "YYYY-MM-DDTHH:mm:00". */
+  const at = (offsetMinutes: number) => {
+    const d = new Date(Date.now() + offsetMinutes * 60_000);
+    return `${dayIso(d)}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:00`;
+  };
+  // Hồng (id 5) đang trong ca; Tuấn (id 6, đã khoá) có ca nhưng vẫn hiện "Đã khoá".
+  const todayShifts: WorkShiftDto[] = [
+    { id: 1, accountId: 5, templateId: null, name: 'Ca lẻ', color: 0, startAt: at(-60), endAt: at(60), edited: false, note: null },
+    { id: 2, accountId: 6, templateId: null, name: 'Ca lẻ', color: 0, startAt: at(-60), endAt: at(60), edited: false, note: null },
+  ];
+
   async function render(role: 'MANAGER' | 'STAFF') {
     const user: AccountSummary = { id: 1, username: 'u', fullName: 'Người dùng', role, mustChangePassword: false };
     await TestBed.configureTestingModule({
@@ -41,6 +54,7 @@ describe('StaffPage', () => {
     const fixture = TestBed.createComponent(StaffPage);
     fixture.detectChanges();
     httpMock.expectOne('/api/accounts').flush(accounts);
+    httpMock.expectOne((r) => r.url === '/api/shifts').flush(todayShifts);
     if (role === 'MANAGER') {
       httpMock.expectOne((r) => r.url === '/api/activity-logs').flush({ items: logs, total: 3 });
     }
@@ -107,6 +121,14 @@ describe('StaffPage', () => {
   it('Nhân viên không thấy nhật ký', async () => {
     const el = (await render('STAFF')).nativeElement as HTMLElement;
     expect(el.textContent).not.toContain('Nhật ký thao tác');
+  });
+
+  it('tag ca: Đang trong ca; tài khoản khoá vẫn hiện Đã khoá', async () => {
+    const el = (await render('STAFF')).nativeElement as HTMLElement;
+    const rows = el.querySelectorAll('.people li');
+    expect(rows[0].textContent).toContain('Đang trong ca');
+    expect(rows[1].textContent).toContain('Đã khoá');
+    expect(rows[1].textContent).not.toContain('Đang trong ca');
   });
 
   it('initials lấy chữ đầu của từ đầu và từ cuối', () => {

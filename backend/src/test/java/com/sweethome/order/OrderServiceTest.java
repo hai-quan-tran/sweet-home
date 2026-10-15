@@ -34,6 +34,7 @@ import com.sweethome.surcharge.SurchargeCalculator;
 import com.sweethome.surcharge.SurchargeRepository;
 import com.sweethome.activity.ActivityAction;
 import com.sweethome.activity.ActivityLogService;
+import com.sweethome.schedule.ScheduleService;
 
 /**
  * Kiểm tra tạo đơn: tính giờ nhận/trả và tiền phòng theo từng loại thuê, kiểm tra trùng lịch,
@@ -44,6 +45,8 @@ class OrderServiceTest {
 
 	@Mock
 	private ActivityLogService activityLog;
+	@Mock
+	private ScheduleService scheduleService;
 
 	@Mock
 	private RentalOrderRepository orderRepository;
@@ -62,7 +65,7 @@ class OrderServiceTest {
 	void setUp() {
 		CryptoService cryptoService = new CryptoService(Base64.getEncoder().encodeToString(new byte[32]));
 		service = new OrderService(orderRepository, roomRepository, pricingSettingsRepository, surchargeRepository,
-				new SurchargeCalculator(), cryptoService, activityLog);
+				new SurchargeCalculator(), cryptoService, activityLog, scheduleService);
 
 		RoomType type = OrderTestFactory.roomType(1L, "Tiêu chuẩn", 150000, 50000, 350000, 500000);
 		room = OrderTestFactory.room(10L, "101", type, 2);
@@ -283,11 +286,22 @@ class OrderServiceTest {
 		RentalOrder order = existingOrder();
 		verify(activityLog).log(ActivityAction.ORDER_CREATED, 42L, "101", "Tạo đơn");
 
-		assertThat(service.getDoorCode(42L, false).doorCode()).isEqualTo("123456");
-		service.getDoorCode(42L, true);
+		assertThat(service.getDoorCode(42L, false, null).doorCode()).isEqualTo("123456");
+		service.getDoorCode(42L, true, null);
 
 		verify(activityLog).log(ActivityAction.DOOR_CODE_VIEWED, 42L, order.getRoom().getRoomNumber(), "Xem mã cửa");
 		verify(activityLog).log(ActivityAction.DOOR_CODE_COPIED, 42L, order.getRoom().getRoomNumber(), "Sao chép tin nhắn có mã cửa");
+	}
+
+	@Test
+	void staffSeesDoorCodeOnlyWhenScheduleAllows() {
+		RentalOrder order = existingOrder();
+		when(scheduleService.canSeeDoorCode(7L, order.getCheckInAt(), order.getCheckOutAt())).thenReturn(false, true);
+
+		assertThatThrownBy(() -> service.getDoorCode(42L, false, 7L)).isInstanceOf(BusinessException.class)
+				.hasMessageContaining("đang trong ca");
+		assertThat(service.getDoorCode(42L, false, 7L).doorCode()).isEqualTo("123456");
+		verify(activityLog).log(ActivityAction.DOOR_CODE_VIEWED, 42L, order.getRoom().getRoomNumber(), "Xem mã cửa");
 	}
 
 	@Test

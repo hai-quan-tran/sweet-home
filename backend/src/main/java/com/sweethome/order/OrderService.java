@@ -29,6 +29,7 @@ import com.sweethome.room.Room;
 import com.sweethome.room.RoomPricingMode;
 import com.sweethome.room.RoomRepository;
 import com.sweethome.room.RoomType;
+import com.sweethome.schedule.ScheduleService;
 import com.sweethome.surcharge.Surcharge;
 import com.sweethome.surcharge.SurchargeCalculationInput;
 import com.sweethome.surcharge.SurchargeCalculationResult;
@@ -54,10 +55,12 @@ public class OrderService {
 	private final SurchargeCalculator surchargeCalculator;
 	private final CryptoService cryptoService;
 	private final ActivityLogService activityLog;
+	private final ScheduleService scheduleService;
 
 	public OrderService(RentalOrderRepository orderRepository, RoomRepository roomRepository,
 			PricingSettingsRepository pricingSettingsRepository, SurchargeRepository surchargeRepository,
-			SurchargeCalculator surchargeCalculator, CryptoService cryptoService, ActivityLogService activityLog) {
+			SurchargeCalculator surchargeCalculator, CryptoService cryptoService, ActivityLogService activityLog,
+			ScheduleService scheduleService) {
 		this.orderRepository = orderRepository;
 		this.roomRepository = roomRepository;
 		this.pricingSettingsRepository = pricingSettingsRepository;
@@ -65,6 +68,7 @@ public class OrderService {
 		this.surchargeCalculator = surchargeCalculator;
 		this.cryptoService = cryptoService;
 		this.activityLog = activityLog;
+		this.scheduleService = scheduleService;
 	}
 
 	/**
@@ -123,15 +127,20 @@ public class OrderService {
 
 	/**
 	 * Mã cửa đã giải mã của một đơn, dùng cho nút "Hiện" và chèn vào tin nhắn gửi khách. Mỗi lần lấy đều
-	 * ghi nhật ký: xem mã cửa, hoặc sao chép tin nhắn có mã cửa (đơn được tính là đã gửi mã).
+	 * ghi nhật ký: xem mã cửa, hoặc sao chép tin nhắn có mã cửa (đơn được tính là đã gửi mã). Nhân viên chỉ
+	 * xem được khi đang trong ca hoặc thời gian ở của đơn giao với một ca của mình.
 	 *
-	 * @param id         id đơn
-	 * @param forMessage true nếu lấy để sao chép tin nhắn gửi khách
+	 * @param id             id đơn
+	 * @param forMessage     true nếu lấy để sao chép tin nhắn gửi khách
+	 * @param staffAccountId tài khoản Nhân viên đang xem, null nếu là Quản lý (không giới hạn)
 	 * @return mã cửa, null nếu đơn không có
 	 */
 	@Transactional
-	public DoorCodeResponse getDoorCode(Long id, boolean forMessage) {
+	public DoorCodeResponse getDoorCode(Long id, boolean forMessage, Long staffAccountId) {
 		RentalOrder order = findOrder(id);
+		if (staffAccountId != null && !scheduleService.canSeeDoorCode(staffAccountId, order.getCheckInAt(), order.getCheckOutAt())) {
+			throw new BusinessException(HttpStatus.FORBIDDEN, "Chỉ xem được mã cửa khi đang trong ca hoặc đơn thuộc ca trực của bạn");
+		}
 		if (forMessage) {
 			activityLog.log(ActivityAction.DOOR_CODE_COPIED, id, order.getRoom().getRoomNumber(), "Sao chép tin nhắn có mã cửa");
 		} else {

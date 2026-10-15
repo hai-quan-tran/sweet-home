@@ -11,9 +11,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +29,9 @@ import com.sweethome.auth.Account;
 import com.sweethome.auth.AccountRepository;
 import com.sweethome.auth.AccountStatus;
 import com.sweethome.common.error.BusinessException;
+import com.sweethome.order.RentalOrder;
+import com.sweethome.order.RentalOrderRepository;
+import com.sweethome.room.Room;
 
 /**
  * Kiểm tra ca mẫu và xếp ca: bản sao theo mẫu, ca đêm sang hôm sau, cờ đã sửa giờ, chặn trùng giờ,
@@ -37,6 +42,7 @@ class ScheduleServiceTest {
 
 	private static final LocalDate FRIDAY = LocalDate.of(2026, 10, 9);
 	private static final LocalDate MONDAY = LocalDate.of(2026, 10, 12);
+	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	@Mock
 	private ShiftTemplateRepository templateRepository;
@@ -44,6 +50,8 @@ class ScheduleServiceTest {
 	private WorkShiftRepository shiftRepository;
 	@Mock
 	private AccountRepository accountRepository;
+	@Mock
+	private RentalOrderRepository orderRepository;
 
 	private ScheduleService service;
 	private Account hong;
@@ -52,7 +60,8 @@ class ScheduleServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new ScheduleService(templateRepository, shiftRepository, accountRepository);
+		service = new ScheduleService(templateRepository, shiftRepository, accountRepository, orderRepository,
+				Clock.fixed(FRIDAY.atTime(10, 0).atZone(ZONE).toInstant(), ZONE));
 		hong = new Account();
 		setId(Account.class, hong, 5L);
 		hong.setFullName("Lê Thị Hồng");
@@ -200,6 +209,52 @@ class ScheduleServiceTest {
 		verify(shiftRepository).delete(existing);
 		when(shiftRepository.findById(10L)).thenReturn(Optional.empty());
 		assertThatThrownBy(() -> service.deleteShift(10L)).isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	void staffSeesDoorCodeWhenOnShiftNowOrStayOverlapsOwnShift() {
+		LocalDateTime now = FRIDAY.atTime(10, 0);
+		LocalDateTime in = FRIDAY.atTime(22, 0);
+		LocalDateTime out = FRIDAY.plusDays(1).atTime(10, 0);
+		when(shiftRepository.existsForAccountBetween(5L, now, now.plusSeconds(1))).thenReturn(true, false, false);
+		when(shiftRepository.existsForAccountBetween(5L, in, out)).thenReturn(true, false);
+
+		assertThat(service.canSeeDoorCode(5L, in, out)).isTrue();
+		assertThat(service.canSeeDoorCode(5L, in, out)).isTrue();
+		assertThat(service.canSeeDoorCode(5L, in, out)).isFalse();
+	}
+
+	@Test
+	void coverageCountsStaffPickupsAndListsThoseWithoutActiveShift() {
+		Account locked = new Account();
+		setId(Account.class, locked, 6L);
+		locked.setStatus(AccountStatus.LOCKED);
+		when(accountRepository.findAll()).thenReturn(List.of(hong, locked));
+		when(shiftRepository.findOverlapping(FRIDAY.atStartOfDay(), FRIDAY.plusDays(2).atStartOfDay())).thenReturn(List.of(
+				shift(5L, FRIDAY.atTime(22, 0), FRIDAY.plusDays(1).atTime(6, 0)),
+				shift(6L, FRIDAY.atTime(6, 0), FRIDAY.atTime(14, 0))));
+		RentalOrder night = order(41L, FRIDAY.atTime(22, 30));
+		RentalOrder morning = order(42L, FRIDAY.atTime(10, 0));
+		when(orderRepository.findStaffPickupsBetween(FRIDAY.atStartOfDay(), FRIDAY.plusDays(2).atStartOfDay()))
+				.thenReturn(List.of(morning, night));
+
+		CoverageDto result = service.coverage(FRIDAY, FRIDAY.plusDays(2));
+
+		assertThat(result.days()).containsExactly(new CoverageDto.Day(FRIDAY, 2, 1), new CoverageDto.Day(FRIDAY.plusDays(1), 0, 0));
+		assertThat(result.uncovered()).singleElement().satisfies(u -> {
+			assertThat(u.orderCode()).isEqualTo("SH-1042");
+			assertThat(u.roomNumber()).isEqualTo("201");
+		});
+	}
+
+	private RentalOrder order(Long id, LocalDateTime checkIn) {
+		RentalOrder o = new RentalOrder();
+		setId(RentalOrder.class, o, id);
+		Room room = new Room();
+		room.setRoomNumber("201");
+		o.setRoom(room);
+		o.setCheckInAt(checkIn);
+		return o;
 	}
 
 	private ShiftTemplate template(Long id, String name, int start, int end, int color) {

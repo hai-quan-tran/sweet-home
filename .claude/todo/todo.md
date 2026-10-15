@@ -39,6 +39,6 @@
 - [x] GĐ 5: vòng đời đơn
 - [x] GĐ 6: lịch đặt phòng & gia hạn
 - [x] GĐ 7: nhân viên & nhật ký
-- [ ] GĐ 8: lịch làm
+- [x] GĐ 8: lịch làm
 - [ ] GĐ 9: tổng quan & thông báo
 - [ ] GĐ 10: hoàn thiện

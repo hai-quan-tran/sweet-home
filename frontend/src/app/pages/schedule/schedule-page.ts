@@ -1,16 +1,18 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Observable, finalize } from 'rxjs';
 
 import { AccountDto } from '../../core/account.models';
 import { AccountService } from '../../core/account.service';
 import { AuthService } from '../../core/auth.service';
-import { ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
+import { CoverageDto, ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
 import { ScheduleService } from '../../core/schedule.service';
 import { initials } from '../staff/staff-permissions';
 
 const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+const WEEKDAY_NAMES = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 /** Tên màu ca mẫu (màu 1–6 định nghĩa ở schedule-page.scss: .s1 … .s6). */
 export const COLOR_NAMES = ['Xanh dương', 'Xanh ngọc', 'Tím', 'Cam', 'Hồng', 'Xanh lá'];
 
@@ -42,7 +44,7 @@ export function shiftHours(s: WorkShiftDto): number {
  */
 @Component({
   selector: 'app-schedule-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './schedule-page.html',
   styleUrl: './schedule-page.scss',
 })
@@ -58,6 +60,7 @@ export class SchedulePage {
   protected readonly accounts = signal<AccountDto[]>([]);
   protected readonly templates = signal<ShiftTemplateDto[]>([]);
   protected readonly shifts = signal<WorkShiftDto[]>([]);
+  protected readonly coverage = signal<CoverageDto | null>(null);
   protected readonly editing = signal<Editing | null>(null);
   protected readonly editingTemplateId = signal<number | 'new' | null>(null);
   protected readonly error = signal<string | null>(null);
@@ -99,6 +102,19 @@ export class SchedulePage {
     const t = this.templates().find((x) => x.id === v.templateId);
     return t ? { template: t, changed: v.startTime !== hm(t.startTime) || v.endTime !== hm(t.endTime) } : null;
   });
+  /** Cảnh báo đơn sắp tới cần nhân viên đón nhưng không ai trực (chỉ Quản lý có dữ liệu độ phủ). */
+  protected readonly alerts = computed(() => {
+    const now = new Date();
+    const nowIso = `${dayIso(now)}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return (this.coverage()?.uncovered ?? []).filter((u) => u.checkInAt.slice(0, 16) >= nowIso).map((u) => {
+      const d = new Date(u.checkInAt);
+      return {
+        orderId: u.orderId,
+        text: `${WEEKDAY_NAMES[d.getDay()]} ${u.checkInAt.slice(8, 10)}/${u.checkInAt.slice(5, 7)}: đơn ${u.orderCode} (P${u.roomNumber}) `
+          + `nhận phòng lúc ${u.checkInAt.slice(11, 16)} cần nhân viên đón, nhưng chưa có ai trực lúc đó.`,
+      };
+    });
+  });
   protected readonly editingAccount = computed(() => this.accounts().find((a) => a.id === this.editing()?.accountId) ?? null);
 
   constructor() {
@@ -107,12 +123,24 @@ export class SchedulePage {
     this.loadShifts();
   }
 
-  /** Tải ca của tuần đang xem. */
+  /** Tải ca của tuần đang xem; Quản lý tải thêm độ phủ đơn cần nhân viên đón. */
   loadShifts(): void {
-    const days = this.days();
+    const from = this.days()[0].iso;
     const end = new Date(this.weekStart());
     end.setDate(end.getDate() + 7);
-    this.scheduleService.listShifts(days[0].iso, dayIso(end)).subscribe((list) => this.shifts.set(list));
+    this.scheduleService.listShifts(from, dayIso(end)).subscribe((list) => this.shifts.set(list));
+    if (this.isManager()) {
+      this.scheduleService.coverage(from, dayIso(end)).subscribe((c) => this.coverage.set(c));
+    }
+  }
+
+  /** Ô "Đơn cần NV đón" của một ngày: "—", "4 · đủ" hoặc "3 · thiếu 1". */
+  coverageOf(day: string): { text: string; bad: boolean } | null {
+    const c = this.coverage()?.days.find((d) => d.date === day);
+    if (!c || c.total === 0) {
+      return null;
+    }
+    return { text: c.uncovered ? `${c.total} · thiếu ${c.uncovered}` : `${c.total} · đủ`, bad: c.uncovered > 0 };
   }
 
   /** Lùi/tiến một tuần, hoặc về tuần này (step = 0). */

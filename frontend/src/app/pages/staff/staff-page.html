@@ -27,6 +27,8 @@
               </div>
               @if (a.status === 'LOCKED') {
                 <span class="tag t-c">Đã khoá</span>
+              } @else if (shiftTags().get(a.id); as t) {
+                <span class="tag" [class]="t.cls">{{ t.text }}</span>
               } @else if (a.role === 'MANAGER') {
                 <span class="tag t-b">Quản lý</span>
               }

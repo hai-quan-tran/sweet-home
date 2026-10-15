@@ -129,6 +129,56 @@
   }
 }
 
+/* Dòng "Đơn cần NV đón": đủ người (xanh) / thiếu (cam). */
+.sch tfoot {
+  th,
+  td {
+    background: var(--p-content-hover-background);
+    font-size: 12px;
+    vertical-align: middle;
+    text-align: center;
+    padding: 12px 6px;
+  }
+
+  th {
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 600;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.cov {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--p-green-700);
+
+  &.bad { color: var(--p-orange-700); }
+  .pi { font-size: 11px; }
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--p-orange-100);
+  color: var(--p-orange-800);
+  font-weight: 500;
+
+  .btn-s { margin-left: auto; min-height: 40px; }
+}
+
+:host-context(.app-dark) {
+  .alert { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+  .cov { color: #86efac; }
+  .cov.bad { color: #fdba74; }
+}
+
 .who-c {
   display: flex;
   align-items: center;

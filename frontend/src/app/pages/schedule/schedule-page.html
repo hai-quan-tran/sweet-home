@@ -21,6 +21,13 @@
   <div class="msg bad" role="alert">{{ error() }}</div>
 }
 
+@for (a of alerts(); track a.orderId) {
+  <div class="alert" role="status">
+    <i class="pi pi-exclamation-triangle"></i><span>{{ a.text }}</span>
+    <a class="btn-s" routerLink="/don-thue" [queryParams]="{ id: a.orderId }">Xem đơn</a>
+  </div>
+}
+
 <section class="card">
   <div class="sch-w">
     <table class="sch">
@@ -75,6 +82,23 @@
           <tr><td colspan="9" class="muted empty">Chưa có tài khoản nào đang hoạt động.</td></tr>
         }
       </tbody>
+      @if (coverage()) {
+        <tfoot>
+          <tr>
+            <th scope="row">Đơn cần NV đón</th>
+            @for (d of days(); track d.iso) {
+              <td [class.today]="d.today">
+                @if (coverageOf(d.iso); as c) {
+                  <span class="cov" [class.bad]="c.bad"><i class="pi" [class]="c.bad ? 'pi-exclamation-triangle' : 'pi-check'"></i>{{ c.text }}</span>
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+            }
+            <td></td>
+          </tr>
+        </tfoot>
+      }
     </table>
   </div>
   <div class="legend">

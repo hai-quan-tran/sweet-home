@@ -66,6 +66,14 @@ public class ScheduleController {
 		return scheduleService.listShifts(from, to);
 	}
 
+	/** Đơn cần nhân viên đón trong khoảng ngày và đơn nào không có ai trực (chỉ Quản lý). */
+	@GetMapping("/shifts/coverage")
+	@PreAuthorize("hasRole('MANAGER')")
+	public CoverageDto coverage(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+		return scheduleService.coverage(from, to);
+	}
+
 	/** Xếp một ca. */
 	@PostMapping("/shifts")
 	@PreAuthorize("hasRole('MANAGER')")

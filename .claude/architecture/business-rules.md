@@ -64,6 +64,13 @@
 - Ca mẫu mặc định: sáng 06:00–14:00, chiều 14:00–22:00, đêm 22:00–06:00.
 - Ca đã xếp lưu bản sao giờ bắt đầu/kết thúc tại lúc xếp. Sửa hoặc xoá ca mẫu sau đó không làm đổi
   các ca đã xếp (kể cả ca của ngày tới); chỉ áp dụng cho ca xếp mới.
+- Ca có giờ kết thúc ≤ giờ bắt đầu là ca qua đêm (kết thúc hôm sau); ca thuộc ngày bắt đầu. Không xếp ca cho
+  tài khoản đã khoá hoặc trước ngày bắt đầu làm. Sao chép tuần trước bỏ qua ca trùng giờ / không xếp được.
+- Đơn cần nhân viên đón = đơn chưa huỷ, hình thức Nhân viên check-in. "Không ai trực" = giờ nhận phòng không
+  nằm trong ca nào của tài khoản đang hoạt động. Màn Lịch làm (Quản lý) hiện số đơn / số đơn thiếu người
+  theo ngày và cảnh báo các đơn sắp tới không ai trực.
+- Nhân viên xem mã cửa (kể cả khi sao chép tin nhắn có mã cửa) chỉ khi đang trong ca, hoặc thời gian ở của
+  đơn giao với một ca của mình. Quản lý không giới hạn.
 
 ## Tin nhắn gửi khách
 - Mẫu tin nhắn do Quản lý thêm/sửa/xoá; Nhân viên chỉ chọn mẫu và sao chép.

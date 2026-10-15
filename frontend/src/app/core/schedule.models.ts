@@ -43,3 +43,9 @@ export interface CopyWeekResult {
   copied: number;
   skipped: number;
 }
+
+/** Độ phủ ca với đơn cần nhân viên đón: theo ngày và danh sách đơn không ai trực lúc nhận phòng. */
+export interface CoverageDto {
+  days: { date: string; total: number; uncovered: number }[];
+  uncovered: { orderId: number; orderCode: string; roomNumber: string; checkInAt: string }[];
+}

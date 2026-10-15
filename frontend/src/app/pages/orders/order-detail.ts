@@ -144,16 +144,17 @@ export class OrderDetail {
     });
   }
 
-  /** Hiện mã cửa của đơn. */
+  /** Hiện mã cửa của đơn (Nhân viên ngoài ca trực bị từ chối, hiện lý do). */
   revealDoorCode(): void {
     const order = this.order();
     if (!order || this.revealingDoorCode()) {
       return;
     }
     this.revealingDoorCode.set(true);
-    this.orderService.doorCode(order.id).subscribe((res) => {
-      this.doorCode.set(res.doorCode);
-      this.revealingDoorCode.set(false);
+    this.actionError.set(null);
+    this.orderService.doorCode(order.id).pipe(finalize(() => this.revealingDoorCode.set(false))).subscribe({
+      next: (res) => this.doorCode.set(res.doorCode),
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Không lấy được mã cửa.'),
     });
   }
 
@@ -177,9 +178,12 @@ export class OrderDetail {
       );
     };
     if (template.containsDoorCode && order.hasDoorCode) {
-      this.orderService.doorCode(order.id, true).subscribe((res) => {
-        this.doorCode.set(res.doorCode);
-        render(res.doorCode);
+      this.orderService.doorCode(order.id, true).subscribe({
+        next: (res) => {
+          this.doorCode.set(res.doorCode);
+          render(res.doorCode);
+        },
+        error: (err) => this.copyFeedback.set(`Không sao chép được: ${err?.error?.detail ?? 'không lấy được mã cửa'}.`),
       });
     } else {
       render(this.doorCode());
