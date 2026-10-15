@@ -31,7 +31,7 @@ describe('ScheduleService', () => {
     service.listShifts('2026-10-12', '2026-10-19').subscribe();
     httpMock.expectOne('/api/shifts?from=2026-10-12&to=2026-10-19').flush([]);
     service.coverage('2026-10-12', '2026-10-19').subscribe();
-    httpMock.expectOne('/api/shifts/coverage?from=2026-10-12&to=2026-10-19').flush({ days: [], uncovered: [] });
+    httpMock.expectOne('/api/shifts/coverage?from=2026-10-12&to=2026-10-19').flush({ days: [], uncovered: [], needs: [] });
     service.createShift({} as WorkShiftRequest).subscribe();
     httpMock.expectOne({ url: '/api/shifts', method: 'POST' }).flush({});
     service.updateShift(9, {} as WorkShiftRequest).subscribe();

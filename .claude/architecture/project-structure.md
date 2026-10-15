@@ -428,3 +428,9 @@
   → Quản lý.
 - `ScheduleService` phụ thuộc `RentalOrderRepository` và `OrderService` phụ thuộc `ScheduleService` (không
   vòng bean vì Schedule chỉ dùng repository của đơn).
+- "Cần người": `CoverageDto.needs` = các cặp (ngày, ca mẫu) mà khung giờ ca mẫu của ngày đó chứa giờ nhận
+  phòng của một đơn không ai trực (`ScheduleService.neededTemplates` xét ngày của giờ nhận và ngày trước đó —
+  ca đêm hôm trước kéo sang sáng nay; chỉ lấy ngày trong khoảng đang xem). Frontend: ô của người chưa có ca
+  ngày đó đổi nút "+" thành "Cần người · Ca …" (viền cam), bấm → `openNew(account, ngày, templateId)`.
+  Lưu ý: dòng "Đơn cần NV đón" đếm theo ngày nhận phòng, còn "Cần người" theo ngày của ca (đơn 02:00 ngày 16
+  báo thiếu ở cột 16 nhưng "Cần người · Ca đêm" ở cột 15).

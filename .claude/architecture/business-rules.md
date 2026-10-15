@@ -69,6 +69,8 @@
 - Đơn cần nhân viên đón = đơn chưa huỷ, hình thức Nhân viên check-in. "Không ai trực" = giờ nhận phòng không
   nằm trong ca nào của tài khoản đang hoạt động. Màn Lịch làm (Quản lý) hiện số đơn / số đơn thiếu người
   theo ngày và cảnh báo các đơn sắp tới không ai trực.
+- "Cần người": khung giờ ca mẫu của một ngày có đơn cần nhân viên đón mà không ai trực → ô trống của ngày đó
+  báo cần người cho ca mẫu đó. Không có đơn hoặc chỉ có đơn khách tự check-in thì không báo.
 - Nhân viên xem mã cửa (kể cả khi sao chép tin nhắn có mã cửa) chỉ khi đang trong ca, hoặc thời gian ở của
   đơn giao với một ca của mình. Quản lý không giới hạn.
 

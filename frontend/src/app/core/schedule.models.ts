@@ -48,4 +48,6 @@ export interface CopyWeekResult {
 export interface CoverageDto {
   days: { date: string; total: number; uncovered: number }[];
   uncovered: { orderId: number; orderCode: string; roomNumber: string; checkInAt: string }[];
+  /** Khung ca mẫu của một ngày cần xếp thêm người. */
+  needs: { date: string; templateId: number }[];
 }

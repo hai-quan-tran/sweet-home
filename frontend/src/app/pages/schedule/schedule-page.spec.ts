@@ -39,7 +39,7 @@ describe('SchedulePage', () => {
   ];
 
   /** Trả lời các request tải tuần đang xem: ca, và độ phủ nếu là Quản lý. */
-  function flushWeek(list: WorkShiftDto[], cov: CoverageDto | null = { days: [], uncovered: [] }) {
+  function flushWeek(list: WorkShiftDto[], cov: CoverageDto | null = { days: [], uncovered: [], needs: [] }) {
     httpMock.expectOne(`/api/shifts?from=${monday}&to=${nextMonday}`).flush(list);
     if (cov) {
       httpMock.expectOne(`/api/shifts/coverage?from=${monday}&to=${nextMonday}`).flush(cov);
@@ -52,6 +52,7 @@ describe('SchedulePage', () => {
       { orderId: 41, orderCode: 'SH-1041', roomNumber: '201', checkInAt: '2099-01-09T22:30:00' },
       { orderId: 40, orderCode: 'SH-1040', roomNumber: '101', checkInAt: '2000-01-01T10:00:00' },
     ],
+    needs: [{ date: sunday, templateId: 3 }],
   };
 
   async function render(role: 'MANAGER' | 'STAFF') {
@@ -92,6 +93,18 @@ describe('SchedulePage', () => {
     expect(alerts.length).toBe(1);
     expect(alerts[0].textContent).toContain('Thứ Sáu 09/01: đơn SH-1041 (P201) nhận phòng lúc 22:30');
     expect(alerts[0].querySelector('a')?.getAttribute('href')).toBe('/don-thue?id=41');
+  });
+
+  it('ô trống của ngày có khung ca thiếu người hiện "Cần người", bấm vào mở form chọn sẵn ca mẫu đó', async () => {
+    const fixture = await render('MANAGER');
+    const hongRow = (fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr')[0];
+    const needs = hongRow.querySelectorAll<HTMLButtonElement>('.add.need');
+    expect(needs.length).toBe(1);
+    expect(needs[0].textContent).toContain('Cần người · Ca đêm');
+
+    needs[0].click();
+    expect(fixture.componentInstance['editing']()).toEqual({ shift: null, accountId: 5, date: sunday });
+    expect(fixture.componentInstance['shiftForm'].getRawValue().templateId).toBe(3);
   });
 
   it('Nhân viên không tải độ phủ, không có dòng Đơn cần NV đón', async () => {
@@ -164,7 +177,7 @@ describe('SchedulePage', () => {
     const after = new Date(mondayOf(new Date()));
     after.setDate(after.getDate() + 14);
     httpMock.expectOne(`/api/shifts?from=${nextMonday}&to=${dayIso(after)}`).flush([]);
-    httpMock.expectOne(`/api/shifts/coverage?from=${nextMonday}&to=${dayIso(after)}`).flush({ days: [], uncovered: [] });
+    httpMock.expectOne(`/api/shifts/coverage?from=${nextMonday}&to=${dayIso(after)}`).flush({ days: [], uncovered: [], needs: [] });
   });
 
   it('ca mẫu: thêm mới chọn màu chưa dùng, sửa và xoá', async () => {

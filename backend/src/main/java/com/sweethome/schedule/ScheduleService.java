@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,6 +130,8 @@ public class ScheduleService {
 		Map<LocalDate, int[]> perDay = new TreeMap<>();
 		from.datesUntil(to).forEach(d -> perDay.put(d, new int[2]));
 		List<CoverageDto.UncoveredOrder> uncovered = new ArrayList<>();
+		Set<CoverageDto.Need> needs = new LinkedHashSet<>();
+		List<ShiftTemplate> templates = templateRepository.findAllByOrderByStartTimeAsc();
 		for (RentalOrder order : orderRepository.findStaffPickupsBetween(from.atStartOfDay(), to.atStartOfDay())) {
 			int[] counts = perDay.get(order.getCheckInAt().toLocalDate());
 			counts[0]++;
@@ -138,10 +141,31 @@ public class ScheduleService {
 				counts[1]++;
 				uncovered.add(new CoverageDto.UncoveredOrder(order.getId(), OrderDto.codeOf(order.getId()),
 						order.getRoom().getRoomNumber(), order.getCheckInAt()));
+				needs.addAll(neededTemplates(order.getCheckInAt(), templates, from, to));
 			}
 		}
 		return new CoverageDto(perDay.entrySet().stream()
-				.map(e -> new CoverageDto.Day(e.getKey(), e.getValue()[0], e.getValue()[1])).toList(), uncovered);
+				.map(e -> new CoverageDto.Day(e.getKey(), e.getValue()[0], e.getValue()[1])).toList(), uncovered, List.copyOf(needs));
+	}
+
+	/**
+	 * Khung ca mẫu (thuộc ngày trong {@code [from, to)}) chứa thời điểm {@code at}: xét ngày của {@code at} và
+	 * ngày trước đó (ca đêm hôm trước kéo sang sáng nay).
+	 */
+	static List<CoverageDto.Need> neededTemplates(LocalDateTime at, List<ShiftTemplate> templates, LocalDate from, LocalDate to) {
+		List<CoverageDto.Need> result = new ArrayList<>();
+		for (LocalDate day : List.of(at.toLocalDate().minusDays(1), at.toLocalDate())) {
+			if (day.isBefore(from) || !day.isBefore(to)) {
+				continue;
+			}
+			for (ShiftTemplate t : templates) {
+				LocalDateTime start = day.atTime(t.getStartTime());
+				if (!at.isBefore(start) && at.isBefore(endOf(day, t.getStartTime(), t.getEndTime()))) {
+					result.add(new CoverageDto.Need(day, t.getId()));
+				}
+			}
+		}
+		return result;
 	}
 
 	/**

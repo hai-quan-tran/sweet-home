@@ -256,6 +256,27 @@
   &.sel { border-color: var(--p-primary-color); color: var(--p-primary-color); }
 }
 
+/* "Cần người": ô trống của ngày có khung ca mẫu thiếu người cho đơn NV đón. */
+.add.need {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  min-height: 52px;
+  border-color: var(--p-orange-400);
+  color: var(--p-orange-700);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+
+  .pi { font-size: 12px; }
+}
+
+:host-context(.app-dark) .add.need {
+  color: #fdba74;
+}
+
 .stack .sft + .add {
   min-height: 28px;
 }

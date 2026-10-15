@@ -65,7 +65,12 @@
                         <span>{{ time(s.startAt) }}–{{ time(s.endAt) }}@if (s.edited) {<i class="pi pi-pencil" aria-label="Đã sửa giờ"></i>}</span>
                       </button>
                     }
-                    @if (isManager()) {
+                    @if (isManager() && cellShifts(a.id, d.iso).length === 0 && dayNeeds(d.iso).length) {
+                      @for (t of dayNeeds(d.iso); track t.id) {
+                        <button class="add need" type="button" [attr.aria-label]="'Cần người ca ' + t.name + ' ngày ' + d.dayMonth + ', xếp ' + a.fullName"
+                          (click)="openNew(a.id, d.iso, t.id)"><i class="pi pi-user-plus"></i>Cần người · Ca {{ t.name.toLowerCase() }}</button>
+                      }
+                    } @else if (isManager()) {
                       <button class="add" type="button" [attr.aria-label]="'Thêm ca cho ' + a.fullName + ' ngày ' + d.dayMonth"
                         [class.sel]="editing()?.shift === null && editing()?.accountId === a.id && editing()?.date === d.iso"
                         (click)="openNew(a.id, d.iso)"><i class="pi pi-plus"></i></button>

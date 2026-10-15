@@ -233,10 +233,12 @@ class ScheduleServiceTest {
 		when(shiftRepository.findOverlapping(FRIDAY.atStartOfDay(), FRIDAY.plusDays(2).atStartOfDay())).thenReturn(List.of(
 				shift(5L, FRIDAY.atTime(22, 0), FRIDAY.plusDays(1).atTime(6, 0)),
 				shift(6L, FRIDAY.atTime(6, 0), FRIDAY.atTime(14, 0))));
-		RentalOrder night = order(41L, FRIDAY.atTime(22, 30));
-		RentalOrder morning = order(42L, FRIDAY.atTime(10, 0));
+		RentalOrder nightOrder = order(41L, FRIDAY.atTime(22, 30));
+		RentalOrder morningOrder = order(42L, FRIDAY.atTime(10, 0));
 		when(orderRepository.findStaffPickupsBetween(FRIDAY.atStartOfDay(), FRIDAY.plusDays(2).atStartOfDay()))
-				.thenReturn(List.of(morning, night));
+				.thenReturn(List.of(morningOrder, nightOrder));
+
+		when(templateRepository.findAllByOrderByStartTimeAsc()).thenReturn(List.of(morning, night));
 
 		CoverageDto result = service.coverage(FRIDAY, FRIDAY.plusDays(2));
 
@@ -245,6 +247,18 @@ class ScheduleServiceTest {
 			assertThat(u.orderCode()).isEqualTo("SH-1042");
 			assertThat(u.roomNumber()).isEqualTo("201");
 		});
+		assertThat(result.needs()).containsExactly(new CoverageDto.Need(FRIDAY, 1L));
+	}
+
+	@Test
+	void neededTemplateOfEarlyMorningIsPreviousNightWithinRange() {
+		List<ShiftTemplate> templates = List.of(morning, night);
+		LocalDateTime saturday2am = FRIDAY.plusDays(1).atTime(2, 0);
+
+		assertThat(ScheduleService.neededTemplates(saturday2am, templates, FRIDAY, FRIDAY.plusDays(7)))
+				.containsExactly(new CoverageDto.Need(FRIDAY, 3L));
+		assertThat(ScheduleService.neededTemplates(saturday2am, templates, FRIDAY.plusDays(1), FRIDAY.plusDays(7))).isEmpty();
+		assertThat(ScheduleService.neededTemplates(FRIDAY.atTime(15, 0), templates, FRIDAY, FRIDAY.plusDays(7))).isEmpty();
 	}
 
 	private RentalOrder order(Long id, LocalDateTime checkIn) {

@@ -10,8 +10,9 @@ import java.util.List;
  *
  * @param days      từng ngày trong khoảng
  * @param uncovered đơn có giờ nhận phòng không nằm trong ca nào
+ * @param needs     khung ca mẫu cần người: chứa giờ nhận phòng của ít nhất một đơn không ai trực
  */
-public record CoverageDto(List<Day> days, List<UncoveredOrder> uncovered) {
+public record CoverageDto(List<Day> days, List<UncoveredOrder> uncovered, List<Need> needs) {
 
 	/**
 	 * Một ngày.
@@ -32,5 +33,14 @@ public record CoverageDto(List<Day> days, List<UncoveredOrder> uncovered) {
 	 * @param checkInAt  giờ nhận phòng
 	 */
 	public record UncoveredOrder(Long orderId, String orderCode, String roomNumber, LocalDateTime checkInAt) {
+	}
+
+	/**
+	 * Khung ca mẫu của một ngày cần xếp thêm người (ca đêm của ngày D chứa cả giờ sáng sớm ngày D+1).
+	 *
+	 * @param date       ngày của khung ca
+	 * @param templateId ca mẫu
+	 */
+	public record Need(LocalDate date, Long templateId) {
 	}
 }

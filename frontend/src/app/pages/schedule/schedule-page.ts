@@ -187,9 +187,15 @@ export class SchedulePage {
     this.error.set(null);
   }
 
-  /** Mở form thêm ca cho một người, một ngày; mặc định theo ca mẫu đầu tiên. */
-  openNew(accountId: number, date: string): void {
-    const t = this.templates()[0];
+  /** Ca mẫu cần thêm người trong ngày (có đơn NV đón không ai trực rơi vào khung ca đó). */
+  dayNeeds(day: string): ShiftTemplateDto[] {
+    const ids = (this.coverage()?.needs ?? []).filter((n) => n.date === day).map((n) => n.templateId);
+    return this.templates().filter((t) => ids.includes(t.id));
+  }
+
+  /** Mở form thêm ca cho một người, một ngày; chọn sẵn ca mẫu `templateId` hoặc ca mẫu đầu tiên. */
+  openNew(accountId: number, date: string, templateId?: number): void {
+    const t = this.templates().find((x) => x.id === templateId) ?? this.templates()[0];
     this.editing.set({ shift: null, accountId, date });
     this.shiftForm.setValue({ templateId: t?.id ?? null, startTime: t ? hm(t.startTime) : '', endTime: t ? hm(t.endTime) : '', note: '' });
     this.error.set(null);

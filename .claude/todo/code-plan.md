@@ -172,7 +172,7 @@ Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
 - Chuyển từ GĐ7: tag "Đang trong ca" / "Vào ca HH:mm" ở danh sách tài khoản màn Nhân viên; mã cửa cho Nhân
   viên chỉ xem được đơn trong ca mình trực (GĐ4 để mở); cân nhắc ghi nhật ký xếp/sửa ca.
 - Frontend: màn Lịch làm (Nhân viên chỉ xem).
-- Tự chốt (người dùng yêu cầu làm không hỏi lại, cần thì sửa sau):
+- Các điểm đã chốt (người dùng xác nhận lại sau khi làm xong):
   - Ca lưu bản sao tên, màu, giờ bắt đầu/kết thúc (giờ kết thúc ≤ giờ bắt đầu = sang hôm sau) và cờ "đã sửa
     giờ so với mẫu" lúc lưu; ca nằm ở ngày bắt đầu. Xoá ca mẫu không ảnh hưởng ca đã xếp.
   - Bảng hiện mọi tài khoản đang hoạt động (Nhân viên trước); ngày trước "ngày bắt đầu làm" không xếp được.
@@ -182,6 +182,9 @@ Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
     nằm trong ca nào. Cảnh báo chỉ nêu đơn sắp tới (giờ nhận ≥ bây giờ).
   - Nhân viên xem mã cửa khi: đang trong ca, hoặc thời gian ở của đơn giao với một ca của mình.
   - Không ghi nhật ký xếp/sửa ca (thuộc nhóm cấu hình), vẫn có created/updated by.
+  - "Cần người" (bổ sung sau khi người dùng chốt): khung ca mẫu của một ngày chứa giờ nhận phòng của đơn NV
+    đón không ai trực → ô trống (người chưa có ca ngày đó) hiện "Cần người · Ca …", bấm để thêm ca chọn sẵn mẫu.
+    Không có đơn hoặc chỉ có đơn khách tự check-in thì không báo.
 - Chia 2 phần, mỗi phần xong → commit:
 - [x] 8.1 Ca mẫu & xếp ca: ca mẫu CRUD (mặc định sáng/chiều/đêm), xếp ca theo mẫu hoặc ca lẻ, sửa giờ,
   ghi chú, xoá, không trùng giờ, sao chép tuần trước; màn Lịch làm theo tuần, tổng giờ; NV chỉ xem.
