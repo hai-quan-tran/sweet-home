@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 7 xong. Tiếp theo: GĐ 8.
+Trạng thái: GĐ 8.1 xong, đang làm GĐ 8.2.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -172,6 +172,21 @@ Trạng thái: GĐ 7 xong. Tiếp theo: GĐ 8.
 - Chuyển từ GĐ7: tag "Đang trong ca" / "Vào ca HH:mm" ở danh sách tài khoản màn Nhân viên; mã cửa cho Nhân
   viên chỉ xem được đơn trong ca mình trực (GĐ4 để mở); cân nhắc ghi nhật ký xếp/sửa ca.
 - Frontend: màn Lịch làm (Nhân viên chỉ xem).
+- Tự chốt (người dùng yêu cầu làm không hỏi lại, cần thì sửa sau):
+  - Ca lưu bản sao tên, màu, giờ bắt đầu/kết thúc (giờ kết thúc ≤ giờ bắt đầu = sang hôm sau) và cờ "đã sửa
+    giờ so với mẫu" lúc lưu; ca nằm ở ngày bắt đầu. Xoá ca mẫu không ảnh hưởng ca đã xếp.
+  - Bảng hiện mọi tài khoản đang hoạt động (Nhân viên trước); ngày trước "ngày bắt đầu làm" không xếp được.
+  - Sao chép tuần trước: chép mọi ca tuần trước sang +7 ngày, bỏ qua ca trùng giờ, tài khoản đã khoá hoặc
+    chưa tới ngày bắt đầu làm; báo số ca đã chép / bỏ qua.
+  - Đơn cần NV đón = đơn chưa huỷ, hình thức Nhân viên check-in; "không ai trực" = giờ nhận phòng không
+    nằm trong ca nào. Cảnh báo chỉ nêu đơn sắp tới (giờ nhận ≥ bây giờ).
+  - Nhân viên xem mã cửa khi: đang trong ca, hoặc thời gian ở của đơn giao với một ca của mình.
+  - Không ghi nhật ký xếp/sửa ca (thuộc nhóm cấu hình), vẫn có created/updated by.
+- Chia 2 phần, mỗi phần xong → commit:
+- [x] 8.1 Ca mẫu & xếp ca: ca mẫu CRUD (mặc định sáng/chiều/đêm), xếp ca theo mẫu hoặc ca lẻ, sửa giờ,
+  ghi chú, xoá, không trùng giờ, sao chép tuần trước; màn Lịch làm theo tuần, tổng giờ; NV chỉ xem.
+- [ ] 8.2 Độ phủ ca: dòng "Đơn cần NV đón" + cảnh báo đơn không ai trực; mã cửa cho NV theo ca; tag
+  "Đang trong ca" / "Vào ca HH:mm" ở màn Nhân viên.
 
 ### GĐ 9: Tổng quan & thông báo
 - Chỉ số hôm nay, tình trạng phòng, việc cần làm, doanh thu 7 ngày, cơ cấu đơn tháng, công suất (doanh thu chỉ Quản lý).

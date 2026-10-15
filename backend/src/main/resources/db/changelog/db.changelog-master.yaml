@@ -22,3 +22,5 @@ databaseChangeLog:
       file: db/changelog/010-account-profile.yaml
   - include:
       file: db/changelog/011-activity-log.yaml
+  - include:
+      file: db/changelog/012-schedule.yaml

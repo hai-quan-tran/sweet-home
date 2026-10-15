@@ -9,6 +9,7 @@ import { OrdersPage } from './pages/orders/orders-page';
 import { PlaceholderPage } from './pages/placeholder/placeholder-page';
 import { RoomFormPage } from './pages/rooms/room-form-page';
 import { RoomsPage } from './pages/rooms/rooms-page';
+import { SchedulePage } from './pages/schedule/schedule-page';
 import { SettingsPage } from './pages/settings/settings-page';
 import { StaffFormPage } from './pages/staff/staff-form-page';
 import { StaffPage } from './pages/staff/staff-page';
@@ -61,7 +62,7 @@ export const routes: Routes = [
         canActivate: [managerGuard],
         title: 'Sửa nhân viên · Sweet Home',
       },
-      page('lich-lam', 'Lịch làm'),
+      { path: 'lich-lam', component: SchedulePage, title: 'Lịch làm · Sweet Home' },
       { path: 'cai-dat', component: SettingsPage, title: 'Cài đặt · Sweet Home' },
     ],
   },

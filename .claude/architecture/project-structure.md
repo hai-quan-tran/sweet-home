@@ -388,3 +388,25 @@
 - **Test không `@Transactional`** (`OrderSerializationIntegrationTest`) tạo đơn thật nên sinh dòng nhật
   ký thật — phần `@AfterEach` phải xoá `activity_log` theo `order_id` (qua `JdbcTemplate`), không thì rác
   lại trong DB dev. Áp dụng cho test tương tự ở các phase sau.
+
+## Lịch làm: ca mẫu & xếp ca (GĐ8.1, package `com.sweethome.schedule`)
+- Bảng `shift_template` (tên, giờ bắt đầu/kết thúc `TIME`, màu 1–6; changelog `012-schedule.yaml` tạo sẵn
+  Sáng 06–14, Chiều 14–22, Đêm 22–06) và `work_shift` (`account_id`, `template_id` null = ca lẻ, bản sao
+  `name`/`color` (0 = ca lẻ), `start_at`/`end_at` `DATETIME`, `edited`, `note`). Cả hai kế thừa `Auditable`.
+  `WorkShift` giữ id thô (`accountId`, `templateId`), không `@ManyToOne` — không cần nạp lazy.
+- Giờ kết thúc ≤ giờ bắt đầu = hôm sau (`ScheduleService.endOf`; bằng nhau → 400). Ca thuộc ngày của
+  `start_at`. `edited` tính lúc lưu (giờ khác ca mẫu lúc đó) — không so lại với mẫu hiện hành, vì sửa mẫu
+  sau đó không được làm ca cũ hiện "đã sửa".
+- Chặn trùng giờ cùng tài khoản: `WorkShiftRepository.existsOverlap` (giao `[start, end)`, bỏ qua chính ca
+  đang sửa). Tài khoản khoá hoặc trước `startDate` → 400. Xoá ca mẫu: `detachTemplate` (update
+  `template_id = null`, `clearAutomatically`) rồi mới xoá — FK `ON DELETE SET NULL` chỉ là lớp dự phòng ở
+  DB, không cập nhật entity đang nằm trong persistence context.
+- Sao chép tuần trước (`POST /shifts/copy-week`, `weekStart` phải là thứ Hai): chép ca có ngày trong tuần
+  trước sang +7 ngày, bỏ qua (đếm `skipped`) ca của tài khoản khoá/chưa tới ngày làm/trùng giờ.
+- API: `GET /shift-templates`, `GET /shifts?from=YYYY-MM-DD&to=…` (ngày của ca trong `[from, to)`, ≤ 31
+  ngày) cho mọi vai trò; `POST/PUT/DELETE` ca mẫu, ca, sao chép tuần chỉ Quản lý.
+- Frontend `pages/schedule/schedule-page` (route `/lich-lam`): bảng người (tài khoản đang hoạt động) × 7
+  ngày, tổng giờ/tuần, cột hôm nay tô nền; bấm ca / ô "+" mở card "Sửa ca / Thêm ca" bên dưới (chọn mẫu tự
+  điền giờ, gợi ý "Đã sửa · ca mẫu …", "Đặt lại theo mẫu", "Thêm ca khác trong ngày", "Xoá ca"); card Ca
+  mẫu sửa/thêm/xoá ngay trong card (màu mới mặc định màu chưa dùng). Màu ca `.s0`–`.s6` trong scss của màn,
+  dark mode qua `:host-context(.app-dark)`. Nhân viên: không có nút thêm/sao chép, ca `disabled`.

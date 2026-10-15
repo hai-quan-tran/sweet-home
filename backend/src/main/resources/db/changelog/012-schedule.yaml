@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-shift-template
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: shift_template
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: name, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: start_time, type: TIME, constraints: { nullable: false } }
+              - column: { name: end_time, type: TIME, constraints: { nullable: false } }
+              - column: { name: color, type: INT, constraints: { nullable: false } }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - insert:
+            tableName: shift_template
+            columns:
+              - column: { name: name, value: "Sáng" }
+              - column: { name: start_time, value: "06:00:00" }
+              - column: { name: end_time, value: "14:00:00" }
+              - column: { name: color, value: "1" }
+              - column: { name: created_at, valueDate: "now()" }
+        - insert:
+            tableName: shift_template
+            columns:
+              - column: { name: name, value: "Chiều" }
+              - column: { name: start_time, value: "14:00:00" }
+              - column: { name: end_time, value: "22:00:00" }
+              - column: { name: color, value: "2" }
+              - column: { name: created_at, valueDate: "now()" }
+        - insert:
+            tableName: shift_template
+            columns:
+              - column: { name: name, value: "Đêm" }
+              - column: { name: start_time, value: "22:00:00" }
+              - column: { name: end_time, value: "06:00:00" }
+              - column: { name: color, value: "3" }
+              - column: { name: created_at, valueDate: "now()" }
+  - changeSet:
+      id: 012-work-shift
+      author: sweet-home
+      changes:
+        - createTable:
+            tableName: work_shift
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true } }
+              - column: { name: account_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: template_id, type: BIGINT }
+              - column: { name: name, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: color, type: INT, constraints: { nullable: false } }
+              - column: { name: start_at, type: DATETIME, constraints: { nullable: false } }
+              - column: { name: end_at, type: DATETIME, constraints: { nullable: false } }
+              - column: { name: edited, type: BIT, defaultValueBoolean: false, constraints: { nullable: false } }
+              - column: { name: note, type: VARCHAR(255) }
+              - column: { name: created_at, type: DATETIME(3), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(50) }
+              - column: { name: updated_at, type: DATETIME(3) }
+              - column: { name: updated_by, type: VARCHAR(50) }
+        - addForeignKeyConstraint:
+            baseTableName: work_shift
+            baseColumnNames: account_id
+            constraintName: fk_work_shift_account
+            referencedTableName: account
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: work_shift
+            baseColumnNames: template_id
+            constraintName: fk_work_shift_template
+            referencedTableName: shift_template
+            referencedColumnNames: id
+            onDelete: SET NULL
+        - createIndex:
+            tableName: work_shift
+            indexName: idx_work_shift_start_at
+            columns:
+              - column: { name: start_at }
+        - createIndex:
+            tableName: work_shift
+            indexName: idx_work_shift_account_start
+            columns:
+              - column: { name: account_id }
+              - column: { name: start_at }

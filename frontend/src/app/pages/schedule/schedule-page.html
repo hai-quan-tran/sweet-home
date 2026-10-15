@@ -1,0 +1,181 @@
+<div class="ph">
+  <div>
+    <h1 class="page-title">Lịch làm</h1>
+    <p class="page-desc">{{ isManager() ? 'Xếp ca theo tuần. Bấm vào một ca để sửa giờ riêng cho ngày đó.' : 'Lịch ca theo tuần.' }}</p>
+  </div>
+  <div class="toolbar">
+    <button class="ib" type="button" aria-label="Tuần trước" (click)="moveWeek(-1)"><i class="pi pi-angle-left"></i></button>
+    <strong class="num">{{ weekLabel() }}</strong>
+    <button class="ib" type="button" aria-label="Tuần sau" (click)="moveWeek(1)"><i class="pi pi-angle-right"></i></button>
+    <button class="btn-s" type="button" (click)="moveWeek(0)">Tuần này</button>
+    @if (isManager()) {
+      <button class="btn-s" type="button" [disabled]="saving()" (click)="copyPreviousWeek()">Sao chép tuần trước</button>
+    }
+  </div>
+</div>
+
+@if (info()) {
+  <div class="msg ok" role="status">{{ info() }}</div>
+}
+@if (error() && !editing() && editingTemplateId() === null) {
+  <div class="msg bad" role="alert">{{ error() }}</div>
+}
+
+<section class="card">
+  <div class="sch-w">
+    <table class="sch">
+      <thead>
+        <tr>
+          <th scope="col" class="nm">Nhân viên</th>
+          @for (d of days(); track d.iso) {
+            <th scope="col" [class.today]="d.today">{{ d.label }}{{ d.today ? ' · hôm nay' : '' }}<br />{{ d.dayMonth }}</th>
+          }
+          <th scope="col" class="hr">Tổng giờ</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of accounts(); track a.id) {
+          <tr>
+            <th scope="row">
+              <div class="who-c">
+                <span class="av">{{ initials(a.fullName) }}</span>
+                <div>
+                  <b>{{ a.fullName }}</b>
+                  <small>{{ a.startDate && a.startDate > days()[0].iso ? 'Bắt đầu làm từ ' + a.startDate.slice(8, 10) + '/' + a.startDate.slice(5, 7) : (a.role === 'MANAGER' ? 'Quản lý' : 'Nhân viên') }}</small>
+                </div>
+              </div>
+            </th>
+            @for (d of days(); track d.iso) {
+              <td [class.today]="d.today">
+                @if (beforeStart(a, d.iso)) {
+                  <span class="na">—</span>
+                } @else {
+                  <div class="stack">
+                    @for (s of cellShifts(a.id, d.iso); track s.id) {
+                      <button class="sft" [class]="'s' + s.color" [class.sel]="editing()?.shift?.id === s.id" type="button"
+                        [disabled]="!isManager()" [attr.title]="s.note" (click)="openShift(s)">
+                        <b>{{ s.name }}</b>
+                        <span>{{ time(s.startAt) }}–{{ time(s.endAt) }}@if (s.edited) {<i class="pi pi-pencil" aria-label="Đã sửa giờ"></i>}</span>
+                      </button>
+                    }
+                    @if (isManager()) {
+                      <button class="add" type="button" [attr.aria-label]="'Thêm ca cho ' + a.fullName + ' ngày ' + d.dayMonth"
+                        [class.sel]="editing()?.shift === null && editing()?.accountId === a.id && editing()?.date === d.iso"
+                        (click)="openNew(a.id, d.iso)"><i class="pi pi-plus"></i></button>
+                    } @else if (cellShifts(a.id, d.iso).length === 0) {
+                      <span class="na">—</span>
+                    }
+                  </div>
+                }
+              </td>
+            }
+            <td class="hrs num">{{ totalHours(a.id) }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="9" class="muted empty">Chưa có tài khoản nào đang hoạt động.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="legend">
+    @for (t of templates(); track t.id) {
+      <span><i [class]="'s' + t.color"></i>Ca {{ t.name.toLowerCase() }}</span>
+    }
+    <span><i class="s0"></i>Ca lẻ (không theo mẫu)</span>
+    <span><i class="pi pi-pencil"></i>Đã sửa giờ so với ca mẫu</span>
+  </div>
+</section>
+
+<div class="bottom">
+  @if (isManager() && editing(); as e) {
+    <section class="card" aria-label="Sửa ca đang chọn">
+      <div class="ch">
+        <h2>{{ e.shift ? 'Sửa ca' : 'Thêm ca' }} · {{ editingAccount()?.fullName }} · {{ e.date.slice(8, 10) }}/{{ e.date.slice(5, 7) }}</h2>
+        <button class="ib" type="button" aria-label="Đóng" (click)="editing.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+      <form class="cb" [formGroup]="shiftForm" (ngSubmit)="saveShift()">
+        @if (error()) {
+          <div class="msg bad">{{ error() }}</div>
+        }
+        <div class="field">
+          <label for="tp">Ca mẫu</label>
+          <select id="tp" class="inp" formControlName="templateId" (change)="applyTemplate()">
+            @for (t of templates(); track t.id) {
+              <option [ngValue]="t.id">Ca {{ t.name.toLowerCase() }} ({{ time(t.startTime) }} – {{ time(t.endTime) }})</option>
+            }
+            <option [ngValue]="null">Không theo mẫu (ca lẻ)</option>
+          </select>
+        </div>
+        <div class="g2">
+          <div class="field"><label for="st">Bắt đầu</label><input id="st" class="inp num" type="time" formControlName="startTime" /></div>
+          <div class="field">
+            <label for="en">Kết thúc</label><input id="en" class="inp num" type="time" formControlName="endTime" />
+            @if (formTemplate()?.changed) {
+              <span class="hint w">Đã sửa · ca mẫu {{ time(formTemplate()!.template.startTime) }} – {{ time(formTemplate()!.template.endTime) }}</span>
+            }
+          </div>
+        </div>
+        <div class="field"><label for="nt">Ghi chú</label><input id="nt" class="inp" formControlName="note" maxlength="255" /></div>
+        <p class="hint">Giờ kết thúc nhỏ hơn giờ bắt đầu là kết thúc hôm sau. Các ca của cùng nhân viên không được trùng giờ.</p>
+        <div class="acts">
+          <button class="btn-p" type="submit" [disabled]="saving()">Lưu</button>
+          @if (formTemplate()?.changed) {
+            <button class="btn-s" type="button" (click)="applyTemplate()">Đặt lại theo mẫu</button>
+          }
+          @if (e.shift) {
+            <button class="btn-s" type="button" (click)="openNew(e.accountId, e.date)">Thêm ca khác trong ngày</button>
+            <button class="btn-t del" type="button" [disabled]="saving()" (click)="deleteShift()">Xoá ca</button>
+          }
+        </div>
+      </form>
+    </section>
+  }
+
+  <section class="card tpl-card">
+    <div class="ch">
+      <h2>Ca mẫu</h2>
+      @if (isManager()) {
+        <button class="btn-t" type="button" (click)="openTemplate(null)">Thêm ca mẫu</button>
+      }
+    </div>
+    <ul class="tpl">
+      @for (t of templates(); track t.id) {
+        <li>
+          <span class="sw-c" [class]="'s' + t.color"></span>
+          <div><b>Ca {{ t.name.toLowerCase() }}</b><small class="num">{{ time(t.startTime) }} – {{ time(t.endTime) }}{{ t.endTime <= t.startTime ? ' hôm sau' : '' }}</small></div>
+          @if (isManager()) {
+            <button class="ib" type="button" [attr.aria-label]="'Sửa ca ' + t.name" (click)="openTemplate(t)"><i class="pi pi-pencil"></i></button>
+          }
+        </li>
+      }
+    </ul>
+    @if (editingTemplateId() !== null) {
+      <form class="cb tpl-form" [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+        @if (error()) {
+          <div class="msg bad">{{ error() }}</div>
+        }
+        <div class="g2">
+          <div class="field"><label for="tn">Tên ca</label><input id="tn" class="inp" formControlName="name" maxlength="50" placeholder="VD: Sáng" /></div>
+          <div class="field">
+            <label for="tc">Màu</label>
+            <select id="tc" class="inp" formControlName="color">
+              @for (c of colorNames; track c; let i = $index) {
+                <option [ngValue]="i + 1">{{ c }}</option>
+              }
+            </select>
+          </div>
+          <div class="field"><label for="ts">Bắt đầu</label><input id="ts" class="inp num" type="time" formControlName="startTime" /></div>
+          <div class="field"><label for="te">Kết thúc</label><input id="te" class="inp num" type="time" formControlName="endTime" /></div>
+        </div>
+        <div class="acts">
+          <button class="btn-p" type="submit" [disabled]="saving()">{{ editingTemplateId() === 'new' ? 'Thêm' : 'Lưu' }}</button>
+          <button class="btn-s" type="button" (click)="editingTemplateId.set(null)">Huỷ</button>
+          @if (editingTemplateId() !== 'new') {
+            <button class="btn-t del" type="button" [disabled]="saving()" (click)="deleteTemplate()">Xoá ca mẫu</button>
+          }
+        </div>
+      </form>
+    }
+    <div class="note">Sửa hoặc xoá ca mẫu chỉ áp dụng cho các ca xếp sau đó. Ca đã xếp trước (kể cả ngày tới) giữ nguyên giờ của ca mẫu cũ.</div>
+  </section>
+</div>
