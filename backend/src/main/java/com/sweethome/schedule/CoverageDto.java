@@ -31,8 +31,10 @@ public record CoverageDto(List<Day> days, List<UncoveredOrder> uncovered, List<N
 	 * @param orderCode  mã đơn
 	 * @param roomNumber số phòng
 	 * @param checkInAt  giờ nhận phòng
+	 * @param needs      khung ca mẫu cần xếp người để có người trực lúc nhận phòng (rỗng nếu không khung nào chứa giờ đó)
 	 */
-	public record UncoveredOrder(Long orderId, String orderCode, String roomNumber, LocalDateTime checkInAt) {
+	public record UncoveredOrder(Long orderId, String orderCode, String roomNumber, LocalDateTime checkInAt,
+			List<Need> needs) {
 	}
 
 	/**

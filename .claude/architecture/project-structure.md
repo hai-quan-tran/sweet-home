@@ -432,5 +432,6 @@
   phòng của một đơn không ai trực (`ScheduleService.neededTemplates` xét ngày của giờ nhận và ngày trước đó —
   ca đêm hôm trước kéo sang sáng nay; chỉ lấy ngày trong khoảng đang xem). Frontend: ô của người chưa có ca
   ngày đó đổi nút "+" thành "Cần người · Ca …" (viền cam), bấm → `openNew(account, ngày, templateId)`.
-  Lưu ý: dòng "Đơn cần NV đón" đếm theo ngày nhận phòng, còn "Cần người" theo ngày của ca (đơn 02:00 ngày 16
-  báo thiếu ở cột 16 nhưng "Cần người · Ca đêm" ở cột 15).
+  Dòng "Đơn cần NV đón" đếm theo ngày nhận phòng, còn "Cần người" theo ngày của ca (đơn 02:00 ngày 16 báo
+  thiếu ở cột 16 nhưng "Cần người · Ca đêm" ở cột 15) — người dùng chọn giữ vậy và để hộp cảnh báo nêu rõ ca
+  cần xếp: mỗi `UncoveredOrder` có `needs` riêng, cảnh báo ghi "… — cần xếp ca đêm Thứ Năm 15/10".

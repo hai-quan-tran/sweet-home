@@ -246,6 +246,7 @@ class ScheduleServiceTest {
 		assertThat(result.uncovered()).singleElement().satisfies(u -> {
 			assertThat(u.orderCode()).isEqualTo("SH-1042");
 			assertThat(u.roomNumber()).isEqualTo("201");
+			assertThat(u.needs()).containsExactly(new CoverageDto.Need(FRIDAY, 1L));
 		});
 		assertThat(result.needs()).containsExactly(new CoverageDto.Need(FRIDAY, 1L));
 	}

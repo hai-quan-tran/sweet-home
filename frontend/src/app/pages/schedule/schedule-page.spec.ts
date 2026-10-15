@@ -49,8 +49,10 @@ describe('SchedulePage', () => {
   const coverage: CoverageDto = {
     days: [{ date: monday, total: 3, uncovered: 1 }, { date: sunday, total: 2, uncovered: 0 }],
     uncovered: [
-      { orderId: 41, orderCode: 'SH-1041', roomNumber: '201', checkInAt: '2099-01-09T22:30:00' },
-      { orderId: 40, orderCode: 'SH-1040', roomNumber: '101', checkInAt: '2000-01-01T10:00:00' },
+      { orderId: 41, orderCode: 'SH-1041', roomNumber: '201', checkInAt: '2099-01-09T22:30:00', needs: [{ date: '2099-01-09', templateId: 3 }] },
+      { orderId: 42, orderCode: 'SH-1042', roomNumber: '202', checkInAt: '2099-01-10T02:00:00', needs: [{ date: '2099-01-09', templateId: 3 }] },
+      { orderId: 43, orderCode: 'SH-1043', roomNumber: '203', checkInAt: '2099-01-10T15:00:00', needs: [] },
+      { orderId: 40, orderCode: 'SH-1040', roomNumber: '101', checkInAt: '2000-01-01T10:00:00', needs: [] },
     ],
     needs: [{ date: sunday, templateId: 3 }],
   };
@@ -90,8 +92,14 @@ describe('SchedulePage', () => {
     expect(foot).toContain('3 · thiếu 1');
     expect(foot).toContain('2 · đủ');
     const alerts = el.querySelectorAll('.alert');
-    expect(alerts.length).toBe(1);
+    expect(alerts.length).toBe(3);
     expect(alerts[0].textContent).toContain('Thứ Sáu 09/01: đơn SH-1041 (P201) nhận phòng lúc 22:30');
+    expect(alerts[0].textContent).toContain('cần xếp ca đêm Thứ Sáu 09/01.');
+    // Đơn 02:00 sáng Thứ Bảy thuộc ca đêm Thứ Sáu: cảnh báo nêu rõ ngày của ca để khớp với ô "Cần người".
+    expect(alerts[1].textContent).toContain('Thứ Bảy 10/01: đơn SH-1042 (P202) nhận phòng lúc 02:00');
+    expect(alerts[1].textContent).toContain('cần xếp ca đêm Thứ Sáu 09/01.');
+    // Không khung ca mẫu nào chứa giờ nhận phòng (dữ liệu test chỉ có ca sáng, ca đêm) thì không nêu ca.
+    expect(alerts[2].textContent).not.toContain('cần xếp');
     expect(alerts[0].querySelector('a')?.getAttribute('href')).toBe('/don-thue?id=41');
   });
 

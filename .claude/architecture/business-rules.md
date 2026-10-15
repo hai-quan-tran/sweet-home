@@ -71,6 +71,7 @@
   theo ngày và cảnh báo các đơn sắp tới không ai trực.
 - "Cần người": khung giờ ca mẫu của một ngày có đơn cần nhân viên đón mà không ai trực → ô trống của ngày đó
   báo cần người cho ca mẫu đó. Không có đơn hoặc chỉ có đơn khách tự check-in thì không báo.
+  Cảnh báo đơn không ai trực nêu rõ ca cần xếp (vd đơn 02:00 Thứ Sáu → "cần xếp ca đêm Thứ Năm").
 - Nhân viên xem mã cửa (kể cả khi sao chép tin nhắn có mã cửa) chỉ khi đang trong ca, hoặc thời gian ở của
   đơn giao với một ca của mình. Quản lý không giới hạn.
 

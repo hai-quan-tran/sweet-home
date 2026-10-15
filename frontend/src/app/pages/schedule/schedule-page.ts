@@ -102,16 +102,24 @@ export class SchedulePage {
     const t = this.templates().find((x) => x.id === v.templateId);
     return t ? { template: t, changed: v.startTime !== hm(t.startTime) || v.endTime !== hm(t.endTime) } : null;
   });
-  /** Cảnh báo đơn sắp tới cần nhân viên đón nhưng không ai trực (chỉ Quản lý có dữ liệu độ phủ). */
+  /**
+   * Cảnh báo đơn sắp tới cần nhân viên đón nhưng không ai trực (chỉ Quản lý có dữ liệu độ phủ), kèm ca cần xếp
+   * người — đơn sáng sớm thuộc ca đêm hôm trước nên nêu rõ ngày của ca để khớp với ô "Cần người".
+   */
   protected readonly alerts = computed(() => {
     const now = new Date();
     const nowIso = `${dayIso(now)}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     return (this.coverage()?.uncovered ?? []).filter((u) => u.checkInAt.slice(0, 16) >= nowIso).map((u) => {
       const d = new Date(u.checkInAt);
+      const shifts = u.needs
+        .map((n) => ({ n, t: this.templates().find((x) => x.id === n.templateId) }))
+        .filter((x) => x.t)
+        .map(({ n, t }) => `ca ${t!.name.toLowerCase()} ${WEEKDAY_NAMES[new Date(n.date + 'T00:00:00').getDay()]} ${n.date.slice(8, 10)}/${n.date.slice(5, 7)}`);
       return {
         orderId: u.orderId,
         text: `${WEEKDAY_NAMES[d.getDay()]} ${u.checkInAt.slice(8, 10)}/${u.checkInAt.slice(5, 7)}: đơn ${u.orderCode} (P${u.roomNumber}) `
-          + `nhận phòng lúc ${u.checkInAt.slice(11, 16)} cần nhân viên đón, nhưng chưa có ai trực lúc đó.`,
+          + `nhận phòng lúc ${u.checkInAt.slice(11, 16)} cần nhân viên đón, nhưng chưa có ai trực lúc đó`
+          + (shifts.length ? ` — cần xếp ${shifts.join(' hoặc ')}.` : '.'),
       };
     });
   });

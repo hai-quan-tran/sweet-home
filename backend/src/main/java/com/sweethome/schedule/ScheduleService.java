@@ -139,9 +139,10 @@ public class ScheduleService {
 					&& s.getEndAt().isAfter(order.getCheckInAt()));
 			if (!covered) {
 				counts[1]++;
+				List<CoverageDto.Need> orderNeeds = neededTemplates(order.getCheckInAt(), templates, from, to);
 				uncovered.add(new CoverageDto.UncoveredOrder(order.getId(), OrderDto.codeOf(order.getId()),
-						order.getRoom().getRoomNumber(), order.getCheckInAt()));
-				needs.addAll(neededTemplates(order.getCheckInAt(), templates, from, to));
+						order.getRoom().getRoomNumber(), order.getCheckInAt(), orderNeeds));
+				needs.addAll(orderNeeds);
 			}
 		}
 		return new CoverageDto(perDay.entrySet().stream()

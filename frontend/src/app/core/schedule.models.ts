@@ -47,7 +47,8 @@ export interface CopyWeekResult {
 /** Độ phủ ca với đơn cần nhân viên đón: theo ngày và danh sách đơn không ai trực lúc nhận phòng. */
 export interface CoverageDto {
   days: { date: string; total: number; uncovered: number }[];
-  uncovered: { orderId: number; orderCode: string; roomNumber: string; checkInAt: string }[];
+  /** Đơn không ai trực; `needs` = khung ca mẫu cần xếp người (ca đêm hôm trước với đơn sáng sớm). */
+  uncovered: { orderId: number; orderCode: string; roomNumber: string; checkInAt: string; needs: { date: string; templateId: number }[] }[];
   /** Khung ca mẫu của một ngày cần xếp thêm người. */
   needs: { date: string; templateId: number }[];
 }
