@@ -45,8 +45,13 @@
   - Được: xem lịch phòng, đơn thuê; tạo đơn, nhận/trả phòng, thu tiền; xem mã cửa đơn trong ca mình trực;
     xem phòng, bảng giá, phụ thu, nhân viên, lịch làm.
   - Không được: thêm/sửa phòng, sửa bảng giá, thêm/sửa phụ thu, thêm/sửa nhân viên, xếp/sửa lịch làm và ca mẫu.
-  - Không được: huỷ đơn đã thu tiền, sửa số tiền đã thu, xem doanh thu.
+  - Không được: huỷ đơn đã thu tiền, sửa số tiền đã thu, xem doanh thu, xem nhật ký thao tác.
 - Mật khẩu: ≥ 8 ký tự, có cả chữ và số; tài khoản mới bắt đổi mật khẩu ở lần đăng nhập đầu.
+- Quản lý thêm/sửa tài khoản: họ tên, SĐT, CCCD (mã hoá, chỉ hiện 4 số cuối), ngày bắt đầu làm, vai trò,
+  khoá/mở, đặt lại mật khẩu tạm. Tên đăng nhập không đổi được sau khi tạo.
+- Khoá tài khoản hoặc đổi vai trò có hiệu lực ngay (đang đăng nhập cũng bị đăng xuất / mất quyền ngay).
+  Đặt lại mật khẩu hoặc khoá thì mọi phiên đăng nhập của tài khoản đó bị thu hồi.
+- Quản lý không tự khoá và không tự đổi vai trò của chính mình.
 
 ## Lịch làm
 - Ca làm không cố định → không cài ở màn nhân viên, quản lý ở mục riêng "Lịch làm".

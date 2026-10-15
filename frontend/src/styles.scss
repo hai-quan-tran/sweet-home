@@ -142,3 +142,45 @@ body {
   .t-w { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
   .t-p { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
 }
+
+/* Danh sách quyền của vai trò (màn Nhân viên, Thêm/Sửa nhân viên): dấu ✓ được, ✕ không được. */
+.perm {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 9px 20px;
+
+    &.off {
+      color: var(--p-text-muted-color);
+    }
+  }
+
+  .ok,
+  .no {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex: none;
+    margin-top: 1px;
+
+    .pi {
+      font-size: 11px;
+      font-weight: 700;
+    }
+  }
+
+  .ok { background: var(--p-green-100); color: var(--p-green-700); }
+  .no { background: var(--p-surface-100); color: var(--p-text-muted-color); }
+}
+
+.app-dark .perm {
+  .ok { background: rgba(74, 222, 128, 0.14); color: #86efac; }
+  .no { background: #27272a; }
+}

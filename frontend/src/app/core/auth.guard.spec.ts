@@ -83,9 +83,9 @@ describe('auth guards', () => {
     expect(result).toBe(true);
   });
 
-  it('managerGuard chuyển về /phong khi là Nhân viên', () => {
+  it('managerGuard chuyển về màn cha khi là Nhân viên', () => {
     setup(staff);
-    const result = TestBed.runInInjectionContext(() => managerGuard({} as never, fakeState)) as UrlTree;
-    expect(result.toString()).toBe('/phong');
+    const result = TestBed.runInInjectionContext(() => managerGuard({} as never, { url: '/nhan-vien/5/sua' } as never)) as UrlTree;
+    expect(result.toString()).toBe('/nhan-vien');
   });
 });

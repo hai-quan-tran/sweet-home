@@ -1,0 +1,136 @@
+<div class="ph">
+  <nav class="crumb" aria-label="Đường dẫn">
+    <a routerLink="/nhan-vien">Nhân viên</a>
+    <i class="pi pi-angle-right"></i>
+    <span>{{ isEdit() ? 'Sửa nhân viên' : 'Thêm nhân viên' }}</span>
+  </nav>
+  <h1 class="page-title">{{ isEdit() ? 'Sửa nhân viên' : 'Thêm nhân viên' }}</h1>
+</div>
+
+@if (!loading()) {
+  <form class="form-wrap" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-col">
+      @if (errorMessage()) {
+        <div class="err">{{ errorMessage() }}</div>
+      }
+
+      <section class="card">
+        <div class="ch"><span class="step">1</span><h2>Thông tin cá nhân</h2></div>
+        <div class="cb">
+          <div class="g2">
+            <div class="field">
+              <label for="fn">Họ tên <span class="req">*</span></label>
+              <input id="fn" class="inp" formControlName="fullName" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="ph">Số điện thoại <span class="req">*</span></label>
+              <input id="ph" class="inp num" type="tel" formControlName="phone" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="cc">CCCD</label>
+              <input id="cc" class="inp num" formControlName="idNumber" inputmode="numeric" autocomplete="off"
+                [placeholder]="idNumberMasked() ?? '12 số'" />
+              <span class="hint">{{ idNumberMasked() ? 'Để trống để giữ số đã lưu' : 'Không bắt buộc · chỉ hiện 4 số cuối sau khi lưu' }}</span>
+            </div>
+            <div class="field">
+              <label for="sd">Ngày bắt đầu làm</label>
+              <input id="sd" class="inp num" type="date" formControlName="startDate" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="ch"><span class="step">2</span><h2>Tài khoản đăng nhập</h2></div>
+        <div class="cb">
+          <div class="g2">
+            <div class="field">
+              <label for="un">Tên đăng nhập <span class="req">*</span></label>
+              <input id="un" class="inp" formControlName="username" autocomplete="off" />
+              <span class="hint" [class.bad]="form.controls.username.invalid && form.controls.username.touched">
+                {{ isEdit() ? 'Không đổi được tên đăng nhập' : 'Chữ không dấu, số, dấu chấm hoặc gạch' }}
+              </span>
+            </div>
+            <div class="field">
+              <label for="pw">{{ isEdit() ? 'Đặt lại mật khẩu tạm' : 'Mật khẩu tạm thời' }} @if (!isEdit()) {<span class="req">*</span>}</label>
+              <div class="row-in">
+                <div class="iw">
+                  <input id="pw" class="inp num" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+                    autocomplete="new-password" />
+                  <button class="eye" type="button" [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                    (click)="showPassword.set(!showPassword())">
+                    <i class="pi" [class]="showPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+                  </button>
+                </div>
+                <button class="btn-s" type="button" (click)="generatePassword()">Tạo ngẫu nhiên</button>
+              </div>
+              <span class="hint" [class.bad]="form.controls.password.invalid && form.controls.password.touched">
+                {{ isEdit() ? 'Để trống để giữ mật khẩu cũ · ' : '' }}Tối thiểu 8 ký tự, có chữ và số
+              </span>
+            </div>
+          </div>
+          <label class="sw">
+            <input type="checkbox" formControlName="mustChangePassword" />
+            {{ isEdit() ? 'Khi đặt lại mật khẩu: bắt đổi ở lần đăng nhập tới' : 'Bắt đổi mật khẩu ở lần đăng nhập đầu tiên' }}
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="ch"><span class="step">3</span><h2>Vai trò</h2></div>
+        <div class="cb">
+          <fieldset class="types two">
+            <legend>Vai trò</legend>
+            <label class="type" [class.on]="role() === 'STAFF'">
+              <input type="radio" formControlName="role" value="STAFF" />
+              <b>Nhân viên</b>
+              <span>Đón khách, nhận và trả phòng, thu tiền</span>
+            </label>
+            <label class="type" [class.on]="role() === 'MANAGER'">
+              <input type="radio" formControlName="role" value="MANAGER" />
+              <b>Quản lý</b>
+              <span>Toàn quyền, gồm bảng giá, doanh thu và nhân viên</span>
+            </label>
+          </fieldset>
+          <label class="sw">
+            <input type="checkbox" formControlName="active" />
+            {{ isEdit() ? 'Tài khoản đang hoạt động (bỏ chọn để khoá)' : 'Kích hoạt tài khoản ngay' }}
+          </label>
+          @if (isSelf()) {
+            <span class="hint">Không thể tự đổi vai trò hoặc tự khoá tài khoản của chính mình.</span>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="side-col">
+      <aside class="card" aria-label="Quyền của vai trò đã chọn">
+        <div class="ch"><h2>Quyền của {{ role() === 'MANAGER' ? 'Quản lý' : 'Nhân viên' }}</h2></div>
+        @if (role() === 'MANAGER') {
+          <ul class="perm">
+            <li><span class="ok"><i class="pi pi-check"></i></span>Toàn quyền, gồm bảng giá, doanh thu, nhân viên và nhật ký</li>
+          </ul>
+        } @else {
+          <ul class="perm">
+            @for (p of permissions; track p.label) {
+              <li [class.off]="!p.allowed">
+                <span [class]="p.allowed ? 'ok' : 'no'"><i class="pi" [class]="p.allowed ? 'pi-check' : 'pi-times'"></i></span>
+                {{ p.label }}
+              </li>
+            }
+          </ul>
+        }
+        <div class="info">
+          <i class="pi pi-lock"></i>
+          <span>Đưa mật khẩu tạm trực tiếp cho nhân viên, không gửi vào nhóm chat chung. Mọi thao tác của tài khoản này đều được ghi tên.</span>
+        </div>
+        <div class="sum-a">
+          <button class="btn-p" type="submit" [disabled]="submitting()">
+            {{ submitting() ? 'Đang lưu...' : isEdit() ? 'Lưu thay đổi' : 'Tạo tài khoản' }}
+          </button>
+          <a class="btn-t" routerLink="/nhan-vien">Huỷ</a>
+        </div>
+      </aside>
+    </div>
+  </form>
+}

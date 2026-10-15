@@ -1,0 +1,57 @@
+/* Bổ sung cho style form dùng chung với màn Thêm phòng (room-form-page.scss). */
+.row-in {
+  display: flex;
+  gap: 8px;
+
+  .btn-s {
+    flex: none;
+  }
+}
+
+.iw {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+
+  .inp {
+    padding-right: 44px;
+  }
+}
+
+.eye {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+}
+
+.hint.bad {
+  color: var(--p-red-600);
+}
+
+.type:has(input:disabled) {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.info {
+  display: flex;
+  gap: 10px;
+  margin: 4px 20px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+  color: var(--p-text-muted-color);
+  font-size: 13px;
+
+  .pi {
+    margin-top: 3px;
+  }
+}

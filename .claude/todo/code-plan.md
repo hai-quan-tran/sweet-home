@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 6 xong. Tiếp theo: GĐ 7.
+Trạng thái: GĐ 7.1 xong. Tiếp theo: GĐ 7.2.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -153,6 +153,18 @@ Trạng thái: GĐ 6 xong. Tiếp theo: GĐ 7.
 ### GĐ 7: Nhân viên & nhật ký
 - Thêm/sửa/khoá tài khoản nhân viên (Quản lý), nhật ký thao tác có lọc.
 - Frontend: màn Nhân viên, Thêm nhân viên.
+- Đã chốt với người dùng: nhật ký ghi thao tác đơn (tạo/sửa, nhận/trả phòng, thu/sửa/xoá tiền, huỷ,
+  gia hạn/chuyển phòng, đã dọn, tự chuyển trạng thái = "Hệ thống"), xem mã cửa, sao chép tin nhắn có
+  mã cửa, thêm/sửa/khoá tài khoản — không ghi sửa cấu hình (phòng, giá, phụ thu, cài đặt). Nhân viên
+  xem danh sách tài khoản + quyền, không xem nhật ký. Khoá/đổi vai trò có hiệu lực ngay (filter kiểm
+  tra tài khoản trong DB mỗi request). Quản lý không tự khoá / tự hạ vai trò chính mình.
+- Nhãn "Đang trong ca" và thao tác "Bắt đầu ca" để GĐ8 (cần Lịch làm).
+- Chia 2 phần, mỗi phần xong → xác nhận → commit:
+- [x] 7.1 Tài khoản nhân viên: thêm SĐT, CCCD (mã hoá), ngày bắt đầu làm; API danh sách / thêm / sửa /
+  khoá-mở / đặt lại mật khẩu tạm; khoá hoặc đổi vai trò có hiệu lực ngay; màn Nhân viên (Tài khoản +
+  Quyền) và Thêm/Sửa nhân viên.
+- [ ] 7.2 Nhật ký thao tác: bảng `activity_log`, ghi từ các thao tác trên; API lọc theo thời gian /
+  người, phân trang (chỉ Quản lý); card Nhật ký ở màn Nhân viên.
 
 ### GĐ 8: Lịch làm
 - Ca mẫu (thêm/sửa/xoá), xếp ca theo mẫu (lưu bản sao giờ) hoặc ca lẻ, không trùng giờ, sao chép tuần trước.

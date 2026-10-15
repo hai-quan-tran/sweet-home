@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-account-profile
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: account
+            columns:
+              - column: { name: phone, type: VARCHAR(20) }
+              - column: { name: id_number_encrypted, type: VARCHAR(255) }
+              - column: { name: id_number_last4, type: VARCHAR(4) }
+              - column: { name: start_date, type: DATE }

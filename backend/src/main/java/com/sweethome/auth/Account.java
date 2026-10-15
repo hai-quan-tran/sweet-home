@@ -1,5 +1,7 @@
 package com.sweethome.auth;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,6 +43,20 @@ public class Account extends Auditable {
 
 	@Column(name = "must_change_password", nullable = false)
 	private boolean mustChangePassword = true;
+
+	@Column(length = 20)
+	private String phone;
+
+	/** CCCD mã hoá AES (nguồn sự thật), giải mã bằng CryptoService. */
+	@Column(name = "id_number_encrypted")
+	private String idNumberEncrypted;
+
+	/** 4 số cuối CCCD, để hiển thị dạng che mà không phải giải mã. */
+	@Column(name = "id_number_last4", length = 4)
+	private String idNumberLast4;
+
+	@Column(name = "start_date")
+	private LocalDate startDate;
 
 	public Long getId() {
 		return id;
@@ -92,5 +108,37 @@ public class Account extends Auditable {
 
 	public void setMustChangePassword(boolean mustChangePassword) {
 		this.mustChangePassword = mustChangePassword;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getIdNumberEncrypted() {
+		return idNumberEncrypted;
+	}
+
+	public void setIdNumberEncrypted(String idNumberEncrypted) {
+		this.idNumberEncrypted = idNumberEncrypted;
+	}
+
+	public String getIdNumberLast4() {
+		return idNumberLast4;
+	}
+
+	public void setIdNumberLast4(String idNumberLast4) {
+		this.idNumberLast4 = idNumberLast4;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
 	}
 }

@@ -343,3 +343,22 @@
   hạn đến …"; không có phòng thì hộp "Không có phòng phù hợp" + gợi ý đổi sang thêm giờ (nếu còn giờ).
 - Test JSON path lọc nhiều phần tử (`$[?(...)].x`) phải so bằng Hamcrest `contains(...)`: `.value(List.of(...))`
   của Spring báo "but was: null" dù dữ liệu đúng.
+
+## Tài khoản nhân viên (GĐ7.1, package `com.sweethome.staff`)
+- `Account` thêm `phone`, `idNumberEncrypted` + `idNumberLast4` (CCCD mã hoá AES, cùng cách lưu với CCCD
+  khách của đơn), `startDate` (changelog `010-account-profile.yaml`). Entity vẫn ở package `auth`;
+  `staff` chỉ có API/service quản lý.
+- API `/accounts`: `GET` danh sách / `GET /{id}` (mọi vai trò — NV được xem danh sách nhân viên),
+  `POST`, `PUT /{id}` (`@PreAuthorize` MANAGER). Một request `AccountUpsertRequest` dùng chung thêm/sửa:
+  sửa thì bỏ qua `username` (không đổi được — audit `createdBy/updatedBy` và nhật ký ghi theo tên đăng
+  nhập), `password`/`idNumber` để trống = giữ cũ; khoá/mở và đặt lại mật khẩu tạm đều qua `PUT`
+  (`active`, `password`) thay vì endpoint riêng. Đặt lại mật khẩu hoặc khoá → thu hồi mọi refresh token.
+  Quản lý không tự khoá / tự đổi vai trò chính mình (400) → luôn còn ít nhất 1 Quản lý hoạt động.
+- **Khoá / đổi vai trò có hiệu lực ngay**: `JwtAuthenticationFilter` nạp lại `Account` theo id trong
+  token mỗi request (1 truy vấn theo khoá chính), bỏ qua tài khoản `LOCKED`, lấy vai trò từ DB chứ không
+  tin claim `role` trong JWT. Access token còn hạn của tài khoản bị khoá trả 401 ngay.
+- Frontend `pages/staff`: `StaffPage` (danh sách tài khoản + quyền của Nhân viên; Quản lý bấm vào dòng
+  để sửa), `StaffFormPage` (route `/nhan-vien/them`, `/nhan-vien/:id/sua`, `managerGuard`) dùng lại
+  style form của Thêm phòng (`styleUrls` trỏ `../rooms/room-form-page.scss`) + phần riêng; nút "Tạo ngẫu
+  nhiên" sinh mật khẩu bằng `crypto.getRandomValues`. Danh sách quyền ở `staff-permissions.ts`, style
+  `.perm` dùng chung đặt ở `styles.scss`. `managerGuard` chặn thì về màn cha (đoạn đầu URL).

@@ -10,6 +10,8 @@ import { PlaceholderPage } from './pages/placeholder/placeholder-page';
 import { RoomFormPage } from './pages/rooms/room-form-page';
 import { RoomsPage } from './pages/rooms/rooms-page';
 import { SettingsPage } from './pages/settings/settings-page';
+import { StaffFormPage } from './pages/staff/staff-form-page';
+import { StaffPage } from './pages/staff/staff-page';
 
 /** Tạo route cho màn chưa làm, tiêu đề truyền qua data. */
 const page = (path: string, title: string) => ({ path, component: PlaceholderPage, data: { title }, title: `${title} · Sweet Home` });
@@ -46,7 +48,19 @@ export const routes: Routes = [
         canActivate: [managerGuard],
         title: 'Sửa phòng · Sweet Home',
       },
-      page('nhan-vien', 'Nhân viên'),
+      { path: 'nhan-vien', component: StaffPage, title: 'Nhân viên · Sweet Home' },
+      {
+        path: 'nhan-vien/them',
+        component: StaffFormPage,
+        canActivate: [managerGuard],
+        title: 'Thêm nhân viên · Sweet Home',
+      },
+      {
+        path: 'nhan-vien/:id/sua',
+        component: StaffFormPage,
+        canActivate: [managerGuard],
+        title: 'Sửa nhân viên · Sweet Home',
+      },
       page('lich-lam', 'Lịch làm'),
       { path: 'cai-dat', component: SettingsPage, title: 'Cài đặt · Sweet Home' },
     ],

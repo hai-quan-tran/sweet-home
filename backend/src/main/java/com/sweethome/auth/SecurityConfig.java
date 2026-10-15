@@ -36,7 +36,8 @@ public class SecurityConfig {
 	 * vì chưa có cookie CSRF lúc đó), JWT filter đọc access token từ cookie.
 	 */
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, ObjectMapper objectMapper)
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
+			AccountRepository accountRepository, ObjectMapper objectMapper)
 			throws Exception {
 		CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 		// Mặc định cookie CSRF kế thừa context-path (/api); phải đặt "/" để JS trên các route SPA
@@ -58,7 +59,7 @@ public class SecurityConfig {
 								writeProblem(response, objectMapper, HttpStatus.UNAUTHORIZED, "Chưa đăng nhập hoặc phiên đã hết hạn"))
 						.accessDeniedHandler((request, response, deniedEx) ->
 								writeProblem(response, objectMapper, HttpStatus.FORBIDDEN, "Không có quyền thực hiện")))
-				.addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(new JwtAuthenticationFilter(jwtService, accountRepository), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 

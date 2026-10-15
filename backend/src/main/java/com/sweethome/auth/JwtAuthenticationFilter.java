@@ -17,13 +17,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Đọc access token từ cookie, xác thực và nạp vào SecurityContext cho request hiện tại.
+ * Vai trò và trạng thái lấy lại từ DB mỗi request (không tin vai trò trong token) để khoá tài khoản
+ * hoặc đổi vai trò có hiệu lực ngay, không phải đợi access token hết hạn.
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
+	private final AccountRepository accountRepository;
 
-	public JwtAuthenticationFilter(JwtService jwtService) {
+	public JwtAuthenticationFilter(JwtService jwtService, AccountRepository accountRepository) {
 		this.jwtService = jwtService;
+		this.accountRepository = accountRepository;
 	}
 
 	@Override
@@ -31,8 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		readCookie(request, AuthCookies.ACCESS_TOKEN)
 				.flatMap(jwtService::parseAccessToken)
-				.ifPresent(principal -> {
-					var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + principal.role().name()));
+				.flatMap(token -> accountRepository.findById(token.accountId()))
+				.filter(account -> account.getStatus() == AccountStatus.ACTIVE)
+				.ifPresent(account -> {
+					var principal = new JwtService.AuthenticatedPrincipal(account.getId(), account.getUsername(), account.getRole());
+					var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name()));
 					var authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
 					SecurityContextHolder.getContext().setAuthentication(authentication);
 				});
