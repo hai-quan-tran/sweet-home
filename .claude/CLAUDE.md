@@ -15,7 +15,9 @@ Unit test: JUnit, mockito
  - Ưu tiên viết ít code nhưng đảm bảo logic. Không thêm code thừa
  - Đảm bảo unit test coverage
  - Giao diện hỗ trợ desktop, laptop và iPad (nhỏ nhất 9 inch)
- - Khi lên kế hoạch cần chia thành từng giai đoạn nhỏ, mỗi khi đã xác nhận hoàn thành giai đoạn thì commit giai đoạn đó.
+ - Khi lên kế hoạch cần chia thành từng giai đoạn nhỏ.
+ - Mỗi lần code là làm trọn 1 giai đoạn. Giai đoạn có chia phần nhỏ (vd 1.1, 1.2) thì vẫn làm hết cả giai đoạn, không chờ xác nhận từng phần nhỏ; xong phần nào thì commit phần đó.
+ - Trong quá trình làm (cả giai đoạn lớn lẫn phần nhỏ), gặp vấn đề chưa rõ hoặc cần quyết định thì phải dừng lại hỏi để xác nhận, không tự chốt.
  - Message commit cần ghi rõ giai đoạn này sửa những chức năng gì. (không cần liệt kê những file được sửa)
  - Không tự động push. Chỉ push khi đã xác nhận
 
