@@ -496,3 +496,21 @@
   JaCoCo ở backend. Bỏ qua `main.ts`, `app.config.ts`, `theme/`. Lúc làm xong: ~90% dòng.
 - `vitest.config.ts` (`runnerConfig`): `testTimeout` 15 giây — lần dựng p-dialog đầu tiên của mỗi file test (PricingDialog,
   SurchargeDialog) từng vượt 5 giây mặc định khi chạy cả bộ song song lúc máy tải nặng (chạy riêng thì pass).
+
+## Kiểm tra giao diện (GĐ10.3)
+- Cách làm (lặp lại được): Playwright cài tạm ngoài dự án (`npm i playwright` trong thư mục tạm), chạy Chromium có sẵn
+  trong `~/AppData/Local/ms-playwright/chromium-*/chrome-win64/chrome.exe` qua `executablePath`; script tạo dữ liệu mẫu qua
+  API (đăng nhập `admin`, gửi `X-XSRF-TOKEN` lấy từ cookie, cookie đổi sau mỗi request), chụp mọi màn ở 1440 / 1280 / 1024
+  / 768 × sáng/tối, tự báo tràn ngang (`scrollWidth > innerWidth`) và lỗi console. Xong thì tắt server, xoá dữ liệu mẫu
+  bằng SQL theo hiện trạng ghi lại trước khi tạo. Git Bash đổi tham số `/tong-quan` thành đường dẫn Windows → đặt
+  `MSYS_NO_PATHCONV=1`. Tắt `mvnw spring-boot:run` chạy nền bằng TaskStop không tắt tiến trình java con — kiểm tra cổng
+  8090 rồi dừng đúng PID.
+- Đã sửa: badge chuông che mất icon (nút PrimeNG chỉ rộng ~31px, khác 44px của thiết kế) → badge lệch ra góc; dark mode
+  các màu nền nhạt `--p-*-100` / chữ `--p-*-700/800` dùng trực tiếp ở nhiều màn (hộp lỗi, tag Chờ dọn, cảnh báo) bị chói
+  → đổi biến một lần ở `styles.scss` (`html.app-dark`), bỏ các đoạn ghi đè dark lặp lại; giờ ca ở Lịch làm tràn khỏi ô
+  trên iPad → cho xuống dòng; Tổng quan ≤ 1366px chia cột 3:2 cho danh sách việc cần làm; đơn đã huỷ không hiện "Còn phải
+  thu"; chi tiết đơn không tồn tại hiện lý do thay vì khung trống.
+- Không tràn ngang ở mọi màn/kích thước. Bảng rộng (Lịch đặt phòng, Lịch làm, Đơn thuê) cuộn ngang trong card trên iPad
+  như thiết kế đã chốt.
+- **Không chạy `prettier --write` trên file cũ**: cấu hình prettier mặc định (80 ký tự) khác cách viết hiện tại, định dạng
+  lại cả file.

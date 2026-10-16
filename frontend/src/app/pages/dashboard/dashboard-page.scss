@@ -7,11 +7,6 @@
   --pend-text: var(--p-purple-700);
 }
 
-:host-context(.app-dark) {
-  --warn-text: #fdba74;
-  --pend-text: #c4b5fd;
-}
-
 .ph {
   display: flex;
   align-items: flex-end;
@@ -126,7 +121,8 @@
   gap: 8px;
 }
 
-.room-n { font-weight: 700; font-size: 15px; }
+.room-h { flex-wrap: wrap; }
+.room-n { font-weight: 700; font-size: 15px; white-space: nowrap; }
 
 .room-g {
   font-weight: 600;
@@ -214,8 +210,6 @@ a.ag-n:hover { color: var(--p-primary-color); }
   &.today .d { color: var(--p-text-color); font-weight: 600; }
 }
 
-:host-context(.app-dark) .col .b { background: rgba(96, 165, 250, 0.25); }
-:host-context(.app-dark) .col.today .b { background: var(--p-primary-color); }
 
 .cb {
   padding: 20px;
@@ -272,6 +266,11 @@ a.ag-n:hover { color: var(--p-primary-color); }
 
 @media (max-width: 1500px) {
   .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Laptop / iPad ngang: nới cột phải để danh sách việc cần làm không xuống dòng quá nhiều. */
+@media (max-width: 1366px) {
+  .row2 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 }
 
 @media (max-width: 860px) {

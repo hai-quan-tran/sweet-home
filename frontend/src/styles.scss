@@ -133,14 +133,25 @@ body {
 .t-w { background: var(--p-orange-100); color: var(--p-orange-700); }
 .t-p { background: var(--p-purple-100); color: var(--p-purple-700); }
 
-/* Tag ở giao diện tối: nền trong suốt, chữ sáng (theo design/theme.css). */
-.app-dark {
-  .t-b { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
-  .t-i { background: rgba(74, 222, 128, 0.14); color: #86efac; }
+/*
+ * Giao diện tối: các màn dùng --p-*-100 làm nền nhạt và --p-*-700/800 làm chữ (tag, hộp báo lỗi/cảnh báo). Đổi chúng
+ * sang nền trong suốt, chữ sáng (theo design/theme.css) ngay tại gốc để màn nào cũng đúng, không phải ghi đè từng màn.
+ * Dùng html.app-dark (độ ưu tiên cao hơn :root mà PrimeNG khai báo biến).
+ */
+html.app-dark {
+  --p-blue-100: rgba(96, 165, 250, 0.16);
+  --p-blue-700: #93c5fd;
+  --p-green-100: rgba(74, 222, 128, 0.14);
+  --p-green-700: #86efac;
+  --p-green-800: #86efac;
+  --p-red-100: rgba(248, 113, 113, 0.14);
+  --p-red-700: #fca5a5;
+  --p-orange-100: rgba(251, 146, 60, 0.16);
+  --p-orange-700: #fdba74;
+  --p-purple-100: rgba(167, 139, 250, 0.16);
+  --p-purple-700: #c4b5fd;
+
   .t-o { background: #27272a; color: #d4d4d8; }
-  .t-c { background: rgba(248, 113, 113, 0.14); color: #fca5a5; }
-  .t-w { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
-  .t-p { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
 }
 
 /* Danh sách quyền của vai trò (màn Nhân viên, Thêm/Sửa nhân viên): dấu ✓ được, ✕ không được. */
@@ -180,7 +191,6 @@ body {
   .no { background: var(--p-surface-100); color: var(--p-text-muted-color); }
 }
 
-.app-dark .perm {
-  .ok { background: rgba(74, 222, 128, 0.14); color: #86efac; }
-  .no { background: #27272a; }
+.app-dark .perm .no {
+  background: #27272a;
 }

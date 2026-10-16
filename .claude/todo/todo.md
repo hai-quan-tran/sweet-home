@@ -41,4 +41,4 @@
 - [x] GĐ 7: nhân viên & nhật ký
 - [x] GĐ 8: lịch làm
 - [x] GĐ 9: tổng quan & thông báo
-- [ ] GĐ 10: hoàn thiện
+- [x] GĐ 10: hoàn thiện

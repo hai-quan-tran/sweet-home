@@ -232,7 +232,8 @@
     gap: 4px;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    /* Ô hẹp (iPad) thì xuống dòng sau dấu "–" thay vì tràn ra ngoài khung ca. */
+    overflow-wrap: anywhere;
   }
 
   /* Dấu "đã sửa giờ" ở góc phải trên để không làm tràn ô hẹp (iPad). */

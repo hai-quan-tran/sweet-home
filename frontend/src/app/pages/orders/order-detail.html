@@ -82,7 +82,10 @@
       </div>
     }
     <div class="kv"><span>Đã thu</span><span class="num">{{ formatMoney(o.paidAmount) }}</span></div>
-    <div class="kv due"><span>Còn phải thu</span><span class="num">{{ formatMoney(o.dueAmount) }}</span></div>
+    <!-- Đơn đã huỷ không còn gì phải thu (số hoàn cọc ở mục Đã huỷ). -->
+    @if (o.status !== 'CANCELLED') {
+      <div class="kv due"><span>Còn phải thu</span><span class="num">{{ formatMoney(o.dueAmount) }}</span></div>
+    }
 
     @if (paymentFormId() !== null) {
       <div class="pay-form">
@@ -206,4 +209,6 @@
     <app-extend-dialog [order]="o" [(visible)]="extendOpen" (extended)="onExtended($event)" />
   }
 </div>
+} @else if (loadError(); as e) {
+<div class="body"><p class="muted">{{ e }}</p></div>
 }

@@ -119,15 +119,17 @@
 /* Chuông và bảng thông báo (theo design/notify.css). */
 .ntf-wrap {
   position: relative;
+  margin-right: 10px;
 }
 
+/* Nút chuông chỉ rộng ~31px nên badge đặt lệch ra góc trên bên phải, không che icon. */
 .badge {
   position: absolute;
-  top: 2px;
-  right: 0;
+  top: -6px;
+  right: -12px;
   min-width: 20px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 5px;
   border-radius: 999px;
   border: 2px solid var(--p-content-background);
   background: #ea580c;
@@ -186,12 +188,6 @@
   &.w .ntf-ic { background: var(--p-orange-100); color: var(--p-orange-700); }
   &.p .ntf-ic { background: var(--p-purple-100); color: var(--p-purple-700); }
   &.c .ntf-ic { background: var(--p-red-100); color: var(--p-red-700); }
-}
-
-:host-context(.app-dark) .ntf-i {
-  &.w .ntf-ic { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
-  &.p .ntf-ic { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
-  &.c .ntf-ic { background: rgba(248, 113, 113, 0.14); color: #fca5a5; }
 }
 
 .ntf-ic {

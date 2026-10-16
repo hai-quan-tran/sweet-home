@@ -61,6 +61,8 @@ export class OrderDetail {
   protected readonly isManager = computed(() => this.auth.currentUser()?.role === 'MANAGER');
 
   protected readonly order = signal<OrderDto | null>(null);
+  /** Lý do không tải được đơn. */
+  protected readonly loadError = signal<string | null>(null);
   protected readonly roomGuide = signal<string | null>(null);
   protected readonly doorCode = signal<string | null>(null);
   protected readonly revealingDoorCode = signal(false);
@@ -134,23 +136,31 @@ export class OrderDetail {
     this.cancelPreview.set(null);
     this.checkoutOpen.set(false);
     this.copyFeedback.set(null);
-    forkJoin({ order: this.orderService.get(id), refs: this.references$ }).subscribe(({ order, refs }) => {
-      this.templates.set(refs.templates);
-      this.homestay.set(refs.homestay);
-      this.order.set(order);
-      this.selectedTemplateId.set(refs.templates.find((t) => t.defaultForCheckInMode === order.checkInMode)?.id ?? refs.templates[0]?.id ?? null);
-      this.roomService.get(order.roomId).subscribe((room) => {
-        this.roomGuide.set(room.checkInGuide);
-        if (action === 'copy') {
-          this.copyMessage();
-        } else if (action && this.isStaying()) {
-          if (action === 'checkout') {
-            this.openCheckout();
-          } else {
-            this.extendOpen.set(true);
+    this.loadError.set(null);
+    forkJoin({ order: this.orderService.get(id), refs: this.references$ }).subscribe({
+      next: ({ order, refs }) => {
+        this.templates.set(refs.templates);
+        this.homestay.set(refs.homestay);
+        this.order.set(order);
+        this.selectedTemplateId.set(refs.templates.find((t) => t.defaultForCheckInMode === order.checkInMode)?.id ?? refs.templates[0]?.id ?? null);
+        this.roomService.get(order.roomId).subscribe((room) => {
+          this.roomGuide.set(room.checkInGuide);
+          if (action === 'copy') {
+            this.copyMessage();
+          } else if (action && this.isStaying()) {
+            if (action === 'checkout') {
+              this.openCheckout();
+            } else {
+              this.extendOpen.set(true);
+            }
           }
-        }
-      });
+        });
+      },
+      // Đơn không tồn tại (link cũ / gõ sai id): báo lỗi thay vì để khung trống hoặc giữ đơn đang xem trước đó.
+      error: (err) => {
+        this.order.set(null);
+        this.loadError.set(err?.error?.detail ?? 'Không tải được đơn, thử lại sau.');
+      },
     });
   }
 

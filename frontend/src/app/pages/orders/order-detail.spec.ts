@@ -86,6 +86,28 @@ describe('OrderDetail', () => {
     httpMock.match(() => true);
   });
 
+  it('đơn đã huỷ không hiện "Còn phải thu"', async () => {
+    const { fixture } = await render({ ...sampleOrder, status: 'CANCELLED', cancelledAt: '2026-10-06T10:00:00', refundAmount: 100000 });
+
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Còn phải thu');
+  });
+
+  it('đơn không tồn tại: hiện lý do thay vì khung trống', async () => {
+    await TestBed.configureTestingModule({
+      imports: [OrderDetail],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(OrderDetail);
+    fixture.componentRef.setInput('orderId', 99);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/orders/99').flush({ detail: 'Không tìm thấy đơn' }, { status: 404, statusText: 'Not Found' });
+    httpMock.match(() => true);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Không tìm thấy đơn');
+  });
+
   it('hiện mã cửa khi bấm Hiện', async () => {
     const { fixture } = await render(sampleOrder);
 
