@@ -73,7 +73,14 @@
           }
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "coverage": true,
+            "coverageReporters": ["text-summary", "html"],
+            "coverageExclude": ["src/main.ts", "src/app/app.config.ts", "src/app/theme/**"],
+            "coverageThresholds": { "lines": 80 }
+          }
         }
       }
     }

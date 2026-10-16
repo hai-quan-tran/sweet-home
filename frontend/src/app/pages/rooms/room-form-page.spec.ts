@@ -117,6 +117,79 @@ describe('RoomFormPage', () => {
     expect(navigateSpy).toHaveBeenCalledWith('/phong');
   });
 
+  /** Giá trị form hợp lệ tối thiểu. */
+  const validForm = {
+    roomNumber: '101', name: 'Mộc', floor: 1, roomTypeId: 1, maxGuests: 2, bedConfig: '', description: '',
+    pricingMode: 'ROOM_TYPE' as const, ownTwoHourPrice: null, ownExtraHourPrice: null, ownOvernightPrice: null, ownDailyPrice: null,
+    defaultCheckInMode: 'SELF' as const, checkInGuide: '', acceptingBookings: true,
+  };
+  const photo = { id: 3, url: '/api/room-photos/3', cover: true };
+
+  /** Sự kiện chọn file của ô input. */
+  function fileEvent(files: File[]): Event {
+    return { target: { files, value: 'x' } } as unknown as Event;
+  }
+
+  it('thêm phòng: ảnh chọn được xem trước, bỏ được, lưu phòng xong mới tải ảnh lên rồi về /phong', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    URL.revokeObjectURL = vi.fn();
+    const fixture = await createForAdd();
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl');
+    const component = fixture.componentInstance;
+    const a = new File(['a'], 'a.jpg', { type: 'image/jpeg' });
+    const b = new File(['b'], 'b.jpg', { type: 'image/jpeg' });
+
+    component.onFilesSelected(fileEvent([]));
+    component.onFilesSelected(fileEvent([a, b]));
+    component.removePendingPhoto(0);
+    expect(component['pendingPhotos']().map((p) => p.file)).toEqual([b]);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
+
+    component['form'].setValue(validForm);
+    component.submit();
+    httpMock.expectOne({ url: '/api/rooms', method: 'POST' }).flush({ id: 10, photos: [] });
+    httpMock.expectOne({ url: '/api/rooms/10/photos', method: 'POST' }).flush({ id: 10, photos: [photo] });
+    expect(navigateSpy).toHaveBeenCalledWith('/phong');
+  });
+
+  it('lưu lỗi thì hiện lý do từ server', async () => {
+    const fixture = await createForAdd();
+    fixture.componentInstance['form'].setValue(validForm);
+
+    fixture.componentInstance.submit();
+    httpMock.expectOne({ url: '/api/rooms', method: 'POST' }).flush({ detail: 'Số phòng đã tồn tại' }, { status: 409, statusText: 'Conflict' });
+
+    expect(fixture.componentInstance['errorMessage']()).toBe('Số phòng đã tồn tại');
+    expect(fixture.componentInstance['submitting']()).toBe(false);
+  });
+
+  it('chế độ sửa: chọn ảnh thì tải lên ngay, xoá ảnh đã lưu, lưu thì PUT', async () => {
+    await TestBed.configureTestingModule({
+      imports: [RoomFormPage],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '7' }) } } },
+      ],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(RoomFormPage);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    httpMock.expectOne('/api/room-types/overview').flush(overview);
+    httpMock.expectOne('/api/rooms/7').flush({ id: 7, ...validForm, roomTypeName: 'Tiêu chuẩn', bedConfig: null, description: null, checkInGuide: null, photos: [] });
+
+    component.onFilesSelected(fileEvent([new File(['a'], 'a.png', { type: 'image/png' })]));
+    httpMock.expectOne({ url: '/api/rooms/7/photos', method: 'POST' }).flush({ photos: [photo] });
+    expect(component['existingPhotos']()).toEqual([photo]);
+
+    component.removeExistingPhoto(photo);
+    httpMock.expectOne({ url: '/api/rooms/7/photos/3', method: 'DELETE' }).flush({ photos: [] });
+    expect(component['existingPhotos']()).toEqual([]);
+
+    component.submit();
+    expect(httpMock.expectOne({ url: '/api/rooms/7', method: 'PUT' }).request.body.bedConfig).toBeNull();
+  });
+
   it('chế độ sửa: nạp sẵn dữ liệu phòng từ API theo id trên route', async () => {
     await TestBed.configureTestingModule({
       imports: [RoomFormPage],

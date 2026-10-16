@@ -220,5 +220,5 @@ Trạng thái: GĐ 9 xong. Tiếp theo: GĐ 10.
 - [x] 10.1 Bảo mật: upload ảnh kiểm tra nội dung thật (JPG/PNG/WebP, đuôi theo loại thật); đăng nhập không lộ tài khoản
   tồn tại/bị khoá; khoá tạm khi sai mật khẩu nhiều lần; mật khẩu admin ban đầu từ biến môi trường; giới hạn kích thước
   trang danh sách đơn; bỏ user mặc định Spring tự sinh.
-- [ ] 10.2 Test & độ phủ: đo độ phủ frontend, ngưỡng 80%, bổ sung test còn thiếu; sửa test chập chờn.
+- [x] 10.2 Test & độ phủ: đo độ phủ frontend, ngưỡng 80%, bổ sung test còn thiếu; sửa test chập chờn.
 - [ ] 10.3 Giao diện: chụp mọi màn ở 1440 / 1280 / 1024 / 768, sáng và tối; sửa lỗi bố cục, màu dark mode.

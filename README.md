@@ -43,7 +43,7 @@ npm start
 ## Test
 ```bash
 cd backend && ./mvnw verify        # unit test + kiểm tra độ phủ ≥ 80% (báo cáo: target/site/jacoco)
-cd frontend && npx ng test --watch=false
+cd frontend && npx ng test --watch=false   # unit test + kiểm tra độ phủ dòng ≥ 80% (báo cáo: coverage/)
 ```
 
 ## Môi trường stage, prod

@@ -489,3 +489,10 @@
   Nhân viên theo business-rules; JPQL dùng tham số; lỗi 500 không trả chi tiết; frontend không dùng `innerHTML`.
 - **Ghi file .md bằng `node -e "..."` trong bash làm mất mọi đoạn trong dấu backtick** (shell hiểu là lệnh) — dùng heredoc
   `<<'EOF'` hoặc công cụ sửa file.
+
+## Test & độ phủ frontend (GĐ10.2)
+- `ng test` luôn đo độ phủ (`@vitest/coverage-v8`, cấu hình ở `angular.json` → `test.options`): báo cáo `text-summary` +
+  `html` (thư mục `coverage/`, đã gitignore), ngưỡng **80% dòng** (`coverageThresholds`) — dưới ngưỡng thì lệnh lỗi, giống
+  JaCoCo ở backend. Bỏ qua `main.ts`, `app.config.ts`, `theme/`. Lúc làm xong: ~90% dòng.
+- `vitest.config.ts` (`runnerConfig`): `testTimeout` 15 giây — lần dựng p-dialog đầu tiên của mỗi file test (PricingDialog,
+  SurchargeDialog) từng vượt 5 giây mặc định khi chạy cả bộ song song lúc máy tải nặng (chạy riêng thì pass).

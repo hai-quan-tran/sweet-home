@@ -162,6 +162,45 @@ describe('RoomsPage', () => {
     expect(el.querySelector('.ch button.btn-t')).toBeNull();
   });
 
+  it('nhãn mức thu theo từng loại phụ thu', async () => {
+    const page = (await render('MANAGER')).componentInstance;
+    const label = (whenType: SurchargeDto['whenType'], amount: number | null) => page.amountLabel({ ...sampleSurcharge, whenType, amount });
+
+    expect(label('OVERSTAY', null)).toBe('Giá mỗi giờ thêm');
+    expect(label('DATE_RANGE', 20)).toBe('+20%');
+    expect(label('EXTRA_GUEST', 50000)).toBe('50.000đ/khách');
+    expect(label('MANUAL', 30000)).toBe('30.000đ/lần');
+  });
+
+  it('khôi phục phụ thu đã ẩn: thành công thì tải lại, lỗi thì hiện lý do', async () => {
+    const page = (await render('MANAGER')).componentInstance;
+
+    page.restoreSurcharge(sampleSurcharge);
+    httpMock.expectOne({ url: '/api/surcharges/1/active', method: 'PATCH' }).flush(sampleSurcharge);
+    httpMock.expectOne('/api/surcharges').flush([sampleSurcharge]);
+
+    page.restoreSurcharge(sampleSurcharge);
+    httpMock.expectOne({ url: '/api/surcharges/1/active', method: 'PATCH' })
+      .flush({ detail: 'Đã có phụ thu quá giờ đang dùng' }, { status: 409, statusText: 'Conflict' });
+    expect(page['restoreError']()).toBe('Đã có phụ thu quá giờ đang dùng');
+
+    page.onSurchargeSaved();
+    httpMock.expectOne('/api/surcharges').flush([]);
+    expect(page['surcharges']()).toEqual([]);
+  });
+
+  it('lưu bảng giá xong thì cập nhật bảng giá và tải lại phòng', async () => {
+    const page = (await render('MANAGER')).componentInstance;
+    const overview = { roomTypes: [], hiddenRoomTypes: [], settings: { minHours: 3 } } as never;
+
+    page.onPricingSaved(overview);
+    expect(page['pricing']()).toBe(overview);
+    httpMock.expectOne('/api/rooms').flush([]);
+    httpMock.expectOne('/api/room-types/overview').flush(overview);
+    httpMock.expectOne('/api/surcharges').flush([]);
+    expect(page['rooms']()).toEqual([]);
+  });
+
   it('bấm vào một phụ thu (Quản lý) thì mở dialog sửa', async () => {
     const fixture = await render('MANAGER');
     openSurchargeTab(fixture);
