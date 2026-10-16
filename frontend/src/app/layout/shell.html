@@ -22,7 +22,46 @@
         [ariaLabel]="theme.dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
         (onClick)="theme.toggle()"
       />
-      <p-button icon="pi pi-bell" [text]="true" severity="secondary" ariaLabel="Thông báo" />
+      <div class="ntf-wrap">
+        <p-button
+          icon="pi pi-bell"
+          [text]="true"
+          severity="secondary"
+          [ariaLabel]="views().length ? 'Thông báo, ' + views().length + ' việc cần xử lý' : 'Thông báo'"
+          [attr.aria-expanded]="panelOpen()"
+          (onClick)="toggleNotifications($event)"
+        />
+        @if (views().length) {
+          <span class="badge">{{ views().length }}</span>
+        }
+        @if (panelOpen()) {
+          <div class="ntf" role="dialog" aria-label="Thông báo" (click)="$event.stopPropagation()">
+            <div class="ntf-h">
+              <h2>Thông báo</h2>
+              <span class="tag t-w">{{ views().length }} việc cần xử lý</span>
+            </div>
+            <ul class="ntf-l">
+              @for (n of views(); track n.key) {
+                <li class="ntf-i" [class]="n.tone">
+                  <span class="ntf-ic"><i class="pi" [class]="n.icon"></i></span>
+                  <div>
+                    <div class="ntf-t"><span>{{ n.title }}</span><time>{{ n.time }}</time></div>
+                    <p class="ntf-m">{{ n.meta }}</p>
+                    <div class="ntf-a">
+                      @for (a of n.actions; track a.label; let first = $first) {
+                        <a [class]="first ? 'btn-s' : 'btn-t'" [routerLink]="a.path" [queryParams]="a.queryParams" (click)="panelOpen.set(false)">{{ a.label }}</a>
+                      }
+                    </div>
+                  </div>
+                </li>
+              } @empty {
+                <li class="ntf-empty">Không có việc nào cần xử lý.</li>
+              }
+            </ul>
+            <div class="ntf-f">Tự cập nhật mỗi phút. Thông báo tự mất khi việc đã được xử lý.</div>
+          </div>
+        }
+      </div>
       <a pButton routerLink="/don-thue/tao-moi"><i class="pi pi-plus" pButtonIcon></i><span pButtonLabel>Tạo đơn thuê</span></a>
       @if (auth.currentUser(); as user) {
         <span class="user">

@@ -50,6 +50,15 @@ class DashboardIntegrationTest {
 		mvc.perform(get("/dashboard")).andExpect(status().isUnauthorized());
 	}
 
+	@Test
+	void notificationsForBothRoles() throws Exception {
+		String suffix = String.valueOf(System.nanoTime());
+		mvc.perform(get("/notifications").cookie(login("mgr_ntf_" + suffix, AccountRole.MANAGER)))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.items").isArray());
+		mvc.perform(get("/notifications").cookie(login("stf_ntf_" + suffix, AccountRole.STAFF)))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.now").isString());
+	}
+
 	/** Tạo tài khoản, đăng nhập và trả cookie access_token. */
 	private MockCookie login(String username, AccountRole role) throws Exception {
 		Account account = new Account();

@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { DARK_CLASS } from '../core/theme.service';
@@ -39,5 +39,29 @@ describe('Shell', () => {
     const btn = el.querySelector<HTMLButtonElement>('button[aria-label="Chuyển sang giao diện tối"]');
     btn?.click();
     expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
+  });
+
+  it('chuông hiện số việc, bấm mở bảng thông báo (tải lại), Esc đóng', async () => {
+    const fixture = TestBed.createComponent(Shell);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const data = {
+      now: '2026-10-07T12:40:00',
+      items: [{ kind: 'OVERSTAY', orderId: 11, orderCode: 'SH-1011', roomNumber: '202', guestName: 'Bùi Thanh Tâm', at: '2026-10-07T12:15:00' }],
+    };
+    fixture.detectChanges();
+    httpMock.expectOne('/api/notifications').flush(data);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.badge')?.textContent?.trim()).toBe('1');
+
+    el.querySelector<HTMLButtonElement>('.ntf-wrap button')!.click();
+    httpMock.expectOne('/api/notifications').flush(data);
+    fixture.detectChanges();
+    expect(el.querySelector('.ntf')?.textContent).toContain('Phòng 202 quá giờ 25 phút');
+    expect(el.querySelector('.ntf a')?.getAttribute('href')).toBe('/don-thue?id=11&action=checkout');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(el.querySelector('.ntf')).toBeNull();
   });
 });

@@ -2,7 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { AccountDto } from '../../core/account.models';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
@@ -203,5 +204,22 @@ describe('SchedulePage', () => {
     page.deleteTemplate();
     httpMock.expectOne({ url: '/api/shift-templates/3', method: 'DELETE' }).flush(null);
     expect(page['templates']().map((t) => t.id)).toEqual([1]);
+  });
+
+  it('?date= mở tuần chứa ngày đó (từ thông báo không ai trực)', async () => {
+    const user: AccountSummary = { id: 1, username: 'u', fullName: 'Người dùng', role: 'STAFF', mustChangePassword: false };
+    await TestBed.configureTestingModule({
+      imports: [SchedulePage],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        { provide: AuthService, useValue: { currentUser: signal(user).asReadonly() } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({ date: '2026-10-09' })) } },
+      ],
+    }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    TestBed.createComponent(SchedulePage).detectChanges();
+    httpMock.expectOne('/api/accounts').flush([]);
+    httpMock.expectOne('/api/shift-templates').flush([]);
+    httpMock.expectOne('/api/shifts?from=2026-10-05&to=2026-10-12').flush([]);
   });
 });

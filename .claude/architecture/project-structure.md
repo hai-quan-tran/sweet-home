@@ -458,3 +458,16 @@
   đang ở màn Đơn thuê vẫn mở đúng đơn.
 - Test tay qua API với dữ liệu thật: **dữ liệu thử để lại trong DB dev làm test tích hợp "thay toàn bộ bảng giá" lỗi 409**
   (hạng phòng còn phòng dùng) — thử xong phải xoá sạch (phòng, hạng phòng, đơn + bảng con, nhật ký).
+
+## Thông báo (GĐ9.2)
+- `DashboardService.notifications(manager)` / `GET /notifications`: quá giờ + chờ xác nhận trả (`findStaying`), đơn khách
+  tự check-in nhận phòng trong `[bây giờ, +2 giờ]` chưa có `DOOR_CODE_COPIED`, và (chỉ Quản lý) đơn không ai trực có giờ
+  nhận trong 7 ngày tới — dùng lại `ScheduleService.coverage(hôm nay, +8 ngày)` rồi lọc theo giờ. Sắp theo loại (thứ tự
+  enum `NotificationDto.Kind`) rồi theo giờ; trả kèm `now` để frontend tính "quá giờ 25 phút", "còn 1 giờ 20 phút".
+- Frontend: `core/notification.service.ts` (`describeNotification` — hàm thuần dựng tiêu đề, mô tả, nút xử lý nhanh);
+  `Shell` hỏi lại mỗi phút (`interval` + `startWith(0)`, lỗi một lần bỏ qua bằng `catchError(() => EMPTY)` để không dừng
+  việc hỏi lại), mở bảng thì tải lại ngay; bảng tự làm (không dùng PrimeNG Popover) theo `design/notify.css`, đóng khi bấm
+  ra ngoài / Esc qua `@HostListener('document:click' | 'document:keydown.escape')`.
+- Nút xử lý nhanh: Trả phòng / Xác nhận trả phòng (`action=checkout`), Gia hạn (`extend`), Sao chép tin nhắn (`copy`),
+  Mở lịch làm (`/lich-lam?date=YYYY-MM-DD` — `SchedulePage` theo dõi `queryParamMap`, mở tuần chứa ngày đó).
+- Hàm định dạng giờ dùng chung (`hm`, `dm`, `timeOf`, `minutesBetween`, `durationLabel`, tên thứ) ở `core/time-format.ts`.

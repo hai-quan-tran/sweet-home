@@ -40,5 +40,5 @@
 - [x] GĐ 6: lịch đặt phòng & gia hạn
 - [x] GĐ 7: nhân viên & nhật ký
 - [x] GĐ 8: lịch làm
-- [ ] GĐ 9: tổng quan & thông báo
+- [x] GĐ 9: tổng quan & thông báo
 - [ ] GĐ 10: hoàn thiện

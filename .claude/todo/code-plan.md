@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
+Trạng thái: GĐ 9 xong. Tiếp theo: GĐ 10.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.
@@ -191,7 +191,7 @@ Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
 - [x] 8.2 Độ phủ ca: dòng "Đơn cần NV đón" + cảnh báo đơn không ai trực; mã cửa cho NV theo ca; tag
   "Đang trong ca" / "Vào ca HH:mm" ở màn Nhân viên.
 
-### GĐ 9: Tổng quan & thông báo
+### GĐ 9: Tổng quan & thông báo ✅
 - Chỉ số hôm nay, tình trạng phòng, việc cần làm, doanh thu 7 ngày, cơ cấu đơn tháng, công suất (doanh thu chỉ Quản lý).
 - Thông báo trên chuông.
 - Đã chốt với người dùng:
@@ -205,8 +205,11 @@ Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
 - [x] 9.1 Tổng quan: API tổng hợp (tình trạng phòng, lượt nhận hôm nay, việc cần làm, doanh thu 7 ngày — chỉ Quản
   lý, cơ cấu đơn tháng, công suất, người đang trong ca); màn Tổng quan tự tải lại mỗi phút; nút xử lý nhanh mở chi
   tiết đơn kèm hành động (trả phòng, sao chép tin nhắn).
-- [ ] 9.2 Thông báo: API 4 loại (quá giờ, chờ xác nhận trả, sắp nhận phòng chưa gửi mã, không ai trực — chỉ Quản
+- [x] 9.2 Thông báo: API 4 loại (quá giờ, chờ xác nhận trả, sắp nhận phòng chưa gửi mã, không ai trực — chỉ Quản
   lý); chuông có số đếm + bảng xổ xuống, hỏi lại mỗi phút, nút xử lý nhanh.
 
 ### GĐ 10: Hoàn thiện
 - Kiểm tra giao diện desktop/laptop/iPad, dark mode; rà soát bảo mật; bổ sung test đạt độ phủ.
+- Test frontend chập chờn: khi chạy cả bộ lúc máy tải nặng, test đầu của `pricing-dialog.spec.ts` và
+  `surcharge-dialog.spec.ts` vượt 5 giây (chạy riêng thì pass; lỗi cả trên commit 9.1) — xem lại thời gian chờ / cách
+  dựng p-dialog trong test.

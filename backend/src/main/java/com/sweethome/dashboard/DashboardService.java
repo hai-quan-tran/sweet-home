@@ -39,33 +39,40 @@ import com.sweethome.order.RentalType;
 import com.sweethome.room.CheckInMode;
 import com.sweethome.room.Room;
 import com.sweethome.room.RoomRepository;
+import com.sweethome.schedule.ScheduleService;
 import com.sweethome.schedule.WorkShift;
 import com.sweethome.schedule.WorkShiftRepository;
 
 /**
  * Số liệu màn Tổng quan (business-rules.md mục Tổng quan): tình trạng phòng, việc cần làm hôm nay, doanh thu
- * 7 ngày (chỉ Quản lý), cơ cấu đơn và công suất của tháng.
+ * 7 ngày (chỉ Quản lý), cơ cấu đơn và công suất của tháng; cùng các thông báo trên chuông.
  */
 @Service
 public class DashboardService {
 
 	static final int REVENUE_DAYS = 7;
+	/** Báo chưa gửi mã cửa với đơn nhận phòng trong khoảng này tới. */
+	static final Duration DOOR_CODE_LEAD = Duration.ofHours(2);
+	/** Báo không ai trực với đơn nhân viên đón nhận phòng trong số ngày này tới. */
+	static final int UNCOVERED_DAYS = 7;
 
 	private final RentalOrderRepository orderRepository;
 	private final RoomRepository roomRepository;
 	private final WorkShiftRepository shiftRepository;
 	private final AccountRepository accountRepository;
 	private final ActivityLogRepository activityLogRepository;
+	private final ScheduleService scheduleService;
 	private final Clock clock;
 
 	public DashboardService(RentalOrderRepository orderRepository, RoomRepository roomRepository,
 			WorkShiftRepository shiftRepository, AccountRepository accountRepository,
-			ActivityLogRepository activityLogRepository, Clock clock) {
+			ActivityLogRepository activityLogRepository, ScheduleService scheduleService, Clock clock) {
 		this.orderRepository = orderRepository;
 		this.roomRepository = roomRepository;
 		this.shiftRepository = shiftRepository;
 		this.accountRepository = accountRepository;
 		this.activityLogRepository = activityLogRepository;
+		this.scheduleService = scheduleService;
 		this.clock = clock;
 	}
 
@@ -108,6 +115,47 @@ public class DashboardService {
 		return new DashboardDto(now, onShift, roomCards(now, rooms, staying, booked), arrivals.size(), checkedIn,
 				tasks(now, staying, booked, shifts, names), manager ? revenue(today, week) : null, monthOrders,
 				occupancyPercent(orderRepository.findStaysBetween(monthStart, now), openRooms, monthStart, now));
+	}
+
+	/**
+	 * Thông báo hiện tại (business-rules.md mục Thông báo): phòng quá giờ trả, đơn chờ xác nhận trả, đơn khách tự
+	 * check-in nhận phòng trong 2 giờ tới mà chưa gửi mã cửa, và (chỉ Quản lý) đơn nhân viên đón trong 7 ngày tới
+	 * không ai trực.
+	 *
+	 * @param manager người xem là Quản lý
+	 * @return thông báo theo loại rồi theo giờ
+	 */
+	@Transactional(readOnly = true)
+	public NotificationDto notifications(boolean manager) {
+		LocalDateTime now = LocalDateTime.now(clock).truncatedTo(ChronoUnit.SECONDS);
+		List<NotificationDto.Item> items = new ArrayList<>();
+		for (RentalOrder o : orderRepository.findStaying()) {
+			if (o.getStatus() != OrderStatus.CHECKED_IN) {
+				items.add(item(o.getStatus() == OrderStatus.OVERSTAY ? NotificationDto.Kind.OVERSTAY
+						: NotificationDto.Kind.PENDING_CHECKOUT, o, o.getRoom().getRoomNumber(), o.getCheckOutAt()));
+			}
+		}
+		List<RentalOrder> arriving = orderRepository.findBookedStaysEndingAfter(now).stream().map(OrderStay::getOrder)
+				.filter(o -> o.getCheckInMode() == CheckInMode.SELF && !o.getCheckInAt().isBefore(now)
+						&& !o.getCheckInAt().isAfter(now.plus(DOOR_CODE_LEAD)))
+				.distinct().toList();
+		Set<Long> sent = doorCodeSent(arriving.stream().map(RentalOrder::getId).toList());
+		arriving.stream().filter(o -> !sent.contains(o.getId()))
+				.forEach(o -> items.add(item(NotificationDto.Kind.DOOR_CODE_NOT_SENT, o, o.getRoom().getRoomNumber(), o.getCheckInAt())));
+		if (manager) {
+			LocalDate today = now.toLocalDate();
+			LocalDateTime until = now.plusDays(UNCOVERED_DAYS);
+			scheduleService.coverage(today, until.toLocalDate().plusDays(1)).uncovered().stream()
+					.filter(u -> !u.checkInAt().isBefore(now) && u.checkInAt().isBefore(until))
+					.forEach(u -> items.add(new NotificationDto.Item(NotificationDto.Kind.UNCOVERED, u.orderId(), u.orderCode(),
+							u.roomNumber(), null, u.checkInAt())));
+		}
+		items.sort(Comparator.comparing(NotificationDto.Item::kind).thenComparing(NotificationDto.Item::at));
+		return new NotificationDto(now, items);
+	}
+
+	private static NotificationDto.Item item(NotificationDto.Kind kind, RentalOrder o, String roomNumber, LocalDateTime at) {
+		return new NotificationDto.Item(kind, o.getId(), OrderDto.codeOf(o.getId()), roomNumber, o.getGuestName(), at);
 	}
 
 	/** Tình trạng từng phòng: đơn đang ở (theo chặng hiện tại) hoặc Chờ dọn / Trống, kèm khách kế tiếp. */

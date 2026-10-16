@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { DashboardPage, durationLabel, minutesBetween, shortMoney } from './dashboard-page';
+import { DashboardPage, shortMoney } from './dashboard-page';
 
 const room = {
   roomId: 1, roomNumber: '101', roomName: 'Mộc', state: 'EMPTY', acceptingBookings: true, checkInMode: 'SELF',
@@ -80,12 +80,7 @@ describe('DashboardPage', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Doanh thu');
   });
 
-  it('hàm định dạng thời lượng và tiền rút gọn', () => {
-    expect(minutesBetween('2026-10-07T12:15:00', '2026-10-07T12:40:00')).toBe(25);
-    expect(durationLabel(50)).toBe('50 phút');
-    expect(durationLabel(130)).toBe('2 giờ 10 phút');
-    expect(durationLabel(120)).toBe('2 giờ');
-    expect(durationLabel(60 * 50)).toBe('2 ngày');
+  it('tiền rút gọn cho biểu đồ', () => {
     expect(shortMoney(1_250_000)).toBe('1,25tr');
     expect(shortMoney(350_000)).toBe('350k');
     expect(shortMoney(0)).toBe('0');

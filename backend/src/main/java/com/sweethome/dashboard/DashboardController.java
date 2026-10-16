@@ -8,7 +8,8 @@ import com.sweethome.auth.AccountRole;
 import com.sweethome.auth.JwtService;
 
 /**
- * API màn Tổng quan. Mọi vai trò xem được; doanh thu chỉ trả cho Quản lý.
+ * API màn Tổng quan và thông báo trên chuông. Mọi vai trò xem được; doanh thu và thông báo "không ai trực" chỉ trả
+ * cho Quản lý.
  */
 @RestController
 public class DashboardController {
@@ -23,5 +24,11 @@ public class DashboardController {
 	@GetMapping("/dashboard")
 	public DashboardDto overview(@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
 		return dashboardService.overview(principal.role() == AccountRole.MANAGER);
+	}
+
+	/** Thông báo hiện tại; "không ai trực" chỉ trả cho Quản lý. */
+	@GetMapping("/notifications")
+	public NotificationDto notifications(@AuthenticationPrincipal JwtService.AuthenticatedPrincipal principal) {
+		return dashboardService.notifications(principal.role() == AccountRole.MANAGER);
 	}
 }

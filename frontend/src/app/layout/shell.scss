@@ -116,6 +116,130 @@
   padding: 28px 32px 48px;
 }
 
+/* Chuông và bảng thông báo (theo design/notify.css). */
+.ntf-wrap {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 2px solid var(--p-content-background);
+  background: #ea580c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ntf {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 96px));
+  display: flex;
+  flex-direction: column;
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+:host-context(.app-dark) .ntf {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.ntf-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  h2 { margin: 0; font-size: 16px; }
+  .tag { margin-left: auto; }
+}
+
+.ntf-l {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.ntf-i {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 16px;
+
+  & + .ntf-i { border-top: 1px solid var(--p-content-border-color); }
+  &.w .ntf-ic { background: var(--p-orange-100); color: var(--p-orange-700); }
+  &.p .ntf-ic { background: var(--p-purple-100); color: var(--p-purple-700); }
+  &.c .ntf-ic { background: var(--p-red-100); color: var(--p-red-700); }
+}
+
+:host-context(.app-dark) .ntf-i {
+  &.w .ntf-ic { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+  &.p .ntf-ic { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
+  &.c .ntf-ic { background: rgba(248, 113, 113, 0.14); color: #fca5a5; }
+}
+
+.ntf-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.ntf-t {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+
+  time { flex: none; font-size: 12px; font-weight: 500; color: var(--p-text-muted-color); font-variant-numeric: tabular-nums; }
+}
+
+.ntf-m {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+}
+
+.ntf-a {
+  display: flex;
+  gap: 8px;
+
+  .btn-s,
+  .btn-t { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .btn-t { display: inline-flex; align-items: center; border-radius: 8px; color: var(--p-primary-color); font-weight: 600; }
+}
+
+.ntf-empty {
+  padding: 16px;
+  color: var(--p-text-muted-color);
+}
+
+.ntf-f {
+  padding: 10px 16px;
+  border-top: 1px solid var(--p-content-border-color);
+  border-radius: 0 0 12px 12px;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  background: var(--p-content-hover-background);
+}
+
 // iPad: menu thu thành cột icon
 @media (max-width: 1100px) {
   .shell {

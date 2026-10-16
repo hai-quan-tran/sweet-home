@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, finalize } from 'rxjs';
 
 import { AccountDto } from '../../core/account.models';
@@ -9,10 +9,10 @@ import { AccountService } from '../../core/account.service';
 import { AuthService } from '../../core/auth.service';
 import { CoverageDto, ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
 import { ScheduleService } from '../../core/schedule.service';
+import { WEEKDAY_NAMES } from '../../core/time-format';
 import { initials } from '../staff/staff-permissions';
 
 const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-const WEEKDAY_NAMES = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 /** Tên màu ca mẫu (màu 1–6 định nghĩa ở schedule-page.scss: .s1 … .s6). */
 export const COLOR_NAMES = ['Xanh dương', 'Xanh ngọc', 'Tím', 'Cam', 'Hồng', 'Xanh lá'];
 
@@ -52,6 +52,7 @@ export class SchedulePage {
   private readonly scheduleService = inject(ScheduleService);
   private readonly accountService = inject(AccountService);
   private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly initials = initials;
   protected readonly colorNames = COLOR_NAMES;
@@ -128,7 +129,12 @@ export class SchedulePage {
   constructor() {
     this.accountService.list().subscribe((list) => this.accounts.set(list.filter((a) => a.status === 'ACTIVE')));
     this.scheduleService.listTemplates().subscribe((list) => this.templates.set(list));
-    this.loadShifts();
+    // ?date=YYYY-MM-DD (từ thông báo "không ai trực") mở tuần chứa ngày đó; theo dõi URL để bấm khi đang ở màn vẫn chuyển tuần.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const date = params.get('date');
+      this.weekStart.set(mondayOf(date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date + 'T00:00:00') : new Date()));
+      this.loadShifts();
+    });
   }
 
   /** Tải ca của tuần đang xem; Quản lý tải thêm độ phủ đơn cần nhân viên đón. */

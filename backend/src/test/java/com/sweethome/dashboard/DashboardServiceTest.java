@@ -36,6 +36,8 @@ import com.sweethome.order.RentalType;
 import com.sweethome.room.CheckInMode;
 import com.sweethome.room.Room;
 import com.sweethome.room.RoomRepository;
+import com.sweethome.schedule.CoverageDto;
+import com.sweethome.schedule.ScheduleService;
 import com.sweethome.schedule.WorkShift;
 import com.sweethome.schedule.WorkShiftRepository;
 
@@ -60,6 +62,8 @@ class DashboardServiceTest {
 	private AccountRepository accountRepository;
 	@Mock
 	private ActivityLogRepository activityLogRepository;
+	@Mock
+	private ScheduleService scheduleService;
 
 	private DashboardService service;
 	private Room r101;
@@ -71,7 +75,7 @@ class DashboardServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new DashboardService(orderRepository, roomRepository, shiftRepository, accountRepository,
-				activityLogRepository, Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE));
+				activityLogRepository, scheduleService, Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE));
 		r101 = room(1L, "101");
 		r102 = room(2L, "102");
 		r202 = room(3L, "202");
@@ -153,6 +157,40 @@ class DashboardServiceTest {
 				.containsExactly(tuple(RoomState.EMPTY, CheckInMode.SELF));
 		assertThat(dto.tasks()).isEmpty();
 		verifyNoInteractions(activityLogRepository);
+	}
+
+	@Test
+	void notificationsForManager() {
+		RentalOrder overstay = order(11L, r202, OrderStatus.OVERSTAY, CheckInMode.STAFF, TODAY.atTime(10, 0), TODAY.atTime(12, 15), 0, 0);
+		RentalOrder pending = order(12L, r302, OrderStatus.PENDING_CHECKOUT, CheckInMode.SELF, TODAY.atTime(6, 0), TODAY.atTime(10, 0), 0, 0);
+		RentalOrder staying = order(10L, r102, OrderStatus.CHECKED_IN, CheckInMode.STAFF, TODAY.atTime(9, 30), TODAY.atTime(13, 30), 0, 0);
+		when(orderRepository.findStaying()).thenReturn(List.of(pending, overstay, staying));
+		RentalOrder sent = order(20L, r101, OrderStatus.BOOKED, CheckInMode.SELF, TODAY.atTime(13, 0), TODAY.atTime(15, 0), 0, 0);
+		RentalOrder notSent = order(23L, r301, OrderStatus.BOOKED, CheckInMode.SELF, TODAY.atTime(14, 0), TODAY.atTime(16, 0), 0, 0);
+		RentalOrder later = order(24L, r301, OrderStatus.BOOKED, CheckInMode.SELF, TODAY.atTime(15, 0), TODAY.atTime(17, 0), 0, 0);
+		RentalOrder staff = order(21L, r102, OrderStatus.BOOKED, CheckInMode.STAFF, TODAY.atTime(14, 0), TODAY.atTime(16, 0), 0, 0);
+		when(orderRepository.findBookedStaysEndingAfter(NOW)).thenReturn(List.of(stay(sent), stay(notSent), stay(later), stay(staff)));
+		when(activityLogRepository.findOrderIdsWithAction(ActivityAction.DOOR_CODE_COPIED, List.of(20L, 23L))).thenReturn(Set.of(20L));
+		when(scheduleService.coverage(TODAY, TODAY.plusDays(8))).thenReturn(new CoverageDto(List.of(), List.of(
+				new CoverageDto.UncoveredOrder(40L, "SH-1040", "201", TODAY.atTime(9, 0), List.of()),
+				new CoverageDto.UncoveredOrder(41L, "SH-1041", "201", TODAY.atTime(22, 30), List.of()),
+				new CoverageDto.UncoveredOrder(42L, "SH-1042", "201", TODAY.plusDays(7).atTime(13, 0), List.of())), List.of()));
+
+		NotificationDto dto = service.notifications(true);
+
+		assertThat(dto.now()).isEqualTo(NOW);
+		assertThat(dto.items()).extracting(NotificationDto.Item::kind, NotificationDto.Item::orderId, NotificationDto.Item::roomNumber)
+				.containsExactly(
+						tuple(NotificationDto.Kind.OVERSTAY, 11L, "202"),
+						tuple(NotificationDto.Kind.PENDING_CHECKOUT, 12L, "302"),
+						tuple(NotificationDto.Kind.DOOR_CODE_NOT_SENT, 23L, "301"),
+						tuple(NotificationDto.Kind.UNCOVERED, 41L, "201"));
+	}
+
+	@Test
+	void staffNotificationsSkipCoverage() {
+		assertThat(service.notifications(false).items()).isEmpty();
+		verifyNoInteractions(scheduleService, activityLogRepository);
 	}
 
 	@Test
