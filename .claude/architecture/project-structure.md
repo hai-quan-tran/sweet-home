@@ -60,8 +60,9 @@
   từng gây vòng lặp vô hạn vì chính route `/dang-nhap` cũng gọi `/auth/me` lúc vào (qua
   `guestGuard`), 401 lại kích hoạt điều hướng lại chính nó. Việc chuyển hướng khi chưa đăng nhập
   do các route guard (`core/auth.guard.ts`) đảm nhiệm, trả về `UrlTree`.
-- Tài khoản Quản lý mặc định (`admin` / `Admin@123`, bắt đổi mật khẩu lần đầu) được
-  `AuthDataSeeder` tạo tự động khi bảng `account` rỗng lúc khởi động — không cần chạy script tay.
+- Tài khoản Quản lý mặc định (`admin`, bắt đổi mật khẩu lần đầu) được `AuthDataSeeder` tạo tự động khi bảng `account`
+  rỗng lúc khởi động. Mật khẩu ban đầu `app.admin.initial-password`: dev `Admin@123`, stage/prod `ADMIN_INITIAL_PASSWORD`
+  (thiếu thì dừng khởi động) — từ GĐ10.1, trước đó cố định `Admin@123` ở mọi môi trường.
 
 ## Quy tắc audit (created/updated) cho các entity nghiệp vụ
 - Mọi entity nghiệp vụ do người dùng tạo/sửa đều kế thừa `common.audit.Auditable`
@@ -473,16 +474,18 @@
 - Hàm định dạng giờ dùng chung (`hm`, `dm`, `timeOf`, `minutesBetween`, `durationLabel`, tên thứ) ở `core/time-format.ts`.
 
 ## Rà soát bảo mật (GĐ10.1)
-- Ảnh phòng:  nhận diện loại theo byte đầu file (JPG/PNG/WebP), đặt đuôi file
-  theo loại thật — không tin tên file/content-type trình duyệt gửi (từng có thể lưu  khai báo  rồi
-  trả về dạng HTML cùng origin = XSS). Đọc ảnh: content-type theo bảng đuôi cố định, đuôi lạ trả .
-- Đăng nhập (): tên không tồn tại vẫn so một hash giả (thời gian trả lời như nhau); khoá tạm 5 lần sai /
-  15 phút qua cột ,  (changelog ), lỗi 429.
-  **** — không có thì lỗi đăng nhập rollback luôn số lần sai.
-  Ghi số lần sai bằng  (update thẳng, không đổi ). Test
-   cố ý không  (test bọc transaction dùng chung session nên không bắt được lỗi
-  rollback), đã xác nhận fail khi bỏ . Màn Đăng nhập hiện  của server thay vì một câu cố định.
-- :  tối đa 100 (), giống nhật ký.
--  loại  (Spring tự tạo user nhớ tạm + in mật khẩu ra log).
-- Đã rà và giữ nguyên: mọi API sửa cấu hình/nhân viên/lịch làm/nhật ký có  MANAGER, phần còn lại đúng
-  quyền Nhân viên theo business-rules; JPQL dùng tham số; lỗi 500 không trả chi tiết; frontend không dùng .
+- Ảnh phòng: `RoomPhotoStorageService.imageExtension` nhận diện loại theo byte đầu file (JPG/PNG/WebP), đặt đuôi file theo
+  loại thật — không tin tên file/content-type trình duyệt gửi (từng có thể lưu `x.html` khai báo `image/png` rồi trả về
+  dạng HTML cùng origin = XSS). Đọc ảnh: content-type theo bảng đuôi cố định, đuôi lạ trả `application/octet-stream`.
+- Đăng nhập (`AuthService.login`): tên không tồn tại vẫn so một hash giả (thời gian trả lời như nhau); khoá tạm 5 lần sai /
+  15 phút qua cột `account.failed_login_count`, `login_locked_until` (changelog `013-login-lockout.yaml`), lỗi 429.
+  **`@Transactional(noRollbackFor = BusinessException.class)`** — không có thì lỗi đăng nhập rollback luôn số lần sai.
+  Ghi số lần sai bằng `AccountRepository.updateLoginFailures` (update thẳng, không đổi `updated_at/by`). Test
+  `LoginLockoutIntegrationTest` cố ý không `@Transactional` (transaction bọc test dùng chung session nên không bắt được lỗi
+  rollback), đã xác nhận fail khi bỏ `noRollbackFor`. Màn Đăng nhập hiện `detail` của server thay vì một câu cố định.
+- `GET /orders`: `size` tối đa 100 (`OrderService.MAX_PAGE_SIZE`), giống nhật ký.
+- `SweetHomeApplication` loại `UserDetailsServiceAutoConfiguration` (Spring tự tạo user nhớ tạm + in mật khẩu ra log).
+- Đã rà và giữ nguyên: mọi API sửa cấu hình/nhân viên/lịch làm/nhật ký có `@PreAuthorize` MANAGER, phần còn lại đúng quyền
+  Nhân viên theo business-rules; JPQL dùng tham số; lỗi 500 không trả chi tiết; frontend không dùng `innerHTML`.
+- **Ghi file .md bằng `node -e "..."` trong bash làm mất mọi đoạn trong dấu backtick** (shell hiểu là lệnh) — dùng heredoc
+  `<<'EOF'` hoặc công cụ sửa file.
