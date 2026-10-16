@@ -435,3 +435,26 @@
   Dòng "Đơn cần NV đón" đếm theo ngày nhận phòng, còn "Cần người" theo ngày của ca (đơn 02:00 ngày 16 báo
   thiếu ở cột 16 nhưng "Cần người · Ca đêm" ở cột 15) — người dùng chọn giữ vậy và để hộp cảnh báo nêu rõ ca
   cần xếp: mỗi `UncoveredOrder` có `needs` riêng, cảnh báo ghi "… — cần xếp ca đêm Thứ Năm 15/10".
+
+## Tổng quan (GĐ9.1, package `com.sweethome.dashboard`)
+- `DashboardService.overview(manager)` / `GET /dashboard` (mọi vai trò; controller lấy vai trò từ
+  `@AuthenticationPrincipal`, `revenue` = null với Nhân viên — ẩn ở backend, không chỉ ẩn ở giao diện). Một API tổng
+  hợp cả màn: người đang trong ca, thẻ phòng, lượt nhận hôm nay, việc cần làm, doanh thu 7 ngày, số đơn tháng theo loại
+  thuê (`EnumMap`, đủ 3 khoá), công suất. `now` cắt phần lẻ giây (Safari không đọc chuỗi giờ 7 chữ số thập phân).
+- Truy vấn mới ở `RentalOrderRepository`: `findStaying` (Đang ở/Quá giờ/Chờ xác nhận trả), `findBookedStaysEndingAfter`
+  (khách kế tiếp từng phòng + lượt nhận hôm nay), `findCheckingInBetween` (gồm đơn huỷ — doanh thu, cơ cấu đơn).
+  `ActivityLogRepository.findOrderIdsWithAction` biết đơn nào đã gửi mã (`DOOR_CODE_COPIED`); chỉ gọi khi danh sách id
+  không rỗng.
+- Phòng của đơn đang ở = chặng mới nhất đã bắt đầu (`DashboardService.currentRoom`), không dùng `order.room` — đơn vừa
+  gia hạn chuyển phòng vẫn ở phòng cũ cho tới khi chặng cũ kết thúc. Có đơn đang ở thì lấy trạng thái đơn, không thì
+  Chờ dọn (`needsCleaning`) / Trống.
+- Việc nhận/trả của đơn nhân viên đón kèm người trực lúc đó (ca của tài khoản đang hoạt động chứa giờ đó).
+- Frontend `pages/dashboard/dashboard-page` (route `/tong-quan`, bỏ `PlaceholderPage` vì không còn màn trống): mọi chữ/
+  phần trăm tính bằng `computed` từ một `DashboardDto`, giờ tương đối ("còn 50 phút", "Quá giờ 25 phút") tính theo `now`
+  của server; tự tải lại mỗi phút. Nhân viên: 3 chỉ số, không có biểu đồ doanh thu (card cơ cấu đơn chiếm hết hàng).
+- Nút xử lý nhanh mở `/don-thue?id=…&action=copy|checkout|extend`. `OrderDetail.autoAction` (thay `autoCopy`): `copy` sao
+  chép tin nhắn, `checkout` mở form trả phòng, `extend` mở dialog gia hạn (2 hành động sau chỉ khi đơn đang ở). Tạo đơn
+  "Lưu & sao chép" cũng dùng `action=copy`. `OrdersPage` theo dõi `queryParamMap` (không chỉ snapshot) để bấm link khi
+  đang ở màn Đơn thuê vẫn mở đúng đơn.
+- Test tay qua API với dữ liệu thật: **dữ liệu thử để lại trong DB dev làm test tích hợp "thay toàn bộ bảng giá" lỗi 409**
+  (hạng phòng còn phòng dùng) — thử xong phải xoá sạch (phòng, hạng phòng, đơn + bảng con, nhật ký).

@@ -1,0 +1,112 @@
+<div class="ph">
+  <div><h1 class="page-title">Tổng quan</h1><p class="page-desc">{{ subtitle() }}</p></div>
+  <a class="btn-s" routerLink="/lich"><i class="pi pi-calendar"></i> Xem lịch hôm nay</a>
+</div>
+
+@if (data(); as d) {
+  <section class="kpis" [class.k3]="kpis().length === 3" aria-label="Chỉ số hôm nay">
+    @for (k of kpis(); track k.label) {
+      <div class="card kpi">
+        <div class="kpi-l"><i class="pi" [class]="k.icon"></i>{{ k.label }}</div>
+        <div class="kpi-v">{{ k.value }}<small>{{ k.unit }}</small></div>
+        <div class="kpi-s">{{ k.sub }}</div>
+      </div>
+    }
+  </section>
+
+  <div class="row2">
+    <section class="card">
+      <div class="ch"><h2>Tình trạng phòng</h2><a class="btn-t" routerLink="/lich">Mở lịch <i class="pi pi-angle-right"></i></a></div>
+      <div class="rooms">
+        @for (r of rooms(); track r.room.roomId) {
+          <article class="room" [class.warn]="r.room.state === 'OVERSTAY'">
+            <div class="room-h">
+              <span class="room-n">{{ r.room.roomNumber }} · {{ r.room.roomName }}</span>
+              <span class="tag" [class]="roomTag[r.room.state].cls">{{ r.tag }}</span>
+            </div>
+            <span class="mode">
+              <i class="pi" [class]="r.room.checkInMode === 'SELF' ? 'pi-key' : 'pi-user'"></i>
+              {{ r.room.checkInMode === 'SELF' ? 'Khách tự check-in' : 'Nhân viên check-in' }}
+            </span>
+            @if (r.room.orderId) {
+              <a class="room-g" routerLink="/don-thue" [queryParams]="{ id: r.room.orderId }">{{ r.room.guestName }}</a>
+            } @else {
+              <div class="room-g muted">{{ r.room.acceptingBookings ? 'Chưa có khách' : 'Tạm ngừng nhận đặt' }}</div>
+            }
+            <div class="room-t"><i class="pi pi-clock"></i>{{ r.line }}</div>
+            @if (r.progress !== null) {
+              <div class="bar" [class.w]="r.room.state === 'OVERSTAY'" role="img" [attr.aria-label]="'Đã ở ' + r.progress + '% thời gian'">
+                <span [style.width.%]="r.progress"></span>
+              </div>
+            }
+          </article>
+        } @empty {
+          <p class="muted empty">Chưa có phòng nào.</p>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Việc cần làm hôm nay</h2><span class="tag t-b">{{ tasks().length }} việc</span></div>
+      <ol class="agenda">
+        @for (t of tasks(); track t.task.kind + t.task.orderId) {
+          <li class="ag" [class]="t.tone">
+            <span class="ag-time num">{{ t.time }}</span>
+            <div>
+              <div class="ag-k">{{ t.label }}</div>
+              <a class="ag-n" routerLink="/don-thue" [queryParams]="{ id: t.task.orderId }">{{ t.task.guestName }}</a>
+              <div class="ag-m" [class.warn-t]="t.warnMeta">{{ t.meta }}</div>
+            </div>
+            @if (t.action; as a) {
+              <a class="btn-s" routerLink="/don-thue" [queryParams]="{ id: t.task.orderId, action: a.value }">{{ a.label }}</a>
+            }
+          </li>
+        } @empty {
+          <li class="muted empty">Không còn việc nào hôm nay.</li>
+        }
+      </ol>
+    </section>
+  </div>
+
+  <div class="row2" [class.single]="!chart()">
+    @if (chart(); as c) {
+      <section class="card">
+        <div class="ch"><h2>Doanh thu 7 ngày</h2><span class="muted">Tổng <b class="num total">{{ formatMoney(c.total) }}</b></span></div>
+        <div class="chart" role="img" [attr.aria-label]="'Doanh thu 7 ngày, tổng ' + formatMoney(c.total)">
+          @for (col of c.cols; track col.date) {
+            <div class="col" [class.today]="col.today">
+              <span class="v">{{ col.value }}</span>
+              <span class="b" [style.height.%]="col.height"></span>
+              <span class="d">{{ col.day }}<br />{{ col.date }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (mix(); as m) {
+      <section class="card">
+        <div class="ch"><h2>Đơn thuê tháng {{ m.month }}</h2><span class="muted num">{{ m.total }} đơn</span></div>
+        <div class="cb">
+          <div class="mix" role="img" [attr.aria-label]="'Cơ cấu đơn tháng ' + m.month">
+            @for (i of m.items; track i.label) {
+              @if (i.count) {
+                <span [class]="i.cls" [style.width.%]="i.pct"></span>
+              }
+            }
+          </div>
+          <ul class="legend">
+            @for (i of m.items; track i.label) {
+              <li><span class="sw" [class]="i.cls"></span>{{ i.label }}<b class="num">{{ i.count }} · {{ i.pct }}%</b></li>
+            }
+          </ul>
+          <div class="occ">
+            <div class="occ-h"><span>Công suất phòng</span><span class="num">{{ d.occupancyPercent }}%</span></div>
+            <div class="bar" role="img" [attr.aria-label]="'Công suất ' + d.occupancyPercent + '%'"><span [style.width.%]="d.occupancyPercent"></span></div>
+            <div class="kpi-s">Tính trên số giờ có khách / tổng giờ mở cửa từ đầu tháng</div>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+}

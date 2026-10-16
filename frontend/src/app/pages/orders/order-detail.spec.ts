@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { OrderDetail } from './order-detail';
+import { OrderAction, OrderDetail } from './order-detail';
 
 const sampleRoom = {
   id: 1, roomNumber: '101', name: 'Mộc', floor: 1, roomTypeId: 1, roomTypeName: 'Tiêu chuẩn',
@@ -29,7 +29,7 @@ describe('OrderDetail', () => {
   let httpMock: HttpTestingController;
 
   /** Mở chi tiết đơn {@code order}: trả lần lượt đơn, mẫu tin nhắn, homestay, phòng. */
-  async function render(order: object = sampleOrder, autoCopy = false) {
+  async function render(order: object = sampleOrder, autoAction: OrderAction | null = null) {
     await TestBed.configureTestingModule({
       imports: [OrderDetail],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
@@ -37,7 +37,7 @@ describe('OrderDetail', () => {
     httpMock = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(OrderDetail);
     fixture.componentRef.setInput('orderId', 36);
-    fixture.componentRef.setInput('autoCopy', autoCopy);
+    fixture.componentRef.setInput('autoAction', autoAction);
     const changed = vi.fn();
     fixture.componentInstance.changed.subscribe(changed);
     fixture.detectChanges();
@@ -60,15 +60,32 @@ describe('OrderDetail', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Phạm Quốc Bảo');
   });
 
-  it('autoCopy: tự sao chép tin nhắn sau khi tải xong', async () => {
+  it('autoAction copy: tự sao chép tin nhắn sau khi tải xong', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });
-    await render(sampleOrder, true);
+    await render(sampleOrder, 'copy');
 
     httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush({ doorCode: '482915' });
 
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining('482915'));
   });
+
+  it('autoAction checkout: đơn đang ở thì mở form trả phòng; đơn Đã đặt thì bỏ qua', async () => {
+    const { component } = await render({ ...sampleOrder, status: 'OVERSTAY' }, 'checkout');
+    expect(component['checkoutOpen']()).toBe(true);
+    httpMock.expectOne({ url: '/api/orders/36/checkout/preview', method: 'POST' });
+    TestBed.resetTestingModule();
+
+    const booked = await render(sampleOrder, 'checkout');
+    expect(booked.component['checkoutOpen']()).toBe(false);
+  });
+
+  it('autoAction extend: mở dialog gia hạn', async () => {
+    const { component } = await render({ ...sampleOrder, status: 'CHECKED_IN' }, 'extend');
+    expect(component['extendOpen']()).toBe(true);
+    httpMock.match(() => true);
+  });
+
   it('hiện mã cửa khi bấm Hiện', async () => {
     const { fixture } = await render(sampleOrder);
 

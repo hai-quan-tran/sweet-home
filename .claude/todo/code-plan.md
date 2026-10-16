@@ -194,6 +194,19 @@ Trạng thái: GĐ 8 xong. Tiếp theo: GĐ 9.
 ### GĐ 9: Tổng quan & thông báo
 - Chỉ số hôm nay, tình trạng phòng, việc cần làm, doanh thu 7 ngày, cơ cấu đơn tháng, công suất (doanh thu chỉ Quản lý).
 - Thông báo trên chuông.
+- Đã chốt với người dùng:
+  - Doanh thu của ngày = tổng tiền các đơn có giờ nhận phòng trong ngày (đơn huỷ chỉ tính cọc giữ lại = đã thu −
+    hoàn); "Đã thu" = số đã thu của các đơn đó.
+  - Công suất tháng = giờ có khách (chặng đơn chưa huỷ) / (số phòng đang nhận đặt × số giờ từ 00:00 ngày 1 đến bây giờ).
+  - Việc cần làm hôm nay chỉ gồm việc chưa xong: chờ xác nhận trả, quá giờ, nhận phòng hôm nay chưa nhận, trả phòng
+    hôm nay chưa trả.
+  - Thông báo "không ai trực" xét đơn NV đón có giờ nhận trong 7 ngày tới.
+- Chia 2 phần, mỗi phần xong → commit:
+- [x] 9.1 Tổng quan: API tổng hợp (tình trạng phòng, lượt nhận hôm nay, việc cần làm, doanh thu 7 ngày — chỉ Quản
+  lý, cơ cấu đơn tháng, công suất, người đang trong ca); màn Tổng quan tự tải lại mỗi phút; nút xử lý nhanh mở chi
+  tiết đơn kèm hành động (trả phòng, sao chép tin nhắn).
+- [ ] 9.2 Thông báo: API 4 loại (quá giờ, chờ xác nhận trả, sắp nhận phòng chưa gửi mã, không ai trực — chỉ Quản
+  lý); chuông có số đếm + bảng xổ xuống, hỏi lại mỗi phút, nút xử lý nhanh.
 
 ### GĐ 10: Hoàn thiện
 - Kiểm tra giao diện desktop/laptop/iPad, dark mode; rà soát bảo mật; bổ sung test đạt độ phủ.

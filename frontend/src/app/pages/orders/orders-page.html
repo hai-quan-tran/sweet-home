@@ -59,6 +59,6 @@
   </section>
 
   @if (selectedId(); as id) {
-    <app-order-detail [orderId]="id" [autoCopy]="autoCopy()" (changed)="reload()" />
+    <app-order-detail [orderId]="id" [autoAction]="autoAction()" (changed)="reload()" />
   }
 </div>

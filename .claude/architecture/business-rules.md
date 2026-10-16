@@ -84,6 +84,15 @@
 - Xem trước che mã cửa. Sao chép mẫu có {ma_cua} được ghi nhật ký như xem mã cửa.
 - App chỉ tạo nội dung để sao chép, không tự gửi SMS/Zalo.
 
+## Tổng quan
+- Doanh thu của một ngày = tổng tiền các đơn có giờ nhận phòng trong ngày; đơn huỷ chỉ tính cọc giữ lại (đã thu − hoàn).
+  "Đã thu" = số đã thu của các đơn đó. Doanh thu (KPI hôm nay + biểu đồ 7 ngày) chỉ Quản lý xem.
+- Phòng trống = không có khách, đã dọn, đang nhận đặt. Đang có khách = Đang ở + Quá giờ (Chờ xác nhận trả không tính).
+- Việc cần làm hôm nay chỉ gồm việc chưa xong: chờ xác nhận trả, quá giờ, nhận phòng hôm nay chưa nhận, trả phòng hôm
+  nay chưa trả.
+- Cơ cấu đơn tháng: đơn chưa huỷ có giờ nhận trong tháng (kể cả đơn đặt cho ngày tới), theo loại thuê.
+- Công suất tháng = giờ có khách (chặng của đơn chưa huỷ) / (số phòng đang nhận đặt × số giờ từ 00:00 ngày 1 đến bây giờ).
+
 ## Thông báo
 - Thông báo là việc cần xử lý, tính từ trạng thái hiện tại; xử lý xong thì tự mất (không có đã đọc/chưa đọc).
 - 4 loại: phòng quá giờ trả · đơn chờ xác nhận trả · sắp nhận phòng mà chưa gửi mã cửa (trong 2 giờ tới) ·

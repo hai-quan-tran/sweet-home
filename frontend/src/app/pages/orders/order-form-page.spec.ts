@@ -184,7 +184,7 @@ describe('OrderFormPage', () => {
     expect(req.request.body.checkInMode).toBe('STAFF');
     req.flush({ id: 42 });
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 42, copy: 1 } });
+    expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 42, action: 'copy' } });
   });
   it('tiền cọc: bắt buộc > 0 và không vượt tổng tiền xem trước', async () => {
     const fixture = await render();
@@ -236,6 +236,6 @@ describe('OrderFormPage', () => {
     expect(req.request.body.deposit).toBe(50000);
     expect(req.request.body.doorCode).toBeNull();
     req.flush({ id: 36 });
-    expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 36, copy: null } });
+    expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 36, action: null } });
   });
 });

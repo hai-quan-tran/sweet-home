@@ -25,6 +25,9 @@ import { ExtendDialog } from './extend-dialog';
 const CLOSED_STATUSES: OrderStatus[] = ['CHECKED_OUT', 'CANCELLED'];
 const STAYING_STATUSES: OrderStatus[] = ['CHECKED_IN', 'OVERSTAY', 'PENDING_CHECKOUT'];
 
+/** Hành động tự làm khi mở đơn (query param `action`): sao chép tin nhắn, mở form trả phòng, mở dialog gia hạn. */
+export type OrderAction = 'copy' | 'checkout' | 'extend';
+
 /**
  * Chi tiết một đơn kèm các thao tác vòng đời (nhận/trả phòng, huỷ, thu tiền, sao chép tin nhắn).
  * Dùng chung cho màn Đơn thuê và Lịch đặt phòng; báo {@link changed} sau mỗi thao tác đổi trạng thái
@@ -45,8 +48,8 @@ export class OrderDetail {
 
   /** Id đơn cần hiện. */
   readonly orderId = input.required<number>();
-  /** Tự sao chép tin nhắn ngay khi tải xong (sau khi vừa tạo đơn). */
-  readonly autoCopy = input(false);
+  /** Hành động tự làm ngay khi tải xong (vừa tạo đơn, hoặc bấm xử lý nhanh ở Tổng quan / thông báo). */
+  readonly autoAction = input<OrderAction | null>(null);
   /** Phát ra đơn mới sau khi nhận/trả phòng hoặc huỷ. */
   readonly changed = output<OrderDto>();
 
@@ -118,12 +121,13 @@ export class OrderDetail {
   constructor() {
     effect(() => {
       const id = this.orderId();
-      untracked(() => this.open(id));
+      const action = this.autoAction();
+      untracked(() => this.open(id, action));
     });
   }
 
-  /** Tải đơn (kèm mẫu tin nhắn, hướng dẫn phòng hiện hành) và đặt lại mọi form đang mở. */
-  private open(id: number): void {
+  /** Tải đơn (kèm mẫu tin nhắn, hướng dẫn phòng hiện hành), đặt lại mọi form đang mở rồi làm hành động tự động nếu có. */
+  private open(id: number, action: OrderAction | null): void {
     this.doorCode.set(null);
     this.actionError.set(null);
     this.paymentFormId.set(null);
@@ -137,8 +141,14 @@ export class OrderDetail {
       this.selectedTemplateId.set(refs.templates.find((t) => t.defaultForCheckInMode === order.checkInMode)?.id ?? refs.templates[0]?.id ?? null);
       this.roomService.get(order.roomId).subscribe((room) => {
         this.roomGuide.set(room.checkInGuide);
-        if (this.autoCopy()) {
+        if (action === 'copy') {
           this.copyMessage();
+        } else if (action && this.isStaying()) {
+          if (action === 'checkout') {
+            this.openCheckout();
+          } else {
+            this.extendOpen.set(true);
+          }
         }
       });
     });

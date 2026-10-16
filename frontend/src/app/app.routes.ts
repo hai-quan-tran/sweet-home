@@ -3,19 +3,16 @@ import { authGuard, authenticatedGuard, guestGuard, managerGuard } from './core/
 import { Shell } from './layout/shell';
 import { CalendarPage } from './pages/calendar/calendar-page';
 import { ChangePasswordPage } from './pages/change-password/change-password-page';
+import { DashboardPage } from './pages/dashboard/dashboard-page';
 import { LoginPage } from './pages/login/login-page';
 import { OrderFormPage } from './pages/orders/order-form-page';
 import { OrdersPage } from './pages/orders/orders-page';
-import { PlaceholderPage } from './pages/placeholder/placeholder-page';
 import { RoomFormPage } from './pages/rooms/room-form-page';
 import { RoomsPage } from './pages/rooms/rooms-page';
 import { SchedulePage } from './pages/schedule/schedule-page';
 import { SettingsPage } from './pages/settings/settings-page';
 import { StaffFormPage } from './pages/staff/staff-form-page';
 import { StaffPage } from './pages/staff/staff-page';
-
-/** Tạo route cho màn chưa làm, tiêu đề truyền qua data. */
-const page = (path: string, title: string) => ({ path, component: PlaceholderPage, data: { title }, title: `${title} · Sweet Home` });
 
 export const routes: Routes = [
   { path: 'dang-nhap', component: LoginPage, canActivate: [guestGuard], title: 'Đăng nhập · Sweet Home' },
@@ -31,7 +28,7 @@ export const routes: Routes = [
     canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'tong-quan' },
-      page('tong-quan', 'Tổng quan'),
+      { path: 'tong-quan', component: DashboardPage, title: 'Tổng quan · Sweet Home' },
       { path: 'lich', component: CalendarPage, title: 'Lịch đặt phòng · Sweet Home' },
       { path: 'don-thue', component: OrdersPage, title: 'Đơn thuê · Sweet Home' },
       { path: 'don-thue/tao-moi', component: OrderFormPage, title: 'Tạo đơn thuê · Sweet Home' },

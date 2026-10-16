@@ -92,6 +92,35 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 	List<RentalOrder> findStaffPickupsBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
 	/**
+	 * Đơn khách đang ở (Đang ở, Quá giờ, Chờ xác nhận trả), kèm phòng, theo giờ trả — dùng cho Tổng quan và thông báo.
+	 *
+	 * @return đơn đang ở
+	 */
+	@Query("select o from RentalOrder o join fetch o.room where o.status in (com.sweethome.order.OrderStatus.CHECKED_IN, "
+			+ "com.sweethome.order.OrderStatus.OVERSTAY, com.sweethome.order.OrderStatus.PENDING_CHECKOUT) order by o.checkOutAt")
+	List<RentalOrder> findStaying();
+
+	/**
+	 * Chặng của đơn Đã đặt chưa kết thúc, kèm đơn và phòng, theo giờ bắt đầu — khách sắp tới của từng phòng.
+	 *
+	 * @param now thời điểm hiện tại
+	 * @return chặng
+	 */
+	@Query("select s from OrderStay s join fetch s.order o join fetch s.room where o.status = com.sweethome.order.OrderStatus.BOOKED "
+			+ "and s.endAt > :now order by s.startAt")
+	List<OrderStay> findBookedStaysEndingAfter(@Param("now") LocalDateTime now);
+
+	/**
+	 * Mọi đơn (kể cả đã huỷ) có giờ nhận phòng trong {@code [from, to)} — tính doanh thu, lượt nhận, cơ cấu đơn.
+	 *
+	 * @param from từ thời điểm
+	 * @param to   đến thời điểm (không gồm)
+	 * @return đơn
+	 */
+	@Query("select o from RentalOrder o where o.checkInAt >= :from and o.checkInAt < :to")
+	List<RentalOrder> findCheckingInBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+	/**
 	 * Danh sách đơn có lọc, mới nhất ở trên, dùng cho màn Đơn thuê.
 	 *
 	 * @param status    trạng thái, null nghĩa là mọi trạng thái

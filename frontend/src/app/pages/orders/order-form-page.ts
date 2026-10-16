@@ -245,7 +245,7 @@ export class OrderFormPage {
       .subscribe({
         next: (order) => {
           this.submitting.set(false);
-          this.router.navigate(['/don-thue'], { queryParams: { id: order.id, copy: copyMessage ? 1 : null } });
+          this.router.navigate(['/don-thue'], { queryParams: { id: order.id, action: copyMessage ? 'copy' : null } });
         },
         error: (err) => {
           this.submitting.set(false);

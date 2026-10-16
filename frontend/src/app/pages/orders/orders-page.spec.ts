@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { OrdersPage } from './orders-page';
 
 const sampleRoom = {
@@ -37,7 +38,7 @@ describe('OrdersPage', () => {
         provideRouter([]),
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) }, queryParamMap: convertToParamMap(queryParams) },
+          useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) }, queryParamMap: of(convertToParamMap(queryParams)) },
         },
       ],
     }).compileComponents();
@@ -85,13 +86,13 @@ describe('OrdersPage', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-order-detail')?.textContent).toContain('SH-1036');
   });
 
-  it('mở màn kèm query param id thì tự mở chi tiết đơn đó, copy=1 thì bật tự sao chép', async () => {
-    const fixture = await render({ id: '36', copy: '1' });
+  it('mở màn kèm query param id thì tự mở chi tiết đơn đó, action=copy thì tự sao chép', async () => {
+    const fixture = await render({ id: '36', action: 'copy' });
     flushDetail();
     httpMock.expectOne('/api/orders/36/door-code?forMessage=true').flush({ doorCode: '482915' });
 
     expect(fixture.componentInstance['selectedId']()).toBe(36);
-    expect(fixture.componentInstance['autoCopy']()).toBe(true);
+    expect(fixture.componentInstance['autoAction']()).toBe('copy');
   });
 
   it('chi tiết đơn báo đổi trạng thái thì tải lại danh sách', async () => {

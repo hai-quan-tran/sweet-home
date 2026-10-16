@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { formatMoney } from '../../core/money';
@@ -7,7 +8,7 @@ import { OrderDto, OrderListResponse, OrderStatus } from '../../core/order.model
 import { OrderListQuery, OrderService } from '../../core/order.service';
 import { RoomDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
-import { OrderDetail } from './order-detail';
+import { OrderAction, OrderDetail } from './order-detail';
 
 const STATUS_TABS: { value: OrderStatus | null; label: string }[] = [
   { value: null, label: 'Tất cả' },
@@ -49,8 +50,8 @@ export class OrdersPage {
   protected readonly rooms = signal<RoomDto[]>([]);
   /** Đơn đang mở chi tiết. */
   protected readonly selectedId = signal<number | null>(null);
-  /** Tự sao chép tin nhắn khi mở đơn từ URL có copy=1 (vừa tạo đơn xong). */
-  protected readonly autoCopy = signal(false);
+  /** Hành động tự làm khi mở đơn từ URL có `action` (vừa tạo đơn, xử lý nhanh từ Tổng quan / thông báo). */
+  protected readonly autoAction = signal<OrderAction | null>(null);
 
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
 
@@ -58,11 +59,14 @@ export class OrdersPage {
     this.roomService.list().subscribe((rooms) => this.rooms.set(rooms));
     this.reload();
 
-    const idParam = this.route.snapshot.queryParamMap.get('id');
-    if (idParam) {
-      this.autoCopy.set(this.route.snapshot.queryParamMap.get('copy') === '1');
-      this.selectedId.set(Number(idParam));
-    }
+    // Theo dõi URL (không chỉ lúc vào màn) để bấm thông báo khi đang ở màn này vẫn mở đúng đơn.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.autoAction.set(params.get('action') as OrderAction | null);
+        this.selectedId.set(Number(id));
+      }
+    });
   }
 
   /** Tải lại danh sách theo bộ lọc hiện tại. */
@@ -113,8 +117,8 @@ export class OrdersPage {
 
   /** Mở chi tiết một đơn, cập nhật lại URL để chia sẻ/giữ khi tải lại trang. */
   selectOrder(order: OrderDto): void {
-    this.router.navigate([], { relativeTo: this.route, queryParams: { id: order.id, copy: null }, queryParamsHandling: 'merge' });
-    this.autoCopy.set(false);
+    this.router.navigate([], { relativeTo: this.route, queryParams: { id: order.id, action: null }, queryParamsHandling: 'merge' });
+    this.autoAction.set(null);
     this.selectedId.set(order.id);
   }
 }
