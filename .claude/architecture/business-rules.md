@@ -47,6 +47,11 @@
   - Không được: thêm/sửa phòng, sửa bảng giá, thêm/sửa phụ thu, thêm/sửa nhân viên, xếp/sửa lịch làm và ca mẫu.
   - Không được: huỷ đơn đã thu tiền, sửa số tiền đã thu, xem doanh thu, xem nhật ký thao tác.
 - Mật khẩu: ≥ 8 ký tự, có cả chữ và số; tài khoản mới bắt đổi mật khẩu ở lần đăng nhập đầu.
+- Đăng nhập sai mật khẩu 5 lần liên tiếp → không đăng nhập được (kể cả đúng mật khẩu) trong 15 phút, báo số phút còn lại;
+  đăng nhập đúng thì đếm lại từ 0; Quản lý đặt lại mật khẩu tạm thì gỡ luôn khoá tạm. Báo "Tài khoản đã bị khoá" chỉ khi
+  mật khẩu đúng (không lộ tài khoản nào tồn tại).
+- Tài khoản Quản lý `admin` tạo khi DB chưa có tài khoản nào; mật khẩu ban đầu: dev `Admin@123`, stage/prod lấy từ biến
+  môi trường `ADMIN_INITIAL_PASSWORD` (thiếu thì không khởi động được).
 - Quản lý thêm/sửa tài khoản: họ tên, SĐT, CCCD (mã hoá, chỉ hiện 4 số cuối), ngày bắt đầu làm, vai trò,
   khoá/mở, đặt lại mật khẩu tạm. Tên đăng nhập không đổi được sau khi tạo.
 - Khoá tài khoản hoặc đổi vai trò có hiệu lực ngay (đang đăng nhập cũng bị đăng xuất / mất quyền ngay).

@@ -1,6 +1,9 @@
 package com.sweethome.auth;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -16,44 +19,84 @@ import com.sweethome.common.error.BusinessException;
 @Service
 public class AuthService {
 
+	/** Sai mật khẩu liên tiếp bao nhiêu lần thì khoá tạm. */
+	static final int MAX_FAILED_LOGINS = 5;
+	/** Thời gian khoá tạm. */
+	static final Duration LOGIN_LOCK = Duration.ofMinutes(15);
+
 	private final AccountRepository accountRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final JwtService jwtService;
 	private final PasswordEncoder passwordEncoder;
+	private final Clock clock;
 	private final long refreshTokenDays;
 	private final long refreshTokenRememberDays;
+	/** Mật khẩu băm giả dùng khi tên đăng nhập không tồn tại. */
+	private final String dummyHash;
 
 	public AuthService(AccountRepository accountRepository, RefreshTokenRepository refreshTokenRepository,
-			JwtService jwtService, PasswordEncoder passwordEncoder,
+			JwtService jwtService, PasswordEncoder passwordEncoder, Clock clock,
 			@Value("${app.jwt.refresh-token-days}") long refreshTokenDays,
 			@Value("${app.jwt.refresh-token-remember-days}") long refreshTokenRememberDays) {
 		this.accountRepository = accountRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.jwtService = jwtService;
 		this.passwordEncoder = passwordEncoder;
+		this.clock = clock;
 		this.refreshTokenDays = refreshTokenDays;
 		this.refreshTokenRememberDays = refreshTokenRememberDays;
+		this.dummyHash = passwordEncoder.encode("sweet-home-dummy-password");
 	}
 
 	/**
-	 * Kiểm tra tên đăng nhập/mật khẩu và cấp token mới.
+	 * Kiểm tra tên đăng nhập/mật khẩu và cấp token mới. Sai mật khẩu {@value #MAX_FAILED_LOGINS} lần liên tiếp thì
+	 * khoá tạm 15 phút; không rollback khi lỗi để giữ số lần sai.
 	 *
 	 * @param username       tên đăng nhập
 	 * @param rawPassword    mật khẩu
 	 * @param rememberDevice true nếu chọn "Ghi nhớ thiết bị" (refresh token sống lâu hơn)
 	 * @return token và thông tin tài khoản
 	 */
-	@Transactional
+	@Transactional(noRollbackFor = BusinessException.class)
 	public AuthResult login(String username, String rawPassword, boolean rememberDevice) {
-		Account account = accountRepository.findByUsername(username)
-				.orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "Tên đăng nhập hoặc mật khẩu không đúng"));
+		LocalDateTime now = LocalDateTime.now(clock);
+		Account account = accountRepository.findByUsername(username).orElse(null);
+		if (account == null) {
+			// Vẫn so một mật khẩu băm để thời gian trả lời không lộ tên đăng nhập có tồn tại hay không.
+			passwordEncoder.matches(rawPassword, dummyHash);
+			throw invalidCredentials();
+		}
+		if (account.getLoginLockedUntil() != null && now.isBefore(account.getLoginLockedUntil())) {
+			throw tooManyFailures(account.getLoginLockedUntil(), now);
+		}
+		if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
+			int failed = account.getFailedLoginCount() + 1;
+			if (failed >= MAX_FAILED_LOGINS) {
+				accountRepository.updateLoginFailures(account.getId(), 0, now.plus(LOGIN_LOCK));
+				throw tooManyFailures(now.plus(LOGIN_LOCK), now);
+			}
+			accountRepository.updateLoginFailures(account.getId(), failed, null);
+			throw invalidCredentials();
+		}
+		// Chỉ báo "đã bị khoá" khi mật khẩu đúng, tránh người ngoài dò được tài khoản nào tồn tại.
 		if (account.getStatus() == AccountStatus.LOCKED) {
 			throw new BusinessException(HttpStatus.FORBIDDEN, "Tài khoản đã bị khoá");
 		}
-		if (!passwordEncoder.matches(rawPassword, account.getPasswordHash())) {
-			throw new BusinessException(HttpStatus.UNAUTHORIZED, "Tên đăng nhập hoặc mật khẩu không đúng");
+		if (account.getFailedLoginCount() > 0 || account.getLoginLockedUntil() != null) {
+			accountRepository.updateLoginFailures(account.getId(), 0, null);
 		}
 		return issueTokens(account, rememberDevice);
+	}
+
+	private static BusinessException invalidCredentials() {
+		return new BusinessException(HttpStatus.UNAUTHORIZED, "Tên đăng nhập hoặc mật khẩu không đúng");
+	}
+
+	/** Lỗi khoá tạm, báo số phút còn lại (làm tròn lên). */
+	private static BusinessException tooManyFailures(LocalDateTime lockedUntil, LocalDateTime now) {
+		long minutes = Math.max(1, Math.ceilDiv(Duration.between(now, lockedUntil).toSeconds(), 60));
+		return new BusinessException(HttpStatus.TOO_MANY_REQUESTS,
+				"Đăng nhập sai quá nhiều lần, thử lại sau " + minutes + " phút");
 	}
 
 	/**

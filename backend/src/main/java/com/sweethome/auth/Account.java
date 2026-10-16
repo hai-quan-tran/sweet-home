@@ -1,6 +1,7 @@
 package com.sweethome.auth;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,6 +58,14 @@ public class Account extends Auditable {
 
 	@Column(name = "start_date")
 	private LocalDate startDate;
+
+	/** Số lần đăng nhập sai liên tiếp; về 0 khi đăng nhập đúng hoặc khi bị khoá tạm. */
+	@Column(name = "failed_login_count", nullable = false)
+	private int failedLoginCount;
+
+	/** Khoá tạm do sai mật khẩu nhiều lần: không đăng nhập được tới thời điểm này; null nếu không bị khoá tạm. */
+	@Column(name = "login_locked_until")
+	private LocalDateTime loginLockedUntil;
 
 	public Long getId() {
 		return id;
@@ -140,5 +149,21 @@ public class Account extends Auditable {
 
 	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
+	}
+
+	public int getFailedLoginCount() {
+		return failedLoginCount;
+	}
+
+	public void setFailedLoginCount(int failedLoginCount) {
+		this.failedLoginCount = failedLoginCount;
+	}
+
+	public LocalDateTime getLoginLockedUntil() {
+		return loginLockedUntil;
+	}
+
+	public void setLoginLockedUntil(LocalDateTime loginLockedUntil) {
+		this.loginLockedUntil = loginLockedUntil;
 	}
 }

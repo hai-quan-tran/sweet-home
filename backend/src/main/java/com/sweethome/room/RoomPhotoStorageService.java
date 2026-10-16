@@ -1,9 +1,12 @@
 package com.sweethome.room;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +22,9 @@ import com.sweethome.common.error.BusinessException;
 @Service
 public class RoomPhotoStorageService {
 
+	/** Kiểu MIME theo đuôi file đã lưu; đuôi khác (file cũ) trả octet-stream để trình duyệt không hiển thị như trang. */
+	private static final Map<String, String> CONTENT_TYPES = Map.of("jpg", "image/jpeg", "png", "image/png", "webp", "image/webp");
+
 	private final Path rootDir;
 
 	public RoomPhotoStorageService(@Value("${app.storage.room-photos-dir}") String roomPhotosDir) {
@@ -31,16 +37,22 @@ public class RoomPhotoStorageService {
 	}
 
 	/**
-	 * Lưu một file ảnh với tên ngẫu nhiên (giữ phần mở rộng gốc), tránh trùng và lộ tên file gốc.
+	 * Lưu một file ảnh với tên ngẫu nhiên. Loại ảnh xác định theo nội dung thật (byte đầu file), không tin tên file /
+	 * content-type do trình duyệt gửi — tránh lưu file HTML/script giả làm ảnh rồi trả về cùng origin với app.
 	 *
 	 * @param file file ảnh gửi lên
-	 * @return tên file đã lưu trên đĩa
+	 * @return tên file đã lưu trên đĩa (đuôi theo loại thật)
 	 */
 	public String save(MultipartFile file) {
-		if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
-			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chỉ nhận file ảnh (JPG, PNG)");
+		String extension;
+		try (InputStream in = file.getInputStream()) {
+			extension = file.isEmpty() ? null : imageExtension(in.readNBytes(12));
+		} catch (IOException e) {
+			throw new UncheckedIOException("Không đọc được ảnh", e);
 		}
-		String extension = extensionOf(file.getOriginalFilename());
+		if (extension == null) {
+			throw new BusinessException(HttpStatus.BAD_REQUEST, "Chỉ nhận file ảnh JPG, PNG hoặc WebP");
+		}
 		String storedName = UUID.randomUUID() + extension;
 		try {
 			file.transferTo(rootDir.resolve(storedName));
@@ -48,6 +60,18 @@ public class RoomPhotoStorageService {
 			throw new UncheckedIOException("Không lưu được ảnh", e);
 		}
 		return storedName;
+	}
+
+	/** Đuôi file theo chữ ký đầu file: JPG (FF D8 FF), PNG (89 'PNG'), WebP ('RIFF' .... 'WEBP'); null nếu không phải. */
+	static String imageExtension(byte[] head) {
+		String ascii = new String(head, StandardCharsets.ISO_8859_1);
+		if (ascii.startsWith("ÿØÿ")) {
+			return ".jpg";
+		}
+		if (ascii.startsWith("\u0089PNG\r\n\u001A\n")) {
+			return ".png";
+		}
+		return ascii.length() >= 12 && ascii.startsWith("RIFF") && ascii.startsWith("WEBP", 8) ? ".webp" : null;
 	}
 
 	/**
@@ -60,8 +84,7 @@ public class RoomPhotoStorageService {
 		Path path = rootDir.resolve(storedName);
 		try {
 			byte[] content = Files.readAllBytes(path);
-			String contentType = Files.probeContentType(path);
-			return new StoredFile(content, contentType != null ? contentType : "application/octet-stream");
+			return new StoredFile(content, CONTENT_TYPES.getOrDefault(storedName.substring(storedName.lastIndexOf('.') + 1), "application/octet-stream"));
 		} catch (IOException e) {
 			throw new BusinessException(HttpStatus.NOT_FOUND, "Không tìm thấy ảnh");
 		}
@@ -78,14 +101,6 @@ public class RoomPhotoStorageService {
 		} catch (IOException e) {
 			throw new UncheckedIOException("Không xoá được ảnh", e);
 		}
-	}
-
-	private String extensionOf(String originalFilename) {
-		if (originalFilename == null) {
-			return "";
-		}
-		int dot = originalFilename.lastIndexOf('.');
-		return dot >= 0 ? originalFilename.substring(dot) : "";
 	}
 
 	/**

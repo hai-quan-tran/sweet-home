@@ -59,8 +59,8 @@
           <label class="drop">
             <i class="pi pi-upload"></i>
             <b>Bấm để chọn ảnh</b>
-            <span>JPG, PNG · ảnh đầu tiên là ảnh bìa</span>
-            <input type="file" accept="image/jpeg,image/png" multiple (change)="onFilesSelected($event)" />
+            <span>JPG, PNG, WebP · ảnh đầu tiên là ảnh bìa</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" multiple (change)="onFilesSelected($event)" />
           </label>
           @if (existingPhotos().length || pendingPhotos().length) {
             <div class="thumbs">

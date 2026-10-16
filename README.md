@@ -49,4 +49,6 @@ cd frontend && npx ng test --watch=false
 ## Môi trường stage, prod
 Chạy với `--spring.profiles.active=stage` (hoặc `prod`) và đặt biến môi trường:
 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SERVER_PORT` (mặc định 8080), `JWT_SECRET` (khoá ký JWT, base64 ≥ 32 byte),
-`ROOM_PHOTOS_DIR` (thư mục lưu ảnh phòng trên đĩa server).
+`ROOM_PHOTOS_DIR` (thư mục lưu ảnh phòng trên đĩa server), `CRYPTO_SECRET` (khoá AES-256 base64 32 byte, mã hoá CCCD và mã cửa),
+`ADMIN_INITIAL_PASSWORD` (mật khẩu ban đầu của tài khoản Quản lý `admin`, chỉ dùng khi DB chưa có tài khoản nào; ≥ 8 ký tự,
+có chữ và số; bắt đổi ở lần đăng nhập đầu).

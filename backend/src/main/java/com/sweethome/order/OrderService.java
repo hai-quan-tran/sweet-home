@@ -47,6 +47,8 @@ public class OrderService {
 	private static final Pattern CODE_PATTERN = Pattern.compile("(?i)^SH-(\\d+)$");
 	/** Khoảng dài nhất của lịch đặt phòng (xem theo tháng). */
 	static final int MAX_CALENDAR_DAYS = 31;
+	/** Kích thước trang tối đa của danh sách đơn (chặn yêu cầu quá lớn). */
+	static final int MAX_PAGE_SIZE = 100;
 
 	private final RentalOrderRepository orderRepository;
 	private final RoomRepository roomRepository;
@@ -86,7 +88,7 @@ public class OrderService {
 		String normalizedSearch = search == null ? "" : search.trim().toLowerCase();
 		Long searchId = parseCodeToId(normalizedSearch);
 		Page<RentalOrder> result = orderRepository.search(status, roomId, normalizedSearch, searchId,
-				PageRequest.of(page, size));
+				PageRequest.of(Math.max(0, page), Math.clamp(size, 1, MAX_PAGE_SIZE)));
 		Map<OrderStatus, Long> counts = new EnumMap<>(OrderStatus.class);
 		for (OrderStatus s : OrderStatus.values()) {
 			counts.put(s, 0L);

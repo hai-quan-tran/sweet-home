@@ -163,7 +163,7 @@ class RoomIntegrationTest {
 		entityManager.clear();
 
 		MockMultipartFile file = new MockMultipartFile("files", "a.png", "image/png",
-				new byte[] { (byte) 0x89, 'P', 'N', 'G' });
+				new byte[] { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' });
 		MvcResult uploadResult = mvc.perform(multipart("/rooms/" + roomId + "/photos")
 						.file(file)
 						.cookie(new MockCookie("access_token", managerAccessToken))

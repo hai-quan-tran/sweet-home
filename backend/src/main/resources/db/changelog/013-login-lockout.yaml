@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-login-lockout
+      author: sweet-home
+      changes:
+        - addColumn:
+            tableName: account
+            columns:
+              - column: { name: failed_login_count, type: INT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: login_locked_until, type: DATETIME }

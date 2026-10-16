@@ -55,9 +55,19 @@ describe('LoginPage', () => {
     fixture.componentInstance['form'].setValue({ username: 'manager1', password: 'wrong', rememberDevice: false });
 
     fixture.componentInstance.submit();
-    httpMock.expectOne('/api/auth/login').flush('sai', { status: 401, statusText: 'Unauthorized' });
+    httpMock.expectOne('/api/auth/login').flush({ detail: 'Tên đăng nhập hoặc mật khẩu không đúng' }, { status: 401, statusText: 'Unauthorized' });
 
-    expect(fixture.componentInstance['errorMessage']()).toBe('Tên đăng nhập hoặc mật khẩu không đúng.');
+    expect(fixture.componentInstance['errorMessage']()).toBe('Tên đăng nhập hoặc mật khẩu không đúng');
+  });
+
+  it('khoá tạm do sai nhiều lần: hiện thông báo của server', () => {
+    const fixture = create();
+    fixture.componentInstance['form'].setValue({ username: 'manager1', password: 'wrong', rememberDevice: false });
+
+    fixture.componentInstance.submit();
+    httpMock.expectOne('/api/auth/login').flush({ detail: 'Đăng nhập sai quá nhiều lần, thử lại sau 15 phút' }, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(fixture.componentInstance['errorMessage']()).toBe('Đăng nhập sai quá nhiều lần, thử lại sau 15 phút');
   });
 
   it('không gửi request khi form thiếu dữ liệu', () => {

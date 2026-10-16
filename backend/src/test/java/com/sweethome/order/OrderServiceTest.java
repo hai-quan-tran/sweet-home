@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -88,6 +90,15 @@ class OrderServiceTest {
 			}
 			return order;
 		});
+	}
+
+	@Test
+	void listCapsPageSize() {
+		when(orderRepository.search(any(), any(), any(), any(), any())).thenReturn(Page.empty());
+
+		service.list(null, null, null, -1, 100_000);
+
+		verify(orderRepository).search(null, null, "", -1L, PageRequest.of(0, OrderService.MAX_PAGE_SIZE));
 	}
 
 	private OrderUpsertRequest requestHourly(LocalDate date, LocalTime time, Integer hours) {

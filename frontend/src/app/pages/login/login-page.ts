@@ -57,7 +57,8 @@ export class LoginPage {
           const redirect = this.route.snapshot.queryParamMap.get('redirect');
           this.router.navigateByUrl(redirect || '/tong-quan');
         },
-        error: () => this.errorMessage.set('Tên đăng nhập hoặc mật khẩu không đúng.'),
+        // Hiện lý do từ server (sai mật khẩu, bị khoá, khoá tạm do sai nhiều lần); mất kết nối thì báo chung.
+        error: (err) => this.errorMessage.set(err?.error?.detail ?? 'Không đăng nhập được, thử lại sau.'),
       });
   }
 }

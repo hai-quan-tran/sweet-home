@@ -3,11 +3,15 @@ package com.sweethome.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,13 +37,17 @@ class AuthServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
+	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+	private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 16, 9, 0);
+
 	private AuthService authService;
 	private Account account;
 
 	@BeforeEach
 	void setUp() {
 		JwtService jwtService = new JwtService("dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdW5pdC10ZXN0cy0zMmJ5dGVz", 30);
-		authService = new AuthService(accountRepository, refreshTokenRepository, jwtService, passwordEncoder, 7, 30);
+		authService = new AuthService(accountRepository, refreshTokenRepository, jwtService, passwordEncoder,
+				Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE), 7, 30);
 		account = AccountTestFactory.create(1L, "manager1", "hashed", AccountRole.MANAGER, AccountStatus.ACTIVE, false);
 	}
 
@@ -86,13 +94,57 @@ class AuthServiceTest {
 	}
 
 	@Test
-	void loginFailsWhenAccountLocked() {
+	void lockedAccountIsReportedOnlyWithCorrectPassword() {
 		Account locked = AccountTestFactory.create(2L, "staff1", "hashed", AccountRole.STAFF, AccountStatus.LOCKED, false);
 		when(accountRepository.findByUsername("staff1")).thenReturn(Optional.of(locked));
+		when(passwordEncoder.matches("secret12", "hashed")).thenReturn(true);
+		when(passwordEncoder.matches("wrong123", "hashed")).thenReturn(false);
 
-		assertThatThrownBy(() -> authService.login("staff1", "whatever1", false))
-				.isInstanceOf(BusinessException.class)
+		assertThatThrownBy(() -> authService.login("staff1", "wrong123", false))
+				.satisfies(e -> assertThat(((BusinessException) e).getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED));
+		assertThatThrownBy(() -> authService.login("staff1", "secret12", false))
 				.satisfies(e -> assertThat(((BusinessException) e).getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
+	}
+
+	@Test
+	void unknownUsernameStillChecksAHash() {
+		when(accountRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> authService.login("ghost", "whatever1", false)).isInstanceOf(BusinessException.class);
+		verify(passwordEncoder).matches(eq("whatever1"), any());
+	}
+
+	@Test
+	void wrongPasswordCountsAndFifthLocksFor15Minutes() {
+		account.setFailedLoginCount(3);
+		when(accountRepository.findByUsername("manager1")).thenReturn(Optional.of(account));
+
+		assertThatThrownBy(() -> authService.login("manager1", "wrong123", false))
+				.satisfies(e -> assertThat(((BusinessException) e).getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED));
+		verify(accountRepository).updateLoginFailures(1L, 4, null);
+
+		account.setFailedLoginCount(4);
+		assertThatThrownBy(() -> authService.login("manager1", "wrong123", false))
+				.satisfies(e -> {
+					assertThat(((BusinessException) e).getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+					assertThat(e.getMessage()).contains("15 phút");
+				});
+		verify(accountRepository).updateLoginFailures(1L, 0, NOW.plusMinutes(15));
+	}
+
+	@Test
+	void temporarilyLockedRejectsEvenCorrectPasswordUntilExpiry() {
+		account.setLoginLockedUntil(NOW.plusMinutes(4).plusSeconds(10));
+		when(accountRepository.findByUsername("manager1")).thenReturn(Optional.of(account));
+
+		assertThatThrownBy(() -> authService.login("manager1", "secret12", false))
+				.satisfies(e -> assertThat(e.getMessage()).contains("5 phút"));
+		verify(passwordEncoder, never()).matches(eq("secret12"), any());
+
+		account.setLoginLockedUntil(NOW.minusSeconds(1));
+		when(passwordEncoder.matches("secret12", "hashed")).thenReturn(true);
+		authService.login("manager1", "secret12", false);
+		verify(accountRepository).updateLoginFailures(1L, 0, null);
 	}
 
 	@Test

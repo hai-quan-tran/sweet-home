@@ -140,11 +140,13 @@ public class AccountManagementService {
 		}
 	}
 
-	/** Đặt mật khẩu tạm theo quy tắc mật khẩu chung. */
+	/** Đặt mật khẩu tạm theo quy tắc mật khẩu chung; gỡ luôn khoá tạm do đăng nhập sai nhiều lần. */
 	private void setPassword(Account account, AccountUpsertRequest request) {
 		PasswordPolicy.validate(request.password());
 		account.setPasswordHash(passwordEncoder.encode(request.password()));
 		account.setMustChangePassword(request.mustChangePassword());
+		account.setFailedLoginCount(0);
+		account.setLoginLockedUntil(null);
 	}
 
 	private Account findAccount(Long id) {

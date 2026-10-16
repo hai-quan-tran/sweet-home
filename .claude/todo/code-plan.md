@@ -213,3 +213,12 @@ Trạng thái: GĐ 9 xong. Tiếp theo: GĐ 10.
 - Test frontend chập chờn: khi chạy cả bộ lúc máy tải nặng, test đầu của `pricing-dialog.spec.ts` và
   `surcharge-dialog.spec.ts` vượt 5 giây (chạy riêng thì pass; lỗi cả trên commit 9.1) — xem lại thời gian chờ / cách
   dựng p-dialog trong test.
+- Đã chốt với người dùng: khoá tạm theo tài khoản (sai 5 lần liên tiếp → 15 phút, đúng thì đếm lại); mật khẩu admin ban
+  đầu ở stage/prod lấy từ `ADMIN_INITIAL_PASSWORD`, log không in mật khẩu; đo độ phủ frontend + ngưỡng 80% dòng; kiểm
+  tra giao diện bằng Playwright cài tạm ngoài dự án, dữ liệu mẫu xoá sau khi xong.
+- Chia 3 phần, mỗi phần xong → commit:
+- [x] 10.1 Bảo mật: upload ảnh kiểm tra nội dung thật (JPG/PNG/WebP, đuôi theo loại thật); đăng nhập không lộ tài khoản
+  tồn tại/bị khoá; khoá tạm khi sai mật khẩu nhiều lần; mật khẩu admin ban đầu từ biến môi trường; giới hạn kích thước
+  trang danh sách đơn; bỏ user mặc định Spring tự sinh.
+- [ ] 10.2 Test & độ phủ: đo độ phủ frontend, ngưỡng 80%, bổ sung test còn thiếu; sửa test chập chờn.
+- [ ] 10.3 Giao diện: chụp mọi màn ở 1440 / 1280 / 1024 / 768, sáng và tối; sửa lỗi bố cục, màu dark mode.

@@ -471,3 +471,18 @@
 - Nút xử lý nhanh: Trả phòng / Xác nhận trả phòng (`action=checkout`), Gia hạn (`extend`), Sao chép tin nhắn (`copy`),
   Mở lịch làm (`/lich-lam?date=YYYY-MM-DD` — `SchedulePage` theo dõi `queryParamMap`, mở tuần chứa ngày đó).
 - Hàm định dạng giờ dùng chung (`hm`, `dm`, `timeOf`, `minutesBetween`, `durationLabel`, tên thứ) ở `core/time-format.ts`.
+
+## Rà soát bảo mật (GĐ10.1)
+- Ảnh phòng:  nhận diện loại theo byte đầu file (JPG/PNG/WebP), đặt đuôi file
+  theo loại thật — không tin tên file/content-type trình duyệt gửi (từng có thể lưu  khai báo  rồi
+  trả về dạng HTML cùng origin = XSS). Đọc ảnh: content-type theo bảng đuôi cố định, đuôi lạ trả .
+- Đăng nhập (): tên không tồn tại vẫn so một hash giả (thời gian trả lời như nhau); khoá tạm 5 lần sai /
+  15 phút qua cột ,  (changelog ), lỗi 429.
+  **** — không có thì lỗi đăng nhập rollback luôn số lần sai.
+  Ghi số lần sai bằng  (update thẳng, không đổi ). Test
+   cố ý không  (test bọc transaction dùng chung session nên không bắt được lỗi
+  rollback), đã xác nhận fail khi bỏ . Màn Đăng nhập hiện  của server thay vì một câu cố định.
+- :  tối đa 100 (), giống nhật ký.
+-  loại  (Spring tự tạo user nhớ tạm + in mật khẩu ra log).
+- Đã rà và giữ nguyên: mọi API sửa cấu hình/nhân viên/lịch làm/nhật ký có  MANAGER, phần còn lại đúng
+  quyền Nhân viên theo business-rules; JPQL dùng tham số; lỗi 500 không trả chi tiết; frontend không dùng .

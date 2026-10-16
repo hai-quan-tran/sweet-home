@@ -39,6 +39,9 @@ app:
   storage:
     # Thư mục lưu ảnh phòng trên đĩa server, DB chỉ lưu đường dẫn
     room-photos-dir: ${ROOM_PHOTOS_DIR}
+  # Mật khẩu ban đầu của tài khoản Quản lý admin, chỉ dùng khi DB chưa có tài khoản nào (dev ghi ở application-dev.yml)
+  admin:
+    initial-password: ${ADMIN_INITIAL_PASSWORD:}
   # Khoá AES-256 (base64) mã hoá CCCD và mã cửa trong DB (GĐ4)
   crypto:
     secret: ${CRYPTO_SECRET}
