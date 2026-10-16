@@ -42,3 +42,6 @@
 - [x] GĐ 8: lịch làm
 - [x] GĐ 9: tổng quan & thông báo
 - [x] GĐ 10: hoàn thiện
+- [x] Lên kế hoạch tài liệu: xem `docs-plan.md`
+- [ ] GĐ 11: detail design (Excel, mỗi màn/dialog 1 file) — 11.1 công cụ + Tổng thể, 11.2–11.5 các màn
+- [ ] GĐ 12: hướng dẫn sử dụng (Word + PDF) — 12.1 công việc hằng ngày, 12.2 phần Quản lý & hỏi đáp
