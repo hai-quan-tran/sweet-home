@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Observable, finalize, forkJoin, shareReplay } from 'rxjs';
+import { Observable, finalize, forkJoin, shareReplay, switchMap } from 'rxjs';
 
 import { AuthService } from '../../core/auth.service';
 import { formatMoney } from '../../core/money';
@@ -274,13 +274,28 @@ export class OrderDetail {
     });
   }
 
-  /** Xác nhận khách đã nhận phòng (đơn Đã đặt), có hỏi lại trước. */
+  /**
+   * Xác nhận khách đã nhận phòng (đơn Đã đặt), có hỏi lại trước. Xem lại trạng thái phòng ngay lúc bấm:
+   * phòng còn Chờ dọn thì nhắc, đồng ý sẽ đánh dấu Đã dọn trước rồi mới nhận phòng.
+   */
   checkIn(): void {
     const order = this.order();
-    if (!order || this.acting() || !confirm(`Xác nhận khách đã nhận phòng ${order.roomNumber}?`)) {
+    if (!order || this.acting()) {
       return;
     }
-    this.runAction(this.orderService.checkIn(order.id));
+    this.roomService.get(order.roomId).subscribe({
+      next: (room) => {
+        const question = room.needsCleaning
+          ? `Phòng ${order.roomNumber} đang Chờ dọn. Đánh dấu Đã dọn rồi nhận phòng?`
+          : `Xác nhận khách đã nhận phòng ${order.roomNumber}?`;
+        if (!confirm(question)) {
+          return;
+        }
+        const checkIn = this.orderService.checkIn(order.id);
+        this.runAction(room.needsCleaning ? this.roomService.markCleaned(room.id).pipe(switchMap(() => checkIn)) : checkIn);
+      },
+      error: () => this.actionError.set('Không tải được trạng thái phòng, thử lại sau.'),
+    });
   }
 
   /**

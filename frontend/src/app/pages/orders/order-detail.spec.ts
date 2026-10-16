@@ -197,6 +197,7 @@ describe('OrderDetail', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     fixture.componentInstance.checkIn();
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
     httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
       .flush({ ...sampleOrder, status: 'CHECKED_IN', actualCheckInAt: '2026-10-07T21:05:00' });
     expect(changed).toHaveBeenCalled();
@@ -204,11 +205,42 @@ describe('OrderDetail', () => {
     expect(fixture.componentInstance['order']()?.status).toBe('CHECKED_IN');
   });
 
+  it('nhận phòng khi phòng còn Chờ dọn: nhắc, đồng ý thì đánh dấu Đã dọn trước rồi nhận phòng', async () => {
+    const { fixture } = await render(sampleOrder);
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    fixture.componentInstance.checkIn();
+    httpMock.expectOne('/api/rooms/1').flush({ ...sampleRoom, needsCleaning: true });
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('Chờ dọn'));
+    httpMock.expectOne({ url: '/api/rooms/1/cleaned', method: 'POST' }).flush(sampleRoom);
+    httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' }).flush({ ...sampleOrder, status: 'CHECKED_IN' });
+
+    expect(fixture.componentInstance['order']()?.status).toBe('CHECKED_IN');
+  });
+
+  it('nhận phòng khi phòng Chờ dọn mà không đồng ý thì không gọi API nào', async () => {
+    const { fixture } = await render(sampleOrder);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    fixture.componentInstance.checkIn();
+    httpMock.expectOne('/api/rooms/1').flush({ ...sampleRoom, needsCleaning: true });
+  });
+
+  it('không tải được phòng khi nhận phòng thì báo lỗi', async () => {
+    const { fixture } = await render(sampleOrder);
+
+    fixture.componentInstance.checkIn();
+    httpMock.expectOne('/api/rooms/1').flush(null, { status: 500, statusText: 'Error' });
+
+    expect(fixture.componentInstance['actionError']()).toContain('trạng thái phòng');
+  });
+
   it('nhận phòng lỗi thì hiện thông báo từ server', async () => {
     const { fixture } = await render(sampleOrder);
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     fixture.componentInstance.checkIn();
+    httpMock.expectOne('/api/rooms/1').flush(sampleRoom);
     httpMock.expectOne({ url: '/api/orders/36/check-in', method: 'POST' })
       .flush({ detail: 'Chỉ nhận phòng được đơn ở trạng thái Đã đặt' }, { status: 400, statusText: 'Bad Request' });
 

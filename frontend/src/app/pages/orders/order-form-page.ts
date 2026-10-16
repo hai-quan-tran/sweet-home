@@ -51,11 +51,13 @@ export class OrderFormPage {
   protected readonly editing = signal<OrderDto | null>(null);
   protected readonly isManager = computed(() => this.auth.currentUser()?.role === 'MANAGER');
 
+  private readonly defaultCheckIn = nearestHour(new Date());
+
   protected readonly form = new FormGroup({
     rentalType: new FormControl<RentalType>('HOURLY', { nonNullable: true }),
     roomId: new FormControl<number | null>(null, Validators.required),
-    checkInDate: new FormControl(today(), { nonNullable: true, validators: Validators.required }),
-    checkInTime: new FormControl('15:00', { nonNullable: true }),
+    checkInDate: new FormControl(this.defaultCheckIn.date, { nonNullable: true, validators: Validators.required }),
+    checkInTime: new FormControl(this.defaultCheckIn.time, { nonNullable: true }),
     quantity: new FormControl(2, { nonNullable: true, validators: Validators.min(1) }),
     checkInMode: new FormControl<CheckInMode>('SELF', { nonNullable: true }),
     doorCode: new FormControl('', { nonNullable: true }),
@@ -255,7 +257,10 @@ export class OrderFormPage {
   }
 }
 
-function today(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/** Giờ nhận mặc định: bây giờ làm tròn tới giờ tròn gần nhất (từ phút 30 làm tròn lên, có thể sang ngày mai). */
+export function nearestHour(now: Date): { date: string; time: string } {
+  const d = new Date(now);
+  d.setMinutes(d.getMinutes() + 30, 0, 0);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return { date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, time: `${pad(d.getHours())}:00` };
 }

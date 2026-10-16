@@ -11,6 +11,8 @@
 - Trả phòng sớm hơn giờ đã đặt: không giảm tiền.
 - Trả phòng phải thu đủ số còn lại (chọn hình thức) ngay lúc xác nhận trả; không cho trả khi còn nợ.
 - Sau khi trả phòng, phòng chuyển Chờ dọn; bấm "Đã dọn" để về Trống.
+- Bấm Nhận phòng khi phòng còn Chờ dọn: nhắc, đồng ý thì đánh dấu Đã dọn trước rồi mới nhận phòng (không chặn).
+- Tạo đơn: giờ nhận mặc định = bây giờ làm tròn tới giờ tròn gần nhất (từ phút 30 làm tròn lên).
 
 ## Tiền cọc & thu tiền
 - Tạo đơn bắt buộc có cọc: > 0, không vượt tổng tiền, bắt buộc chọn hình thức cọc.

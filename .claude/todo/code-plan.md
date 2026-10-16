@@ -222,3 +222,5 @@ Trạng thái: GĐ 10 xong — hoàn thành toàn bộ kế hoạch.
   trang danh sách đơn; bỏ user mặc định Spring tự sinh.
 - [x] 10.2 Test & độ phủ: đo độ phủ frontend, ngưỡng 80%, bổ sung test còn thiếu; sửa test chập chờn.
 - [x] 10.3 Giao diện: chụp mọi màn ở 1440 / 1280 / 1024 / 768, sáng và tối; sửa lỗi bố cục, màu dark mode.
+- [x] Sau GĐ 10 (người dùng chốt): giờ nhận mặc định khi tạo đơn = giờ tròn gần nhất; nhận phòng khi phòng Chờ dọn
+  thì nhắc và đánh dấu Đã dọn trước.

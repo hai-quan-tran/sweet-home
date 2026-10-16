@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { OrderFormPage } from './order-form-page';
+import { OrderFormPage, nearestHour } from './order-form-page';
 
 const sampleRoom = {
   id: 1,
@@ -237,5 +237,13 @@ describe('OrderFormPage', () => {
     expect(req.request.body.doorCode).toBeNull();
     req.flush({ id: 36 });
     expect(navigateSpy).toHaveBeenCalledWith(['/don-thue'], { queryParams: { id: 36, action: null } });
+  });
+});
+
+describe('nearestHour', () => {
+  it('làm tròn tới giờ tròn gần nhất, từ phút 30 lên giờ sau, qua nửa đêm thì sang ngày mai', () => {
+    expect(nearestHour(new Date(2026, 9, 16, 14, 29))).toEqual({ date: '2026-10-16', time: '14:00' });
+    expect(nearestHour(new Date(2026, 9, 16, 14, 30))).toEqual({ date: '2026-10-16', time: '15:00' });
+    expect(nearestHour(new Date(2026, 9, 16, 23, 45))).toEqual({ date: '2026-10-17', time: '00:00' });
   });
 });
