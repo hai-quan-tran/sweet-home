@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { SettingsPage } from './settings-page';
 
 const templateA = { id: 1, name: 'Hướng dẫn tự nhận phòng', body: 'Chào {ten_khach}', defaultForCheckInMode: 'SELF', containsDoorCode: false };
@@ -51,6 +52,19 @@ describe('SettingsPage', () => {
 
     expect(component['selectedId']()).toBeNull();
     expect(component['templateForm'].value.name).toBe('');
+  });
+
+  it('lưu mẫu / thông tin homestay khi thiếu ô bắt buộc thì báo lỗi, không gọi API', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+
+    component.newTemplate();
+    component.saveTemplate();
+    component['homestayForm'].patchValue({ name: '' });
+    component.saveHomestay();
+
+    expect(component['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
+    expect(component['homestayError']()).toBe(REQUIRED_FIELDS_MESSAGE);
   });
 
   it('insertVariable chèn biến vào nội dung', async () => {

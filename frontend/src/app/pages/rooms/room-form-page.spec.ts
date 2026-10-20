@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { RoomFormPage } from './room-form-page';
 
 describe('RoomFormPage', () => {
@@ -67,6 +68,8 @@ describe('RoomFormPage', () => {
     const fixture = await createForAdd();
     fixture.componentInstance.submit();
     httpMock.verify();
+    expect(fixture.componentInstance['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
+    expect(fixture.componentInstance['form'].controls.roomNumber.touched).toBe(true);
   });
 
   it('chọn giá riêng nhưng thiếu giá thì báo lỗi, không gửi request', async () => {

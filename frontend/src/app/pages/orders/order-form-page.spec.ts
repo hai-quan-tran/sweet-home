@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { OrderFormPage, nearestHour } from './order-form-page';
 
 const sampleRoom = {
@@ -124,6 +125,17 @@ describe('OrderFormPage', () => {
     fixture.detectChanges();
 
     expect(component['preview']()?.available).toBe(true);
+  });
+
+  it('submit khi thiếu họ tên / SĐT thì tô đỏ ô và báo nhập đủ ô bắt buộc, không gọi API', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+
+    component.submit(false);
+    fixture.detectChanges();
+
+    expect(component['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
+    expect((fixture.nativeElement as HTMLElement).querySelector('#name')?.classList).toContain('ng-touched');
   });
 
   it('submit khi thiếu mã cửa (tự check-in) thì báo lỗi, không gọi API', async () => {

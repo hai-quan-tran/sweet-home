@@ -6,6 +6,7 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angul
 import { AccountDto } from '../../core/account.models';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { StaffFormPage, randomPassword } from './staff-form-page';
 
 describe('StaffFormPage', () => {
@@ -52,6 +53,7 @@ describe('StaffFormPage', () => {
     fixture.componentInstance['form'].patchValue({ fullName: 'Vy', phone: '0978345120', username: 'vy.nguyen', password: 'abcdefgh' });
     fixture.componentInstance.submit();
     httpMock.verify();
+    expect(fixture.componentInstance['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
   });
 
   it('thêm mới: gửi POST đủ dữ liệu rồi về /nhan-vien', async () => {

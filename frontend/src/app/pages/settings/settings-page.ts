@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth.service';
 import { CheckInMode } from '../../core/room.models';
 import { HomestayInfoDto, MessageTemplateDto } from '../../core/settings.models';
 import { SettingsService } from '../../core/settings.service';
+import { rejectInvalid } from '../../core/form-errors';
 
 type Tab = 'mau-tin-nhan' | 'thong-tin';
 
@@ -138,8 +139,7 @@ export class SettingsPage {
 
   /** Lưu mẫu (thêm mới hoặc sửa). */
   saveTemplate(): void {
-    if (this.templateForm.invalid || this.submitting()) {
-      this.templateForm.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.templateForm)) {
       return;
     }
     this.errorMessage.set(null);
@@ -182,8 +182,7 @@ export class SettingsPage {
 
   /** Lưu thông tin homestay. */
   saveHomestay(): void {
-    if (this.homestayForm.invalid || this.homestaySubmitting()) {
-      this.homestayForm.markAllAsTouched();
+    if (this.homestaySubmitting() || rejectInvalid(this.homestayError, this.homestayForm)) {
       return;
     }
     this.homestayError.set(null);

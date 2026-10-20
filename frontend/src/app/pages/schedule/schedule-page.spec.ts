@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { AccountDto } from '../../core/account.models';
 import { AccountSummary } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { CoverageDto, ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
 import { SchedulePage, dayIso, mondayOf, shiftHours } from './schedule-page';
 
@@ -194,6 +195,8 @@ describe('SchedulePage', () => {
     const page = fixture.componentInstance;
     page.openTemplate(null);
     expect(page['templateForm'].getRawValue().color).toBe(2);
+    page.saveTemplate();
+    expect(page['error']()).toBe(REQUIRED_FIELDS_MESSAGE);
     page['templateForm'].patchValue({ name: 'Gãy', startTime: '10:00', endTime: '15:00' });
     page.saveTemplate();
     httpMock.expectOne({ url: '/api/shift-templates', method: 'POST' }).flush({});

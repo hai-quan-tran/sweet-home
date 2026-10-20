@@ -8,6 +8,7 @@ import { finalize } from 'rxjs';
 import { RoomTypeDto } from '../../core/room.models';
 import { SurchargeDateRangeDto, SurchargeDto, SurchargeUpsertRequest, SurchargeWhenType, Weekday } from '../../core/surcharge.models';
 import { SurchargeService } from '../../core/surcharge.service';
+import { rejectInvalid } from '../../core/form-errors';
 
 interface DateRangeRow {
   name: FormControl<string>;
@@ -172,9 +173,7 @@ export class SurchargeDialog {
 
   /** Lưu phụ thu (thêm mới hoặc sửa). */
   save(): void {
-    if (this.form.invalid || this.dateRanges.invalid || this.submitting()) {
-      this.form.markAllAsTouched();
-      this.dateRanges.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.form, this.dateRanges)) {
       return;
     }
     const raw = this.form.getRawValue();

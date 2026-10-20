@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RoomTypeDto } from '../../core/room.models';
 import { SurchargeDto } from '../../core/surcharge.models';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { SurchargeDialog } from './surcharge-dialog';
 
 const roomTypes: RoomTypeDto[] = [
@@ -90,6 +91,16 @@ describe('SurchargeDialog', () => {
     expect(dialog['dateRanges'].length).toBe(1);
     dialog.removeDateRange(0);
     expect(dialog['dateRanges'].length).toBe(0);
+  });
+
+  it('save khi thiếu tên thì báo nhập đủ ô bắt buộc, không gọi API', async () => {
+    const fixture = await render();
+    const dialog = fixture.debugElement.children[0].componentInstance as SurchargeDialog;
+
+    dialog.save();
+
+    expect(dialog['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
+    httpMock.verify();
   });
 
   it('save WEEKDAY mà chưa chọn ngày nào thì báo lỗi, không gọi API', async () => {

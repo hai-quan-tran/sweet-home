@@ -7,6 +7,7 @@ import { finalize } from 'rxjs';
 import { formatMoney } from '../../core/money';
 import { CheckInMode, RoomDto, RoomPhotoDto, RoomPricingMode, RoomTypeDto } from '../../core/room.models';
 import { RoomService } from '../../core/room.service';
+import { rejectInvalid } from '../../core/form-errors';
 
 /** Màn Thêm/Sửa phòng: dùng chung một form, phân biệt qua route param `id`. */
 @Component({
@@ -136,8 +137,7 @@ export class RoomFormPage {
 
   /** Lưu phòng (thêm mới hoặc sửa). */
   submit(): void {
-    if (this.form.invalid || this.submitting()) {
-      this.form.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.form)) {
       return;
     }
     const raw = this.form.getRawValue();

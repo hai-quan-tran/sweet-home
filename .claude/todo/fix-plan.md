@@ -27,7 +27,7 @@ Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hư�
 - Form Trả phòng: ô ngày giờ không tràn khung chi tiết đơn (sửa CSS lưới, kiểm tra 1440/1280/1024/768).
 - Nhãn "{N} giờ đầu" theo số giờ tối thiểu ở thẻ phòng, màn Thêm/Sửa phòng, dialog Bảng giá.
 - Chữ hướng dẫn phụ thu "Thêm tay vào đơn": chọn khi trả phòng.
-### 13.3 Báo ô bắt buộc chưa nhập (frontend)
+### [x] 13.3 Báo ô bắt buộc chưa nhập (frontend)
 - `styles.scss`: ô `.inp` / ô chọn bắt buộc đã chạm mà không hợp lệ → viền đỏ (light + dark mode).
 - Các form có nút lưu (Tạo/Sửa đơn, Thêm/Sửa phòng, Thêm/Sửa nhân viên, Bảng giá, Phụ thu, Cài đặt, Lịch làm): bấm lưu khi
   thiếu ô → hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)." thay vì im lặng. Test cho từng form.

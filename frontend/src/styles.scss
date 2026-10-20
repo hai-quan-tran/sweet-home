@@ -113,6 +113,12 @@ body {
   }
 }
 
+/* Ô đã chạm (hoặc đã bấm Lưu) mà chưa hợp lệ: viền đỏ, kể cả khi đang nhập; thắng cả style .inp riêng của từng màn (xem core/form-errors.ts). */
+:is(.inp, .sel).ng-invalid.ng-touched,
+:is(.inp, .sel).ng-invalid.ng-touched:focus {
+  border-color: var(--p-red-500);
+}
+
 /* Tag trạng thái đơn: Đã đặt · Đang ở · Đã trả · Đã huỷ · Quá giờ · Chờ xác nhận trả. */
 .tag {
   display: inline-flex;

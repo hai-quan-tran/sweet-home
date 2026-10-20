@@ -13,6 +13,7 @@ import { RoomService } from '../../core/room.service';
 import { OrderDto, OrderPreviewRequest, OrderPreviewResponse, OrderSource, OrderUpsertRequest, PaymentMethod, RentalType } from '../../core/order.models';
 import { OrderService } from '../../core/order.service';
 import { formatMoney } from '../../core/money';
+import { rejectInvalid } from '../../core/form-errors';
 
 const RENTAL_TYPE_LABEL: Record<RentalType, string> = { HOURLY: 'Theo giờ', OVERNIGHT: 'Qua đêm', DAILY: 'Theo ngày' };
 const SOURCE_OPTIONS: { value: OrderSource; label: string }[] = [
@@ -212,8 +213,7 @@ export class OrderFormPage {
 
   /** Lưu đơn (tạo mới hoặc lưu thay đổi khi đang sửa). */
   submit(copyMessage: boolean): void {
-    if (this.form.invalid || this.submitting() || this.depositError() !== null) {
-      this.form.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.form) || this.depositError() !== null) {
       return;
     }
     const raw = this.form.getRawValue();

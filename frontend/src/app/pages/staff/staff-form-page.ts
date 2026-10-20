@@ -8,6 +8,7 @@ import { AccountDto, AccountUpsertRequest } from '../../core/account.models';
 import { AccountService } from '../../core/account.service';
 import { AccountRole } from '../../core/auth.models';
 import { AuthService } from '../../core/auth.service';
+import { rejectInvalid } from '../../core/form-errors';
 import { STAFF_PERMISSIONS } from './staff-permissions';
 
 /** Mật khẩu ≥ 8 ký tự, có chữ và số — cùng quy tắc với backend (PasswordPolicy). */
@@ -108,8 +109,7 @@ export class StaffFormPage {
 
   /** Lưu tài khoản (thêm mới hoặc sửa). */
   submit(): void {
-    if (this.form.invalid || this.submitting()) {
-      this.form.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.form)) {
       return;
     }
     const raw = this.form.getRawValue();

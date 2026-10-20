@@ -30,5 +30,7 @@ Bản thiết kế: các file HTML thuần trong thư mục `design/` (mở `des
 - Nhãn hình thức check-in: "Khách tự check-in" (icon chìa khoá) / "Nhân viên check-in" (icon người).
 - Dữ liệu nhạy cảm (CCCD, mã cửa) che mặc định, chỉ hiện 4 số cuối hoặc bấm mới hiện.
 - Sửa nhanh dùng dialog phủ lên màn hiện tại: Sửa bảng giá, Sửa phụ thu, Gia hạn.
+- Ô bắt buộc chưa nhập / chưa hợp lệ: viền đỏ khi đã chạm (`styles.scss`). Bấm Lưu khi còn ô lỗi → hộp lỗi
+  "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)." và đưa con trỏ tới ô lỗi đầu tiên (`core/form-errors.ts`, `rejectInvalid`).
 - Bản vẽ là góc nhìn Quản lý. Vai trò Nhân viên: ẩn các nút Thêm phòng, Sửa phòng, Sửa bảng giá, Thêm/Sửa phụ thu,
   Thêm nhân viên, Sao chép tuần trước, sửa ca và quản lý ca mẫu; mục Lịch làm và Cài đặt chỉ xem.

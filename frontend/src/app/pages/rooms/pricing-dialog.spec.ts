@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { PricingOverview } from '../../core/room.models';
+import { REQUIRED_FIELDS_MESSAGE } from '../../core/form-errors';
 import { PricingDialog } from './pricing-dialog';
 
 const overview: PricingOverview = {
@@ -112,5 +113,6 @@ describe('PricingDialog', () => {
     dialog.save();
 
     httpMock.verify();
+    expect(dialog['errorMessage']()).toBe(REQUIRED_FIELDS_MESSAGE);
   });
 });

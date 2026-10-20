@@ -7,6 +7,7 @@ import { finalize } from 'rxjs';
 
 import { RoomService } from '../../core/room.service';
 import { PricingOverview, RoomTypeDto } from '../../core/room.models';
+import { rejectInvalid } from '../../core/form-errors';
 
 interface RoomTypeRow {
   id: FormControl<number | null>;
@@ -128,9 +129,7 @@ export class PricingDialog {
 
   /** Lưu bảng giá. */
   save(): void {
-    if (this.rows.invalid || this.settingsForm.invalid || this.submitting()) {
-      this.rows.markAllAsTouched();
-      this.settingsForm.markAllAsTouched();
+    if (this.submitting() || rejectInvalid(this.errorMessage, this.rows, this.settingsForm)) {
       return;
     }
     this.errorMessage.set(null);

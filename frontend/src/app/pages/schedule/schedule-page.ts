@@ -7,6 +7,7 @@ import { Observable, finalize } from 'rxjs';
 import { AccountDto } from '../../core/account.models';
 import { AccountService } from '../../core/account.service';
 import { AuthService } from '../../core/auth.service';
+import { rejectInvalid } from '../../core/form-errors';
 import { CoverageDto, ShiftTemplateDto, WorkShiftDto } from '../../core/schedule.models';
 import { ScheduleService } from '../../core/schedule.service';
 import { WEEKDAY_NAMES } from '../../core/time-format';
@@ -226,8 +227,7 @@ export class SchedulePage {
   /** Lưu ca đang sửa/thêm. */
   saveShift(): void {
     const e = this.editing();
-    if (!e || this.shiftForm.invalid || this.saving()) {
-      this.shiftForm.markAllAsTouched();
+    if (!e || this.saving() || rejectInvalid(this.error, this.shiftForm)) {
       return;
     }
     const v = this.shiftForm.getRawValue();
@@ -273,8 +273,7 @@ export class SchedulePage {
   /** Lưu ca mẫu đang mở. */
   saveTemplate(): void {
     const id = this.editingTemplateId();
-    if (id === null || this.templateForm.invalid || this.saving()) {
-      this.templateForm.markAllAsTouched();
+    if (id === null || this.saving() || rejectInvalid(this.error, this.templateForm)) {
       return;
     }
     const request = this.templateForm.getRawValue();
