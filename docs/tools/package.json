@@ -1,0 +1,19 @@
+{
+  "name": "sweet-home-docs-tools",
+  "private": true,
+  "type": "module",
+  "description": "Công cụ sinh tài liệu Sweet Home: chụp ảnh màn hình có đánh số, sinh detail design (Excel)",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "diagrams": "node diagrams.mjs",
+    "build:design": "node build-design.mjs",
+    "restore": "node restore.mjs",
+    "all": "node capture.mjs && node diagrams.mjs && node build-design.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "3.0.3",
+    "exceljs": "4.4.0",
+    "mermaid": "11.17.2",
+    "playwright-core": "1.63.0"
+  }
+}

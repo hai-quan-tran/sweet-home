@@ -514,3 +514,17 @@
   như thiết kế đã chốt.
 - **Không chạy `prettier --write` trên file cũ**: cấu hình prettier mặc định (80 ký tự) khác cách viết hiện tại, định dạng
   lại cả file.
+
+## Tài liệu (GĐ11, thư mục `docs/`)
+- `docs/detail-design/*.xlsx`: detail design, mỗi màn/dialog 1 file, 4 sheet (Thông tin · Màn hình · Chi tiết mục · Logic);
+  `00_TongThe.xlsx` thay sheet 2, 3 bằng kiến trúc/ERD và bảng/cột DB. Không sửa tay — sinh lại bằng công cụ.
+- `docs/tools/` (package.json riêng, version cố định; cách chạy: `docs/tools/README.md`): `capture.mjs` sao lưu DB dev
+  (`mysqldump`) → tạo tài khoản Quản lý tạm `docs_quanly` thẳng trong DB (mật khẩu `admin` không biết) + dữ liệu mẫu qua API
+  (`seed.mjs`, mốc giờ theo lúc chạy, chờ tác vụ nền chuyển Quá giờ / Chờ xác nhận trả) → chụp ảnh, vẽ khung + số đỏ bằng lớp
+  phủ DOM → luôn khôi phục DB từ bản sao lưu (đúng cả AUTO_INCREMENT) và xoá ảnh phòng mẫu. `diagrams.mjs` vẽ Mermaid bằng
+  Chromium; `build-design.mjs` sinh Excel (exceljs) trên lưới 32 cột, tự tính chiều cao dòng có xuống dòng.
+- Danh sách mục của mỗi màn khai báo một lần trong `content/design/NN_*.mjs` → cùng số cho ảnh và bảng. Cấu trúc DB ở file
+  Tổng thể đọc thật từ `information_schema` (lúc capture), bảng/cột chưa có mô tả thì build báo lỗi.
+- Kiểm tra bản in: xuất PDF bằng Excel (PowerShell COM `ExportAsFixedFormat`); máy không có poppler nên xem trang PDF bằng
+  pdf.js chạy trong Chromium (script tạm, không thuộc dự án).
+- Độ rộng cột Excel: cột rộng `w` ký tự = `trunc((256w + 18)/256 × 7)` px (4.6 → 32 px), không phải `7w + 5`.
