@@ -19,7 +19,7 @@
       <thead>
         <tr>
           <th scope="col">Hạng phòng</th>
-          <th scope="col">2 giờ đầu</th>
+          <th scope="col">{{ minHours() }} giờ đầu</th>
           <th scope="col">Mỗi giờ thêm</th>
           <th scope="col">Qua đêm</th>
           <th scope="col">Theo ngày</th>
@@ -72,7 +72,7 @@
     <div class="field">
       <label for="minh">Theo giờ: số giờ tối thiểu</label>
       <input id="minh" class="inp" type="number" formControlName="minHours" />
-      <span class="hint">Giá "2 giờ đầu" đổi tên theo số này</span>
+      <span class="hint">Cột giá "… giờ đầu" đổi theo số này</span>
     </div>
     <div class="field">
       <span class="flab">Qua đêm</span>

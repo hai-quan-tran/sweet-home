@@ -1,4 +1,5 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -41,6 +42,11 @@ export class PricingDialog {
     overnightCheckOut: new FormControl('12:00', { nonNullable: true, validators: Validators.required }),
     dailyCheckIn: new FormControl('14:00', { nonNullable: true, validators: Validators.required }),
     dailyCheckOut: new FormControl('12:00', { nonNullable: true, validators: Validators.required }),
+  });
+
+  /** Số giờ tối thiểu đang nhập, dùng đặt tên cột giá "{N} giờ đầu". */
+  protected readonly minHours = toSignal(this.settingsForm.controls.minHours.valueChanges, {
+    initialValue: this.settingsForm.controls.minHours.value,
   });
 
   protected readonly roomNumbersByRow = signal<(string[] | null)[]>([]);

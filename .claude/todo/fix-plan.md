@@ -22,7 +22,7 @@ Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hư�
   hạn) coi chặng hiện tại của đơn OVERSTAY / PENDING_CHECKOUT kéo dài tới bây giờ + 1 tiếng.
 - Thông báo trùng riêng cho trường hợp này. Unit test + integration test (gia hạn không còn đề xuất phòng đó; tạo đơn
   bị chặn; đơn sau mốc vẫn tạo được).
-### 13.2 Lỗi giao diện nhỏ (frontend + test)
+### [x] 13.2 Lỗi giao diện nhỏ (frontend + test)
 - Tab "Tất cả" ở Đơn thuê = tổng countByStatus (không phụ thuộc tab đang chọn).
 - Form Trả phòng: ô ngày giờ không tràn khung chi tiết đơn (sửa CSS lưới, kiểm tra 1440/1280/1024/768).
 - Nhãn "{N} giờ đầu" theo số giờ tối thiểu ở thẻ phòng, màn Thêm/Sửa phòng, dialog Bảng giá.

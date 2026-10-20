@@ -71,7 +71,12 @@ describe('OrdersPage', () => {
     fixture.componentInstance.setStatus('CHECKED_IN');
 
     const req = httpMock.expectOne((r) => r.url === '/api/orders' && r.params.get('status') === 'CHECKED_IN');
-    req.flush({ items: [], total: 0, countByStatus: {} });
+    req.flush({ items: [sampleOrder], total: 1, countByStatus: { BOOKED: 2, CHECKED_IN: 1 } });
+    fixture.detectChanges();
+
+    // Tab "Tất cả" vẫn là tổng mọi trạng thái, không phải số đơn của tab đang chọn
+    const allTab = (fixture.nativeElement as HTMLElement).querySelector('.tabs button .n');
+    expect(allTab?.textContent?.trim()).toBe('3');
   });
 
   it('chọn một đơn thì hiện chi tiết đơn đó', async () => {

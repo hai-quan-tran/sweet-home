@@ -10,7 +10,7 @@
         <button type="button" [class.active]="statusFilter() === t.value" (click)="setStatus(t.value)">
           {{ t.label }}
           @if (listResponse(); as r) {
-            <span class="n">{{ t.value === null ? r.total : r.countByStatus[t.value] }}</span>
+            <span class="n">{{ t.value === null ? allCount() : r.countByStatus[t.value] }}</span>
           }
         </button>
       }

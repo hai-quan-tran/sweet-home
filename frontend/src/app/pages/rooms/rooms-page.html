@@ -43,7 +43,7 @@
             </div>
             <span class="mode"><i class="pi" [class.pi-key]="room.defaultCheckInMode === 'SELF'" [class.pi-user]="room.defaultCheckInMode === 'STAFF'"></i>{{ checkInLabel(room) }}</span>
             <div class="prices">
-              <div class="pr"><span>2 giờ đầu</span><b>{{ formatMoney(room.effectiveTwoHourPrice) }}</b><small>+{{ formatMoney(room.effectiveExtraHourPrice) }}/giờ</small></div>
+              <div class="pr"><span>{{ minHours() }} giờ đầu</span><b>{{ formatMoney(room.effectiveTwoHourPrice) }}</b><small>+{{ formatMoney(room.effectiveExtraHourPrice) }}/giờ</small></div>
               <div class="pr"><span>Qua đêm</span><b>{{ formatMoney(room.effectiveOvernightPrice) }}</b></div>
               <div class="pr"><span>Theo ngày</span><b>{{ formatMoney(room.effectiveDailyPrice) }}</b></div>
             </div>

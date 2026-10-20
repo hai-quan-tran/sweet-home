@@ -17,7 +17,7 @@ describe('RoomFormPage', () => {
     settings: { minHours: 2, overnightCheckIn: '21:00:00', overnightCheckOut: '12:00:00', dailyCheckIn: '14:00:00', dailyCheckOut: '12:00:00' },
   };
 
-  async function createForAdd() {
+  async function createForAdd(pricing = overview) {
     await TestBed.configureTestingModule({
       imports: [RoomFormPage],
       providers: [
@@ -31,7 +31,7 @@ describe('RoomFormPage', () => {
     router = TestBed.inject(Router);
     const fixture = TestBed.createComponent(RoomFormPage);
     fixture.detectChanges();
-    httpMock.expectOne('/api/room-types/overview').flush(overview);
+    httpMock.expectOne('/api/room-types/overview').flush(pricing);
     fixture.detectChanges();
     return fixture;
   }
@@ -53,6 +53,14 @@ describe('RoomFormPage', () => {
     fixture.detectChanges();
 
     expect(component['selectedRoomType']()?.name).toBe('Tiêu chuẩn');
+  });
+
+  it('nhãn giá giờ đầu theo số giờ tối thiểu của bảng giá', async () => {
+    const fixture = await createForAdd({ ...overview, settings: { ...overview.settings, minHours: 3 } });
+    fixture.componentInstance['form'].controls.roomTypeId.setValue(1);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.prices4 .pr span')?.textContent).toBe('3 giờ đầu');
   });
 
   it('không gửi request khi thiếu trường bắt buộc', async () => {

@@ -53,6 +53,10 @@ export class OrdersPage {
   /** Hành động tự làm khi mở đơn từ URL có `action` (vừa tạo đơn, xử lý nhanh từ Tổng quan / thông báo). */
   protected readonly autoAction = signal<OrderAction | null>(null);
 
+  /** Số trên tab "Tất cả": tổng mọi trạng thái, không phụ thuộc tab đang chọn. */
+  protected readonly allCount = computed(() =>
+    Object.values(this.listResponse()?.countByStatus ?? {}).reduce((sum, n) => sum + n, 0),
+  );
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil((this.listResponse()?.total ?? 0) / PAGE_SIZE)));
 
   constructor() {

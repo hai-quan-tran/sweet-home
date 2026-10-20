@@ -48,6 +48,9 @@ export class RoomFormPage {
     acceptingBookings: new FormControl(true, { nonNullable: true }),
   });
 
+  /** Số giờ tối thiểu thuê theo giờ, dùng cho nhãn giá "{N} giờ đầu". */
+  protected readonly minHours = signal(2);
+
   // form.controls.*.value không phải signal nên computed() không tự chạy lại khi người dùng đổi
   // lựa chọn; phải đưa valueChanges qua toSignal() thì selectedRoomType mới cập nhật đúng lúc.
   private readonly roomTypeIdValue = toSignal(this.form.controls.roomTypeId.valueChanges, {
@@ -56,7 +59,10 @@ export class RoomFormPage {
   protected readonly selectedRoomType = computed(() => this.roomTypes().find((t) => t.id === this.roomTypeIdValue()) ?? null);
 
   constructor() {
-    this.roomService.pricingOverview().subscribe((overview) => this.roomTypes.set(overview.roomTypes));
+    this.roomService.pricingOverview().subscribe((overview) => {
+      this.roomTypes.set(overview.roomTypes);
+      this.minHours.set(overview.settings.minHours);
+    });
     const id = this.roomId();
     if (id !== null) {
       this.roomService.get(id).subscribe((room) => {

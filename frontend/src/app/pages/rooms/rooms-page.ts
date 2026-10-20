@@ -158,6 +158,8 @@ export class RoomsPage {
   }
 
   protected readonly roomTypeCount = computed(() => this.pricing()?.roomTypes.length ?? 0);
+  /** Số giờ tối thiểu thuê theo giờ, dùng cho nhãn giá "{N} giờ đầu". */
+  protected readonly minHours = computed(() => this.pricing()?.settings.minHours ?? 2);
 
   /** Ảnh bìa của phòng, null nếu chưa có ảnh. */
   coverPhoto(room: RoomDto): string | null {

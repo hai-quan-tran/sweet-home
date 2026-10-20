@@ -45,6 +45,16 @@ describe('PricingDialog', () => {
     expect(dialog['rows'].at(0)?.value.name).toBe('Tiêu chuẩn');
   });
 
+  it('cột giá giờ đầu đổi tên theo số giờ tối thiểu đang nhập', async () => {
+    const fixture = await render();
+    const dialog = fixture.debugElement.children[0].componentInstance as PricingDialog;
+
+    dialog['settingsForm'].controls.minHours.setValue(3);
+    fixture.detectChanges();
+
+    expect(document.querySelector('.ptbl th:nth-child(2)')?.textContent?.trim()).toBe('3 giờ đầu');
+  });
+
   it('thêm dòng mới thì rows tăng, xoá dòng thì giảm', async () => {
     const fixture = await render();
     const dialog = fixture.debugElement.children[0].componentInstance as PricingDialog;

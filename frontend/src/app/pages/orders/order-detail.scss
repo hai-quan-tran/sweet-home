@@ -176,10 +176,15 @@
   }
 }
 
+/* 2 cột khi đủ rộng, hẹp thì xuống dòng (ô ngày giờ cần ~210px, không để tràn khung chi tiết đơn). */
 .pf-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   gap: 10px;
+
+  .inp {
+    min-width: 0;
+  }
 }
 
 .pf-a {

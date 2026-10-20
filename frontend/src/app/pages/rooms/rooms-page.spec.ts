@@ -189,6 +189,15 @@ describe('RoomsPage', () => {
     expect(page['surcharges']()).toEqual([]);
   });
 
+  it('thẻ phòng hiện nhãn giá giờ đầu theo số giờ tối thiểu', async () => {
+    const fixture = await render('MANAGER');
+    const pricing = fixture.componentInstance['pricing'];
+    pricing.set({ ...pricing()!, settings: { ...pricing()!.settings, minHours: 3 } });
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.prices .pr span')?.textContent).toBe('3 giờ đầu');
+  });
+
   it('lưu bảng giá xong thì cập nhật bảng giá và tải lại phòng', async () => {
     const page = (await render('MANAGER')).componentInstance;
     const overview = { roomTypes: [], hiddenRoomTypes: [], settings: { minHours: 3 } } as never;
