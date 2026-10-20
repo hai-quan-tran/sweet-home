@@ -52,3 +52,7 @@
 - [ ] Màn Đơn thuê: số trên tab "Tất cả" lấy `total` của tab đang chọn (đang ở tab Đã đặt thì "Tất cả" = số đơn Đã đặt).
 - [ ] Chi tiết đơn, form Trả phòng ở 1440px: ô "Giờ trả thực tế" (datetime-local) tràn ra ngoài khung chi tiết.
 - [ ] Màn Tạo/Sửa đơn: thiếu Họ tên / SĐT bấm Lưu không báo gì (ô không tô đỏ, không có thông báo).
+- [ ] Dialog Phụ thu, loại "Thêm tay vào đơn": chữ hướng dẫn ghi "Khi tạo hoặc sửa đơn, nhân viên chọn…" nhưng thực tế chỉ
+  chọn được ở form Trả phòng.
+- [ ] Thẻ phòng, màn Thêm/Sửa phòng: nhãn "2 giờ đầu" cố định, không đổi theo "số giờ tối thiểu" (tab Bảng giá thì có đổi).
+- [ ] Form phòng / đơn / phụ thu không giới hạn độ dài ô chữ ở frontend lẫn request backend → nhập quá cột DB lỗi 500.

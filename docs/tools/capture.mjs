@@ -129,6 +129,7 @@ async function main() {
   try {
     console.log('Tạo dữ liệu mẫu (chờ tác vụ nền chuyển trạng thái đơn, ~1–2 phút)...');
     const ctx = await seed({ photo: photoMaker(browser) });
+    ctx.photo = photoMaker(browser);
     const logins = { guest: undefined, manager: ctx.manager, staff: ctx.staffLogin, newStaff: ctx.newStaffLogin };
     const contexts = {};
     ctx.open = async (page, path) => {

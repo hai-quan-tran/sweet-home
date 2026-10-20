@@ -38,15 +38,20 @@ export async function seed({ photo }) {
   const api = new Api();
   await api.login(manager.username, manager.password);
 
-  // Bảng giá: 3 hạng phòng, giữ nguyên khung giờ chung đang có
+  // Bảng giá: 3 hạng phòng đang dùng + 1 hạng đã ẩn, giữ nguyên khung giờ chung đang có
   const { settings } = await api.get('/room-types/overview');
+  const types = [
+    { name: 'Tiêu chuẩn', twoHourPrice: 150000, extraHourPrice: 50000, overnightPrice: 350000, dailyPrice: 500000 },
+    { name: 'Deluxe', twoHourPrice: 200000, extraHourPrice: 70000, overnightPrice: 450000, dailyPrice: 650000 },
+    { name: 'Gia đình', twoHourPrice: 300000, extraHourPrice: 90000, overnightPrice: 600000, dailyPrice: 900000 },
+  ];
+  const first = await api.put('/room-types/overview', {
+    settings,
+    roomTypes: [...types, { name: 'Phòng đơn', twoHourPrice: 120000, extraHourPrice: 40000, overnightPrice: 300000, dailyPrice: 420000 }],
+  });
   const pricing = await api.put('/room-types/overview', {
     settings,
-    roomTypes: [
-      { name: 'Tiêu chuẩn', twoHourPrice: 150000, extraHourPrice: 50000, overnightPrice: 350000, dailyPrice: 500000 },
-      { name: 'Deluxe', twoHourPrice: 200000, extraHourPrice: 70000, overnightPrice: 450000, dailyPrice: 650000 },
-      { name: 'Gia đình', twoHourPrice: 300000, extraHourPrice: 90000, overnightPrice: 600000, dailyPrice: 900000 },
-    ],
+    roomTypes: types.map((t) => ({ ...t, id: first.roomTypes.find((x) => x.name === t.name).id })),
   });
   const type = Object.fromEntries(pricing.roomTypes.map((t) => [t.name, t.id]));
 
