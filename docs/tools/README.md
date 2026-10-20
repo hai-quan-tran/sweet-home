@@ -34,8 +34,9 @@ npm run restore                      # khôi phục DB nếu lần chụp trư�
 export default {
   file: '05_LichDatPhong', title, kind, route, summary, access: [...], roles, related: [...], sources: [...],
   history: [{ version, date, author, content }],      // thêm dòng mới mỗi lần cập nhật
-  shots: [{ id, caption, note?, role: 'manager'|'staff'|'newStaff'|'guest', fullPage?, go: async (page, ctx) => {...} }],
-  items: [{ shot?, sel, label, kind, code, dataType?, required?, rule?, default?, note?, badge?: 'left'|'right'|'inside' }],
+  shots: [{ id, caption, note?, role: 'manager'|'staff'|'newStaff'|'guest', fullPage?, viewport?, isolated?,
+            go: async (page, ctx) => {...} }],   // viewport/isolated: chụp trong context riêng (iPad, dark mode)
+  items: [{ shot?, sel, label, kind, code, dataType?, required?, rule?, default?, note?, badge?: 'left'|'right'|'bottom'|'inside' }],
   logic: [/* khối */], diagrams: { id: 'mermaid...' },
 };
 ```

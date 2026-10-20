@@ -50,8 +50,9 @@ async function drawMarks(page, items) {
         border:2px solid #e11d48;border-radius:4px;box-sizing:border-box`;
       const tag = document.createElement('div');
       tag.textContent = no;
+      // Vị trí số: left = góc trên trái (mặc định), right = góc trên phải, bottom = góc dưới trái, inside = trong khung
       const left = badge === 'right' ? x + box.width - 10 : badge === 'inside' ? x + 2 : x - 12;
-      const top = badge === 'inside' ? y + 2 : y - 12;
+      const top = badge === 'inside' ? y + 2 : badge === 'bottom' ? y + box.height - 10 : y - 12;
       tag.style.cssText = `position:absolute;left:${Math.max(0, left)}px;top:${Math.max(0, top)}px;min-width:22px;height:22px;
         padding:0 5px;box-sizing:border-box;border-radius:11px;background:#e11d48;color:#fff;font:700 12px/22px Arial;
         text-align:center;box-shadow:0 0 0 2px #fff`;
@@ -65,10 +66,11 @@ async function drawMarks(page, items) {
  * Đăng nhập qua giao diện, trả về context đã có cookie đăng nhập.
  * @param {import('playwright-core').Browser} browser trình duyệt
  * @param {{username: string, password: string}} [login] tài khoản; bỏ trống = chưa đăng nhập
+ * @param {{width: number, height: number}} [viewport] kích thước màn hình, mặc định 1440×900
  */
-async function newContext(browser, login) {
+async function newContext(browser, login, viewport = VIEWPORT) {
   const context = await browser.newContext({
-    viewport: VIEWPORT, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh', colorScheme: 'light',
+    viewport, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh', colorScheme: 'light',
   });
   if (login) {
     const page = await context.newPage();
@@ -121,8 +123,12 @@ async function main() {
     };
     for (const { design, shot } of shots) {
       const role = shot.role ?? 'manager';
-      contexts[role] ??= await newContext(browser, logins[role]);
-      const page = await contexts[role].newPage();
+      // Ảnh đổi kích thước màn hình hoặc đổi trạng thái lưu trong trình duyệt (dark mode) dùng context riêng
+      const isolated = shot.isolated || shot.viewport;
+      const context = isolated
+        ? await newContext(browser, logins[role], shot.viewport)
+        : (contexts[role] ??= await newContext(browser, logins[role]));
+      const page = await context.newPage();
       try {
         await shot.go(page, ctx);
         await page.evaluate(() => document.fonts.ready);
@@ -134,6 +140,7 @@ async function main() {
         console.log(`  ✓ ${design.file} / ${shot.id} (${items.length} mục)`);
       } finally {
         await page.close();
+        if (isolated) await context.close();
       }
     }
   } finally {

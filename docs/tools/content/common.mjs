@@ -13,6 +13,17 @@ export const ROLES = {
   guest: 'Chưa đăng nhập',
 };
 
+/** Menu trái theo frontend/src/app/layout/menu.ts: nhãn, route, icon. */
+export const MENU_LABELS = [
+  ['Tổng quan', '/tong-quan', 'pi-th-large'],
+  ['Lịch đặt phòng', '/lich', 'pi-calendar'],
+  ['Đơn thuê', '/don-thue', 'pi-clipboard'],
+  ['Phòng & bảng giá', '/phong', 'pi-building'],
+  ['Nhân viên', '/nhan-vien', 'pi-users'],
+  ['Lịch làm', '/lich-lam', 'pi-clock'],
+  ['Cài đặt', '/cai-dat', 'pi-sliders-h'],
+];
+
 /** Danh sách file detail design (tên file → nội dung), dùng cho mục lục ở file Tổng thể. */
 export const DESIGN_FILES = [
   ['00_TongThe', 'Tổng thể: kiến trúc, ERD, bảng/cột DB, tác vụ nền, bảo mật, trạng thái đơn, danh sách API'],
