@@ -528,3 +528,7 @@
 - Kiểm tra bản in: xuất PDF bằng Excel (PowerShell COM `ExportAsFixedFormat`); máy không có poppler nên xem trang PDF bằng
   pdf.js chạy trong Chromium (script tạm, không thuộc dự án).
 - Độ rộng cột Excel: cột rộng `w` ký tự = `trunc((256w + 18)/256 × 7)` px (4.6 → 32 px), không phải `7w + 5`.
+- Chạy trọn `npm run all` (18 file) ~2,5 phút với backend + frontend dev đang chạy. Dữ liệu mẫu đặt giờ quanh "bây giờ" (đơn
+  kế tiếp +3 giờ, việc hôm nay…) → nên chạy trong khoảng 07:00–20:00, chạy quá khuya một số mục "hôm nay" rơi sang ngày mai
+  và selector có thể không tìm thấy (capture báo lỗi rõ mục nào). Ảnh dialog / chi tiết đơn dùng `clip` + `viewport` riêng;
+  ảnh dark mode dùng context riêng (`isolated`) để lựa chọn giao diện trong localStorage không lan sang ảnh khác.

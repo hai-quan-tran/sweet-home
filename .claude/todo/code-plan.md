@@ -3,7 +3,7 @@
 Mỗi giai đoạn gồm backend + frontend + unit test, chạy được end-to-end.
 Xong giai đoạn → người dùng xác nhận → commit. Không tự push.
 
-Trạng thái: GĐ 10 xong — hoàn thành toàn bộ kế hoạch code. Tiếp theo: GĐ 11–12 tài liệu (chưa làm), xem `docs-plan.md`.
+Trạng thái: GĐ 10 xong — hoàn thành toàn bộ kế hoạch code. GĐ 11 (detail design) xong; tiếp theo GĐ 12 (hướng dẫn sử dụng), xem `docs-plan.md`.
 
 ## Quyết định kỹ thuật (đã chốt)
 - Cấu trúc repo: `backend/` (Spring Boot) + `frontend/` (Angular) trong cùng repo.

@@ -1,6 +1,6 @@
 # Kế hoạch tài liệu: Detail design + Hướng dẫn sử dụng
 
-Trạng thái: đã chốt với người dùng (16/10/2026). Đang làm GĐ 11 — xong 11.1–11.4 (20/10/2026).
+Trạng thái: đã chốt với người dùng (16/10/2026). GĐ 11 xong (20/10/2026). Tiếp theo: GĐ 12 (hướng dẫn sử dụng).
 
 ## Context
 App đã xong GĐ 0–10. Tài liệu hiện có chỉ là ghi chú kỹ thuật ngắn trong `.claude/architecture/` (viết cho người code).
@@ -60,7 +60,7 @@ docs/
 - [x] **11.2** 01–04 (Đăng nhập, Đổi mật khẩu, Khung ứng dụng, Tổng quan).
 - [x] **11.3** 05–09 (Lịch, Đơn thuê, Chi tiết đơn, Tạo/Sửa đơn, Gia hạn) + sơ đồ luồng tạo đơn, nhận–trả phòng, gia hạn.
 - [x] **11.4** 10–13 (Phòng, Thêm/Sửa phòng, Bảng giá, Phụ thu).
-- [ ] **11.5** 14–17 (Nhân viên, Thêm/Sửa nhân viên, Lịch làm, Cài đặt).
+- [x] **11.5** 14–17 (Nhân viên, Thêm/Sửa nhân viên, Lịch làm, Cài đặt).
 
 ## GĐ 12: Hướng dẫn sử dụng (mỗi phần xong → commit)
 Ngôn ngữ nghiệp vụ, mỗi việc = các bước đánh số + ảnh; phần "Chỉ Quản lý" đánh dấu.

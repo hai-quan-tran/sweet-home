@@ -7,6 +7,7 @@ App quản lý cho thuê homestay theo giờ, theo ngày.
 | `backend/` | Java 25, Spring Boot 4, Maven, Liquibase, MySQL 8 |
 | `frontend/` | Angular 21, PrimeNG 21 (theme Aura) |
 | `design/` | Bản thiết kế HTML, mở `design/index.html` bằng trình duyệt |
+| `docs/detail-design/` | Detail design (Excel, mỗi màn/dialog 1 file), sinh bằng công cụ `docs/tools/` (xem `docs/tools/README.md`) |
 
 ## Chuẩn bị
 - JDK 25 và khai báo trong `~/.m2/toolchains.xml` (Maven chạy bằng JDK nào cũng được, biên dịch bằng JDK 25):

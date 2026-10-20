@@ -43,7 +43,7 @@
 - [x] GĐ 9: tổng quan & thông báo
 - [x] GĐ 10: hoàn thiện
 - [x] Lên kế hoạch tài liệu: xem `docs-plan.md`
-- [ ] GĐ 11: detail design (Excel, mỗi màn/dialog 1 file) — 11.1 công cụ + Tổng thể, 11.2–11.5 các màn
+- [x] GĐ 11: detail design (Excel, mỗi màn/dialog 1 file) — 11.1 công cụ + Tổng thể, 11.2–11.5 các màn
 - [ ] GĐ 12: hướng dẫn sử dụng (Word + PDF) — 12.1 công việc hằng ngày, 12.2 phần Quản lý & hỏi đáp
 
 ## Lỗi phát hiện khi làm tài liệu GĐ 11 (chờ người dùng quyết định sửa)
@@ -56,3 +56,4 @@
   chọn được ở form Trả phòng.
 - [ ] Thẻ phòng, màn Thêm/Sửa phòng: nhãn "2 giờ đầu" cố định, không đổi theo "số giờ tối thiểu" (tab Bảng giá thì có đổi).
 - [ ] Form phòng / đơn / phụ thu không giới hạn độ dài ô chữ ở frontend lẫn request backend → nhập quá cột DB lỗi 500.
+- [ ] Màn Cài đặt chưa có phần "xem trước" mẫu tin nhắn (che mã cửa) như `screens.md` / `business-rules.md` mô tả.
