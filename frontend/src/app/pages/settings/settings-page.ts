@@ -1,13 +1,15 @@
 import { Component, computed, inject, signal, viewChild, ElementRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/auth.service';
+import { rejectInvalid } from '../../core/form-errors';
+import { SAMPLE_ORDER_CODE, buildSampleMessageContext, renderMessageTemplate } from '../../core/message-template';
 import { CheckInMode } from '../../core/room.models';
 import { HomestayInfoDto, MessageTemplateDto } from '../../core/settings.models';
 import { SettingsService } from '../../core/settings.service';
-import { rejectInvalid } from '../../core/form-errors';
 
 type Tab = 'mau-tin-nhan' | 'thong-tin';
 
@@ -31,6 +33,9 @@ const VARIABLES: { key: string; label: string; sensitive?: boolean }[] = [
   { key: 'wifi', label: 'Tên wifi' },
   { key: 'mat_khau_wifi', label: 'Mật khẩu wifi' },
 ];
+
+/** Ký tự đánh dấu chỗ {ma_cua} khi xem trước, để thay bằng chữ che (không bao giờ có trong nội dung gõ vào). */
+const DOOR_CODE_MARK = '\u0000';
 
 const DEFAULT_LABEL: Record<string, string> = {
   SELF: 'Khách tự check-in',
@@ -73,8 +78,27 @@ export class SettingsPage {
     wifiName: new FormControl(''),
     wifiPassword: new FormControl(''),
   });
+  /** Thông tin homestay đã lưu, dùng cho phần xem trước. */
+  private readonly homestay = signal<HomestayInfoDto | null>(null);
   protected readonly homestaySubmitting = signal(false);
   protected readonly homestayError = signal<string | null>(null);
+
+  protected readonly sampleOrderCode = SAMPLE_ORDER_CODE;
+  private readonly bodyValue = toSignal(this.templateForm.controls.body.valueChanges, {
+    initialValue: this.templateForm.controls.body.value,
+  });
+  /**
+   * Xem trước nội dung mẫu đang gõ với đơn mẫu + thông tin homestay hiện tại, tách thành các đoạn quanh chỗ
+   * {ma_cua} (giao diện chèn chữ che vào giữa); null khi chưa có nội dung.
+   */
+  protected readonly previewParts = computed(() => {
+    const body = this.bodyValue();
+    const homestay = this.homestay();
+    if (!body.trim() || !homestay) {
+      return null;
+    }
+    return renderMessageTemplate(body, buildSampleMessageContext(homestay, DOOR_CODE_MARK)).split(DOOR_CODE_MARK);
+  });
 
   constructor() {
     this.reloadTemplates();
@@ -91,6 +115,7 @@ export class SettingsPage {
   }
 
   private fillHomestayForm(info: HomestayInfoDto): void {
+    this.homestay.set(info);
     this.homestayForm.setValue({
       name: info.name,
       hotline: info.hotline,

@@ -91,7 +91,8 @@
   {da_coc} {con_phai_thu} {ma_cua} {huong_dan} (hướng dẫn của phòng) {ten_homestay} {dia_chi} {ban_do} {hotline}
   {wifi} {mat_khau_wifi}. Thông tin homestay nhập ở Cài đặt.
 - Mỗi hình thức check-in (khách tự / nhân viên) có tối đa một mẫu tự chọn sẵn khi tạo đơn.
-- Xem trước che mã cửa. Sao chép mẫu có {ma_cua} được ghi nhật ký như xem mã cửa.
+- Xem trước (màn Cài đặt) dùng một đơn mẫu cố định + thông tin homestay đã lưu, cập nhật khi gõ, {ma_cua} hiện
+  "●●●●●● (hiện khi sao chép)"; không gọi API đơn, không ghi nhật ký. Sao chép mẫu có {ma_cua} được ghi nhật ký như xem mã cửa.
 - App chỉ tạo nội dung để sao chép, không tự gửi SMS/Zalo.
 
 ## Tổng quan

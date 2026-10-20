@@ -60,12 +60,47 @@ export function buildOrderMessageContext(
     con_phai_thu: formatMoney(order.dueAmount),
     ma_cua: doorCode ?? '',
     huong_dan: roomGuide ?? '',
+    ...homestayVariables(homestay),
+  };
+}
+
+/** Các biến lấy từ thông tin homestay. */
+function homestayVariables(homestay: HomestayInfoDto) {
+  return {
     ten_homestay: homestay.name,
     dia_chi: homestay.address,
     ban_do: homestay.mapLink ?? '',
     hotline: homestay.hotline,
     wifi: homestay.wifiName ?? '',
     mat_khau_wifi: homestay.wifiPassword ?? '',
+  };
+}
+
+/** Mã đơn mẫu hiện ở tiêu đề phần xem trước. */
+export const SAMPLE_ORDER_CODE = 'SH-1036';
+
+/**
+ * Dữ liệu biến của một đơn mẫu cố định (không phải đơn thật) + thông tin homestay hiện tại, dùng xem trước mẫu
+ * tin nhắn ở màn Cài đặt — không gọi API đơn, không lấy mã cửa thật.
+ *
+ * @param homestay thông tin homestay đã lưu
+ * @param doorCode giá trị đặt vào {ma_cua} (giá trị đánh dấu để hiện dạng che)
+ */
+export function buildSampleMessageContext(homestay: HomestayInfoDto, doorCode: string): MessageTemplateContext {
+  return {
+    ten_khach: 'Phạm Quốc Bảo',
+    ma_don: SAMPLE_ORDER_CODE,
+    phong: '101 · Mộc',
+    loai_thue: RENTAL_TYPE_LABEL.OVERNIGHT,
+    gio_nhan: '21:00, 07/10/2026',
+    gio_tra: '12:00, 08/10/2026',
+    so_khach: '2',
+    tong_tien: formatMoney(450000),
+    da_coc: formatMoney(100000),
+    con_phai_thu: formatMoney(350000),
+    ma_cua: doorCode,
+    huong_dan: 'Đi thang bộ lên tầng 1, phòng đầu hành lang bên phải. Nhập mã cửa trên khoá số rồi nhấn #.',
+    ...homestayVariables(homestay),
   };
 }
 

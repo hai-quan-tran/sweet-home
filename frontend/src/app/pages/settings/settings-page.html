@@ -75,6 +75,13 @@
             <span class="hint">Bấm để chèn vào vị trí con trỏ. "Hướng dẫn của phòng" lấy từ phần Nhận &amp; trả phòng của từng phòng.
               Mẫu có mã cửa: mỗi lần sao chép được ghi vào nhật ký.</span>
           </div>
+
+          @if (previewParts(); as parts) {
+            <div class="field">
+              <span class="flab">Xem trước với đơn mẫu {{ sampleOrderCode }}</span>
+              <div class="preview">@for (part of parts; track $index) {@if (!$first) {<span class="mask">●●●●●● (hiện khi sao chép)</span>}{{ part }}}</div>
+            </div>
+          }
         </fieldset>
       </form>
       @if (isManager()) {

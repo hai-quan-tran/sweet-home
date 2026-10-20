@@ -35,7 +35,7 @@ Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hư�
 - Request backend thêm `@Size` khớp cột DB (đơn, phòng, hạng phòng, phụ thu + khoảng ngày, homestay, mẫu tin nhắn) →
   lỗi 400 theo trường thay vì 500.
 - Frontend thêm `maxlength` tương ứng cho các ô chữ.
-### 13.5 Xem trước mẫu tin nhắn ở Cài đặt (frontend + test)
+### [x] 13.5 Xem trước mẫu tin nhắn ở Cài đặt (frontend + test)
 - Khung "Xem trước" dưới phần chèn biến, cập nhật khi gõ; dùng lại `renderMessageTemplate`.
 ### 13.6 Cập nhật tài liệu
 - `.claude/architecture` (business-rules, project-structure); chạy lại công cụ detail design cho các file bị ảnh hưởng

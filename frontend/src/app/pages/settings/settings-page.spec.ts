@@ -67,6 +67,23 @@ describe('SettingsPage', () => {
     expect(component['homestayError']()).toBe(REQUIRED_FIELDS_MESSAGE);
   });
 
+  it('xem trước nội dung đang gõ với đơn mẫu, mã cửa hiện dạng che', async () => {
+    const fixture = await render();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.preview')?.textContent).toBe('Chào Phạm Quốc Bảo');
+
+    fixture.componentInstance['templateForm'].controls.body.setValue('Mã cửa {ma_cua}\nHotline {hotline}');
+    fixture.detectChanges();
+
+    const preview = el.querySelector('.preview')!;
+    expect(preview.textContent).toBe('Mã cửa ●●●●●● (hiện khi sao chép)\nHotline 0909123456');
+    expect(preview.querySelector('.mask')).not.toBeNull();
+
+    fixture.componentInstance.newTemplate();
+    fixture.detectChanges();
+    expect(el.querySelector('.preview')).toBeNull();
+  });
+
   it('insertVariable chèn biến vào nội dung', async () => {
     const fixture = await render();
     const component = fixture.componentInstance;

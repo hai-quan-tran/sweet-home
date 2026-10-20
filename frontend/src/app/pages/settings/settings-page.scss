@@ -297,6 +297,21 @@ textarea.inp {
   }
 }
 
+/* Xem trước mẫu tin nhắn: giữ xuống dòng như khi sao chép; {ma_cua} hiện chữ che màu nhạt. */
+.preview {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mask {
+  color: var(--p-text-muted-color);
+}
+
 .vars {
   display: flex;
   flex-wrap: wrap;

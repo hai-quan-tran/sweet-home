@@ -1,6 +1,6 @@
 import { OrderDto } from './order.models';
 import { HomestayInfoDto } from './settings.models';
-import { buildOrderMessageContext, renderMessageTemplate } from './message-template';
+import { SAMPLE_ORDER_CODE, buildOrderMessageContext, buildSampleMessageContext, renderMessageTemplate } from './message-template';
 
 const order: OrderDto = {
   id: 36,
@@ -82,5 +82,14 @@ describe('renderMessageTemplate', () => {
 
     expect(context.gio_nhan).toBe('21:00, 07/10/2026');
     expect(context.gio_tra).toBe('12:00, 08/10/2026');
+  });
+});
+
+describe('buildSampleMessageContext', () => {
+  it('đơn mẫu cố định + thông tin homestay hiện tại, mã cửa lấy theo tham số', () => {
+    const context = buildSampleMessageContext(homestay, '#');
+
+    expect(renderMessageTemplate('{ma_don} {phong} {con_phai_thu} {ma_cua} {wifi}', context))
+      .toBe(SAMPLE_ORDER_CODE + ' 101 · Mộc 350.000đ # SweetHome_5G');
   });
 });
