@@ -5,6 +5,8 @@
 - Package gốc `com.sweethome`. Chia theo chức năng (`common`, sau này `auth`, `room`, `order`, …).
   - `common.error`: `BusinessException` (lỗi nghiệp vụ có thông báo tiếng Việt + mã HTTP),
     `GlobalExceptionHandler` trả ProblemDetail; lỗi 400 kèm `errors` theo trường; lỗi 500 chỉ trả thông báo chung.
+  - Ô chữ trong request có `@Size` khớp độ dài cột DB (vượt → 400 "Tối đa N ký tự" theo trường); frontend đặt
+    `maxlength` cùng số cho ô tương ứng.
 - API dưới context path `/api`.
 - Cấu hình: `application.yml` (chung) + `application-dev.yml` (ghi thẳng kết nối) + `application-stage.yml`,
   `application-prod.yml` (biến môi trường `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SERVER_PORT`). Profile mặc định: dev.

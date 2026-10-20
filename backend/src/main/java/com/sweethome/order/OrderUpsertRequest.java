@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 import com.sweethome.room.CheckInMode;
 
@@ -37,16 +38,16 @@ public record OrderUpsertRequest(
 		@NotNull(message = "Bắt buộc nhập") LocalDate checkInDate,
 		LocalTime checkInTime,
 		Integer quantity,
-		@NotBlank(message = "Bắt buộc nhập") String guestName,
-		@NotBlank(message = "Bắt buộc nhập") String guestPhone,
-		String guestIdNumber,
+		@NotBlank(message = "Bắt buộc nhập") @Size(max = 100, message = "Tối đa 100 ký tự") String guestName,
+		@NotBlank(message = "Bắt buộc nhập") @Size(max = 20, message = "Tối đa 20 ký tự") String guestPhone,
+		@Size(max = 20, message = "Tối đa 20 ký tự") String guestIdNumber,
 		@NotNull(message = "Bắt buộc nhập") @Positive(message = "Phải lớn hơn 0") Integer guestCount,
 		@NotNull(message = "Bắt buộc nhập") OrderSource source,
-		String note,
+		@Size(max = 1000, message = "Tối đa 1000 ký tự") String note,
 		@NotNull(message = "Bắt buộc nhập") CheckInMode checkInMode,
-		String doorCode,
+		@Size(max = 20, message = "Tối đa 20 ký tự") String doorCode,
 		@Positive(message = "Phải lớn hơn 0") long deposit,
 		@NotNull(message = "Bắt buộc nhập") PaymentMethod depositMethod,
 		@PositiveOrZero(message = "Không được âm") long discount,
-		String discountReason) {
+		@Size(max = 255, message = "Tối đa 255 ký tự") String discountReason) {
 }

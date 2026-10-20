@@ -87,4 +87,15 @@ class SurchargeControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.active").value(false));
 	}
+
+	@Test
+	void createRejectsTooLongDateRangeName() throws Exception {
+		mvc.perform(post("/surcharges").contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"name":"Lễ","whenType":"DATE_RANGE","amount":10,"roomTypeIds":[1],
+								 "dateRanges":[{"name":"%s","fromDate":"2026-12-24","toDate":"2026-12-25"}]}
+								""".formatted("a".repeat(101))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors['dateRanges[0].name']").value("Tối đa 100 ký tự"));
+	}
 }

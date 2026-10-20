@@ -49,4 +49,12 @@ class HomestayControllerTest {
 						.content("{\"name\":\"\",\"hotline\":\"0909\",\"address\":\"A\"}"))
 				.andExpect(status().isBadRequest());
 	}
+
+	@Test
+	void updateRejectsTooLongHotline() throws Exception {
+		mvc.perform(put("/settings/homestay").contentType(MediaType.APPLICATION_JSON)
+						.content("{\"name\":\"Sweet Home\",\"hotline\":\"%s\",\"address\":\"A\"}".formatted("0".repeat(31))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors.hotline").value("Tối đa 30 ký tự"));
+	}
 }

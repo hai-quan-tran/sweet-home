@@ -19,11 +19,11 @@
         <div class="cb g3">
           <div class="field">
             <label for="no">Số phòng <span class="req">*</span></label>
-            <input id="no" class="inp" formControlName="roomNumber" />
+            <input id="no" class="inp" formControlName="roomNumber" maxlength="20" />
           </div>
           <div class="field">
             <label for="nm">Tên phòng <span class="req">*</span></label>
-            <input id="nm" class="inp" formControlName="name" />
+            <input id="nm" class="inp" formControlName="name" maxlength="100" />
           </div>
           <div class="field">
             <label for="fl">Tầng</label>
@@ -44,11 +44,11 @@
           </div>
           <div class="field">
             <label for="bed">Giường</label>
-            <input id="bed" class="inp" formControlName="bedConfig" placeholder="VD: 1 giường đôi" />
+            <input id="bed" class="inp" formControlName="bedConfig" maxlength="100" placeholder="VD: 1 giường đôi" />
           </div>
           <div class="field span-all">
             <label for="desc">Mô tả ngắn</label>
-            <textarea id="desc" class="inp" formControlName="description" placeholder="Ví dụ: cửa sổ trời, bồn tắm, máy chiếu…"></textarea>
+            <textarea id="desc" class="inp" formControlName="description" maxlength="500" placeholder="Ví dụ: cửa sổ trời, bồn tắm, máy chiếu…"></textarea>
           </div>
         </div>
       </section>
@@ -145,7 +145,7 @@
           </fieldset>
           <div class="field">
             <label for="guide">Hướng dẫn tự nhận phòng</label>
-            <textarea id="guide" class="inp guide" formControlName="checkInGuide"></textarea>
+            <textarea id="guide" class="inp guide" formControlName="checkInGuide" maxlength="1000"></textarea>
             <span class="hint">Được chèn vào tin nhắn gửi khách cùng mã cửa và giờ nhận, giờ trả</span>
           </div>
           <label class="sw">

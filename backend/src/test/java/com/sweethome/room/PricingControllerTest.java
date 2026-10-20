@@ -67,4 +67,15 @@ class PricingControllerTest {
 								"""))
 				.andExpect(status().isBadRequest());
 	}
+
+	@Test
+	void updateRejectsTooLongRoomTypeName() throws Exception {
+		mvc.perform(put("/room-types/overview").contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"roomTypes":[{"id":null,"name":"%s","twoHourPrice":1,"extraHourPrice":1,"overnightPrice":1,"dailyPrice":1}],
+								 "settings":{"minHours":2,"overnightCheckIn":"21:00","overnightCheckOut":"12:00","dailyCheckIn":"14:00","dailyCheckOut":"12:00"}}
+								""".formatted("a".repeat(101))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors['roomTypes[0].name']").value("Tối đa 100 ký tự"));
+	}
 }

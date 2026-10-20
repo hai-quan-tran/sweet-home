@@ -138,6 +138,13 @@ describe('OrderFormPage', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('#name')?.classList).toContain('ng-touched');
   });
 
+  it('ô chữ giới hạn độ dài theo cột DB', async () => {
+    const el = (await render()).nativeElement as HTMLElement;
+
+    expect(el.querySelector('#name')?.getAttribute('maxlength')).toBe('100');
+    expect(el.querySelector('#note')?.getAttribute('maxlength')).toBe('1000');
+  });
+
   it('submit khi thiếu mã cửa (tự check-in) thì báo lỗi, không gọi API', async () => {
     const fixture = await render();
     const component = fixture.componentInstance;

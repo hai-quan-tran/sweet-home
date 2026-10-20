@@ -3,6 +3,7 @@ package com.sweethome.room;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 /**
  * Dữ liệu thêm/sửa phòng.
@@ -24,19 +25,19 @@ import jakarta.validation.constraints.Positive;
  * @param acceptingBookings  có nhận đặt phòng không
  */
 public record RoomUpsertRequest(
-		@NotBlank(message = "Bắt buộc nhập") String roomNumber,
-		@NotBlank(message = "Bắt buộc nhập") String name,
+		@NotBlank(message = "Bắt buộc nhập") @Size(max = 20, message = "Tối đa 20 ký tự") String roomNumber,
+		@NotBlank(message = "Bắt buộc nhập") @Size(max = 100, message = "Tối đa 100 ký tự") String name,
 		Integer floor,
 		@NotNull(message = "Bắt buộc nhập") Long roomTypeId,
 		@NotNull(message = "Bắt buộc nhập") @Positive(message = "Phải lớn hơn 0") Integer maxGuests,
-		String bedConfig,
-		String description,
+		@Size(max = 100, message = "Tối đa 100 ký tự") String bedConfig,
+		@Size(max = 500, message = "Tối đa 500 ký tự") String description,
 		@NotNull(message = "Bắt buộc nhập") RoomPricingMode pricingMode,
 		Long ownTwoHourPrice,
 		Long ownExtraHourPrice,
 		Long ownOvernightPrice,
 		Long ownDailyPrice,
 		@NotNull(message = "Bắt buộc nhập") CheckInMode defaultCheckInMode,
-		String checkInGuide,
+		@Size(max = 1000, message = "Tối đa 1000 ký tự") String checkInGuide,
 		boolean acceptingBookings) {
 }

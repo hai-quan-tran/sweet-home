@@ -99,4 +99,16 @@ class OrderControllerTest {
 								"""))
 				.andExpect(status().isBadRequest());
 	}
+
+	@Test
+	void createRejectsTooLongGuestNameWithFieldError() throws Exception {
+		mvc.perform(post("/orders").contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"roomId":1,"rentalType":"HOURLY","checkInDate":"2026-10-07","checkInTime":"15:00",
+								 "guestName":"%s","guestPhone":"0900000000","guestCount":2,"source":"ZALO",
+								 "checkInMode":"SELF","doorCode":"123456","deposit":50000,"depositMethod":"CASH","discount":0}
+								""".formatted("A".repeat(101))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors.guestName").value("Tối đa 100 ký tự"));
+	}
 }

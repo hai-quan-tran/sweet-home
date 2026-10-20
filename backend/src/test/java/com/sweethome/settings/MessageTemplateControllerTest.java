@@ -53,4 +53,12 @@ class MessageTemplateControllerTest {
 						.content("{\"name\":\"Mẫu\",\"body\":\"\"}"))
 				.andExpect(status().isBadRequest());
 	}
+
+	@Test
+	void createRejectsTooLongBody() throws Exception {
+		mvc.perform(post("/message-templates").contentType(MediaType.APPLICATION_JSON)
+						.content("{\"name\":\"Mẫu\",\"body\":\"%s\"}".formatted("a".repeat(2001))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors.body").value("Tối đa 2000 ký tự"));
+	}
 }

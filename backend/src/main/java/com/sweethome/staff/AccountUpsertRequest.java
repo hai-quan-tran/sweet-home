@@ -25,7 +25,7 @@ import com.sweethome.auth.AccountRole;
 public record AccountUpsertRequest(
 		@NotBlank(message = "Bắt buộc nhập") @Size(max = 100, message = "Tối đa 100 ký tự") String fullName,
 		@NotBlank(message = "Bắt buộc nhập") @Size(max = 20, message = "Tối đa 20 ký tự") String phone,
-		@Pattern(regexp = "^[0-9 ]*$", message = "Chỉ gồm chữ số") String idNumber,
+		@Pattern(regexp = "^[0-9 ]*$", message = "Chỉ gồm chữ số") @Size(max = 20, message = "Tối đa 20 ký tự") String idNumber,
 		LocalDate startDate,
 		@NotBlank(message = "Bắt buộc nhập")
 		@Pattern(regexp = "^[A-Za-z0-9._-]{3,50}$", message = "3–50 ký tự: chữ không dấu, số, dấu chấm, gạch") String username,

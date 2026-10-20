@@ -30,7 +30,7 @@
         @for (row of rows.controls; track row; let i = $index) {
           <tr [formGroup]="row">
             <td class="cls">
-              <input class="inp" formControlName="name" [attr.aria-label]="'Tên hạng phòng dòng ' + (i + 1)" />
+              <input class="inp" formControlName="name" maxlength="100" [attr.aria-label]="'Tên hạng phòng dòng ' + (i + 1)" />
               @if (roomNumbersByRow()[i]?.length) {
                 <small>{{ roomNumbersByRow()[i]!.join(', ') }}</small>
               }

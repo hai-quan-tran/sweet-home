@@ -106,4 +106,15 @@ class RoomControllerTest {
 
 		mvc.perform(delete("/rooms/1/photos/2")).andExpect(status().isOk());
 	}
+
+	@Test
+	void createRejectsTooLongDescription() throws Exception {
+		mvc.perform(post("/rooms").contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"roomNumber":"101","name":"Mộc","floor":1,"roomTypeId":1,"maxGuests":2,"description":"%s",
+								 "pricingMode":"ROOM_TYPE","defaultCheckInMode":"SELF","acceptingBookings":true}
+								""".formatted("a".repeat(501))))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors.description").value("Tối đa 500 ký tự"));
+	}
 }

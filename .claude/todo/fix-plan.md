@@ -31,7 +31,7 @@ Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hư�
 - `styles.scss`: ô `.inp` / ô chọn bắt buộc đã chạm mà không hợp lệ → viền đỏ (light + dark mode).
 - Các form có nút lưu (Tạo/Sửa đơn, Thêm/Sửa phòng, Thêm/Sửa nhân viên, Bảng giá, Phụ thu, Cài đặt, Lịch làm): bấm lưu khi
   thiếu ô → hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)." thay vì im lặng. Test cho từng form.
-### 13.4 Giới hạn độ dài ô chữ (backend + frontend + test)
+### [x] 13.4 Giới hạn độ dài ô chữ (backend + frontend + test)
 - Request backend thêm `@Size` khớp cột DB (đơn, phòng, hạng phòng, phụ thu + khoảng ngày, homestay, mẫu tin nhắn) →
   lỗi 400 theo trường thay vì 500.
 - Frontend thêm `maxlength` tương ứng cho các ô chữ.

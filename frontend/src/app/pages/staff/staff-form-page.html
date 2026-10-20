@@ -20,15 +20,15 @@
           <div class="g2">
             <div class="field">
               <label for="fn">Họ tên <span class="req">*</span></label>
-              <input id="fn" class="inp" formControlName="fullName" autocomplete="off" />
+              <input id="fn" class="inp" formControlName="fullName" maxlength="100" autocomplete="off" />
             </div>
             <div class="field">
               <label for="ph">Số điện thoại <span class="req">*</span></label>
-              <input id="ph" class="inp num" type="tel" formControlName="phone" autocomplete="off" />
+              <input id="ph" class="inp num" type="tel" formControlName="phone" maxlength="20" autocomplete="off" />
             </div>
             <div class="field">
               <label for="cc">CCCD</label>
-              <input id="cc" class="inp num" formControlName="idNumber" inputmode="numeric" autocomplete="off"
+              <input id="cc" class="inp num" formControlName="idNumber" maxlength="20" inputmode="numeric" autocomplete="off"
                 [placeholder]="idNumberMasked() ?? '12 số'" />
               <span class="hint">{{ idNumberMasked() ? 'Để trống để giữ số đã lưu' : 'Không bắt buộc · chỉ hiện 4 số cuối sau khi lưu' }}</span>
             </div>
@@ -46,7 +46,7 @@
           <div class="g2">
             <div class="field">
               <label for="un">Tên đăng nhập <span class="req">*</span></label>
-              <input id="un" class="inp" formControlName="username" autocomplete="off" />
+              <input id="un" class="inp" formControlName="username" maxlength="50" autocomplete="off" />
               <span class="hint" [class.bad]="form.controls.username.invalid && form.controls.username.touched">
                 {{ isEdit() ? 'Không đổi được tên đăng nhập' : 'Chữ không dấu, số, dấu chấm hoặc gạch' }}
               </span>

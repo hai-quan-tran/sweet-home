@@ -45,7 +45,7 @@
       }
       <form [formGroup]="templateForm" class="cb">
         <fieldset [disabled]="!isManager()" class="fs">
-          <div class="field"><label for="tname">Tên mẫu <span class="req">*</span></label><input id="tname" class="inp" formControlName="name" /></div>
+          <div class="field"><label for="tname">Tên mẫu <span class="req">*</span></label><input id="tname" class="inp" formControlName="name" maxlength="100" /></div>
 
           <fieldset class="opts">
             <legend>Tự chọn sẵn cho đơn</legend>
@@ -62,7 +62,7 @@
 
           <div class="field">
             <label for="body">Nội dung <span class="req">*</span></label>
-            <textarea id="body" #bodyField class="inp" formControlName="body"></textarea>
+            <textarea id="body" #bodyField class="inp" formControlName="body" maxlength="2000"></textarea>
           </div>
 
           <div class="field">
@@ -99,12 +99,12 @@
     <form [formGroup]="homestayForm" class="cb">
       <fieldset [disabled]="!isManager()" class="fs">
         <div class="g2">
-          <div class="field"><label for="hname">Tên homestay <span class="req">*</span></label><input id="hname" class="inp" formControlName="name" /></div>
-          <div class="field"><label for="hotline">Hotline <span class="req">*</span></label><input id="hotline" class="inp" formControlName="hotline" /></div>
-          <div class="field span2"><label for="addr">Địa chỉ <span class="req">*</span></label><input id="addr" class="inp" formControlName="address" /></div>
-          <div class="field span2"><label for="map">Link bản đồ</label><input id="map" class="inp" formControlName="mapLink" /></div>
-          <div class="field"><label for="wifi">Tên wifi</label><input id="wifi" class="inp" formControlName="wifiName" /></div>
-          <div class="field"><label for="wpass">Mật khẩu wifi</label><input id="wpass" class="inp" formControlName="wifiPassword" /></div>
+          <div class="field"><label for="hname">Tên homestay <span class="req">*</span></label><input id="hname" class="inp" formControlName="name" maxlength="100" /></div>
+          <div class="field"><label for="hotline">Hotline <span class="req">*</span></label><input id="hotline" class="inp" formControlName="hotline" maxlength="30" /></div>
+          <div class="field span2"><label for="addr">Địa chỉ <span class="req">*</span></label><input id="addr" class="inp" formControlName="address" maxlength="255" /></div>
+          <div class="field span2"><label for="map">Link bản đồ</label><input id="map" class="inp" formControlName="mapLink" maxlength="255" /></div>
+          <div class="field"><label for="wifi">Tên wifi</label><input id="wifi" class="inp" formControlName="wifiName" maxlength="100" /></div>
+          <div class="field"><label for="wpass">Mật khẩu wifi</label><input id="wpass" class="inp" formControlName="wifiPassword" maxlength="100" /></div>
         </div>
       </fieldset>
       <p class="hint">Các thông tin này được chèn vào tin nhắn gửi khách qua mẫu tin nhắn.</p>

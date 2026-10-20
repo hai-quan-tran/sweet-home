@@ -3,6 +3,7 @@ package com.sweethome.room;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 /**
  * Một dòng hạng phòng gửi lên khi lưu bảng giá. {@code id} null nghĩa là hạng mới.
@@ -16,7 +17,7 @@ import jakarta.validation.constraints.PositiveOrZero;
  */
 public record RoomTypeUpsertItem(
 		Long id,
-		@NotBlank(message = "Bắt buộc nhập") String name,
+		@NotBlank(message = "Bắt buộc nhập") @Size(max = 100, message = "Tối đa 100 ký tự") String name,
 		@NotNull(message = "Bắt buộc nhập") @PositiveOrZero(message = "Không được âm") Long twoHourPrice,
 		@NotNull(message = "Bắt buộc nhập") @PositiveOrZero(message = "Không được âm") Long extraHourPrice,
 		@NotNull(message = "Bắt buộc nhập") @PositiveOrZero(message = "Không được âm") Long overnightPrice,

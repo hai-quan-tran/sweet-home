@@ -16,7 +16,7 @@
   <form [formGroup]="form" class="dlg-b">
     <div class="field">
       <label for="s-name">Tên phụ thu <span class="req">*</span></label>
-      <input id="s-name" class="inp" formControlName="name" />
+      <input id="s-name" class="inp" formControlName="name" maxlength="100" />
     </div>
 
     <fieldset class="opts">
@@ -80,7 +80,7 @@
         <div class="ranges">
           @for (row of dateRanges.controls; track row; let i = $index) {
             <div class="rg" [formGroup]="row">
-              <input class="inp" formControlName="name" [attr.aria-label]="'Tên dịp ' + (i + 1)" placeholder="Tên dịp" />
+              <input class="inp" formControlName="name" maxlength="100" [attr.aria-label]="'Tên dịp ' + (i + 1)" placeholder="Tên dịp" />
               <input class="inp" type="date" formControlName="fromDate" [attr.aria-label]="'Từ ngày, dịp ' + (i + 1)" />
               <input class="inp" type="date" formControlName="toDate" [attr.aria-label]="'Đến ngày, dịp ' + (i + 1)" />
               <button class="ibtn" type="button" [attr.aria-label]="'Xoá dịp ' + (i + 1)" (click)="removeDateRange(i)">

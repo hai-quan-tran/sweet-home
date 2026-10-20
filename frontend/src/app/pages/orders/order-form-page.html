@@ -88,7 +88,7 @@
           <div class="field">
             <label for="code">Mã cửa cho đơn này <span class="req">*</span></label>
             <div class="iw">
-              <input id="code" class="inp num" [type]="showDoorCode() ? 'text' : 'password'" formControlName="doorCode" autocomplete="off" [placeholder]="editing()?.hasDoorCode ? 'Để trống để giữ mã cũ' : ''" />
+              <input id="code" class="inp num" [type]="showDoorCode() ? 'text' : 'password'" formControlName="doorCode" maxlength="20" autocomplete="off" [placeholder]="editing()?.hasDoorCode ? 'Để trống để giữ mã cũ' : ''" />
               <button class="eye" type="button" (click)="showDoorCode.set(!showDoorCode())" [attr.aria-label]="showDoorCode() ? 'Ẩn mã cửa' : 'Hiện mã cửa'">
                 <i class="pi" [class.pi-eye]="!showDoorCode()" [class.pi-eye-slash]="showDoorCode()"></i>
               </button>
@@ -102,9 +102,9 @@
       <div class="ch"><span class="step">2</span><h2>Thông tin khách</h2></div>
       <div class="cb">
         <div class="g2">
-          <div class="field"><label for="phone">Số điện thoại <span class="req">*</span></label><input id="phone" class="inp num" type="tel" formControlName="guestPhone" /></div>
-          <div class="field"><label for="name">Họ tên <span class="req">*</span></label><input id="name" class="inp" formControlName="guestName" /></div>
-          <div class="field"><label for="idn">CCCD / Hộ chiếu</label><input id="idn" class="inp num" formControlName="guestIdNumber" [placeholder]="editing()?.guestIdNumberMasked ? editing()!.guestIdNumberMasked + ' (để trống để giữ)' : ''" /></div>
+          <div class="field"><label for="phone">Số điện thoại <span class="req">*</span></label><input id="phone" class="inp num" type="tel" formControlName="guestPhone" maxlength="20" /></div>
+          <div class="field"><label for="name">Họ tên <span class="req">*</span></label><input id="name" class="inp" formControlName="guestName" maxlength="100" /></div>
+          <div class="field"><label for="idn">CCCD / Hộ chiếu</label><input id="idn" class="inp num" formControlName="guestIdNumber" maxlength="20" [placeholder]="editing()?.guestIdNumberMasked ? editing()!.guestIdNumberMasked + ' (để trống để giữ)' : ''" /></div>
           <div class="field">
             <label for="g">Số khách</label>
             <div class="stepper">
@@ -121,7 +121,7 @@
               }
             </select>
           </div>
-          <div class="field span-all"><label for="note">Ghi chú</label><textarea id="note" class="inp" formControlName="note" placeholder="Yêu cầu thêm của khách, giờ đến dự kiến…"></textarea></div>
+          <div class="field span-all"><label for="note">Ghi chú</label><textarea id="note" class="inp" formControlName="note" maxlength="1000" placeholder="Yêu cầu thêm của khách, giờ đến dự kiến…"></textarea></div>
         </div>
       </div>
     </section>
@@ -142,7 +142,7 @@
             </div>
           </div>
           <div class="field"><label for="disc">Giảm giá</label><div class="iw money"><input id="disc" class="inp num" type="number" formControlName="discount" /><span>đ</span></div></div>
-          <div class="field"><label for="why">Lý do giảm</label><input id="why" class="inp" formControlName="discountReason" placeholder="Không bắt buộc" /></div>
+          <div class="field"><label for="why">Lý do giảm</label><input id="why" class="inp" formControlName="discountReason" maxlength="255" placeholder="Không bắt buộc" /></div>
         </div>
       </div>
     </section>
