@@ -148,15 +148,17 @@ public class OrderExtensionService {
 
 	/**
 	 * Phòng chuyển khách sang được: khác phòng đang ở, cùng 4 mức giá, đang nhận đặt, đã dọn, không có
-	 * đơn nào từ giờ trả hiện tại đến giờ trả mới + 1 tiếng.
+	 * đơn nào từ giờ trả hiện tại đến giờ trả mới + 1 tiếng (phòng còn khách Quá giờ / Chờ xác nhận trả
+	 * coi là bận tới bây giờ + 1 tiếng).
 	 */
 	private List<ExtendPreviewResponse.MoveOption> moveOptions(RentalOrder order, LocalDateTime from, LocalDateTime to) {
 		Room current = order.getRoom();
 		List<Long> prices = current.effectivePrices();
+		LocalDateTime busyUntil = LocalDateTime.now(clock).plus(GAP_BEFORE_NEXT);
 		return roomRepository.findAll().stream()
 				.filter(r -> !r.getId().equals(current.getId()) && r.isAcceptingBookings() && !r.isNeedsCleaning()
 						&& r.effectivePrices().equals(prices))
-				.filter(r -> orderRepository.findOverlapping(r.getId(), from, to.plus(GAP_BEFORE_NEXT)).isEmpty())
+				.filter(r -> orderRepository.findOverlapping(r.getId(), from, to.plus(GAP_BEFORE_NEXT), busyUntil).isEmpty())
 				.sorted(Comparator.comparing(Room::getRoomNumber))
 				.map(r -> {
 					OrderStay next = nextStay(r, order.getId(), from);

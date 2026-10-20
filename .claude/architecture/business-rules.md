@@ -12,6 +12,9 @@
 - Trả phòng phải thu đủ số còn lại (chọn hình thức) ngay lúc xác nhận trả; không cho trả khi còn nợ.
 - Sau khi trả phòng, phòng chuyển Chờ dọn; bấm "Đã dọn" để về Trống.
 - Bấm Nhận phòng khi phòng còn Chờ dọn: nhắc, đồng ý thì đánh dấu Đã dọn trước rồi mới nhận phòng (không chặn).
+- Phòng còn khách chưa trả (đơn Quá giờ / Chờ xác nhận trả): chặng hiện tại của đơn coi là chiếm phòng tới
+  **bây giờ + 1 tiếng** khi kiểm tra trùng lịch (tạo/sửa đơn, xem trước ở màn Tạo đơn, phòng chuyển khi gia hạn).
+  Đơn có giờ nhận trước mốc đó bị báo "Phòng còn khách đơn SH-x chưa trả phòng"; đặt cho giờ sau mốc vẫn được.
 - Tạo đơn: giờ nhận mặc định = bây giờ làm tròn tới giờ tròn gần nhất (từ phút 30 làm tròn lên).
 
 ## Tiền cọc & thu tiền

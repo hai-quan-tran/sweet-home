@@ -4,13 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +62,9 @@ class OrderServiceTest {
 	@Mock
 	private SurchargeRepository surchargeRepository;
 
+	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+	private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 7, 10, 0);
+
 	private OrderService service;
 	private Room room;
 	private PricingSettings settings;
@@ -67,7 +73,7 @@ class OrderServiceTest {
 	void setUp() {
 		CryptoService cryptoService = new CryptoService(Base64.getEncoder().encodeToString(new byte[32]));
 		service = new OrderService(orderRepository, roomRepository, pricingSettingsRepository, surchargeRepository,
-				new SurchargeCalculator(), cryptoService, activityLog, scheduleService);
+				new SurchargeCalculator(), cryptoService, activityLog, scheduleService, Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE));
 
 		RoomType type = OrderTestFactory.roomType(1L, "Tiêu chuẩn", 150000, 50000, 350000, 500000);
 		room = OrderTestFactory.room(10L, "101", type, 2);
@@ -82,7 +88,7 @@ class OrderServiceTest {
 		lenient().when(roomRepository.findById(10L)).thenReturn(Optional.of(room));
 		lenient().when(pricingSettingsRepository.findById(PricingSettings.SINGLETON_ID)).thenReturn(Optional.of(settings));
 		lenient().when(surchargeRepository.findActiveByRoomTypeId(1L)).thenReturn(List.of());
-		lenient().when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of());
+		lenient().when(orderRepository.findOverlapping(anyLong(), any(), any(), any())).thenReturn(List.of());
 		lenient().when(orderRepository.save(any())).thenAnswer(inv -> {
 			RentalOrder order = inv.getArgument(0);
 			if (order.getId() == null) {
@@ -202,11 +208,23 @@ class OrderServiceTest {
 	void createRejectsOnScheduleConflict() {
 		RentalOrder existing = new RentalOrder();
 		setId(existing, 99L);
-		when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of(existing));
+		when(orderRepository.findOverlapping(anyLong(), any(), any(), any())).thenReturn(List.of(existing));
 
 		assertThatThrownBy(() -> service.create(requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 3)))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining(OrderDto.codeOf(99L));
+	}
+
+	@Test
+	void createRejectsRoomWhoseGuestHasNotCheckedOutUntilOneHourFromNow() {
+		RentalOrder overstay = new RentalOrder();
+		setId(overstay, 98L);
+		overstay.setStatus(OrderStatus.OVERSTAY);
+		when(orderRepository.findOverlapping(anyLong(), any(), any(), eq(NOW.plusHours(1)))).thenReturn(List.of(overstay));
+
+		assertThatThrownBy(() -> service.create(requestHourly(LocalDate.of(2026, 10, 7), LocalTime.of(10, 30), 2)))
+				.isInstanceOf(BusinessException.class)
+				.hasMessage("Phòng còn khách đơn %s chưa trả phòng".formatted(OrderDto.codeOf(98L)));
 	}
 
 	@Test
@@ -271,7 +289,7 @@ class OrderServiceTest {
 	void previewReportsConflictWithoutPersisting() {
 		RentalOrder existing = new RentalOrder();
 		setId(existing, 77L);
-		when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of(existing));
+		when(orderRepository.findOverlapping(anyLong(), any(), any(), any())).thenReturn(List.of(existing));
 		var request = new OrderPreviewRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0),
 				3, 2, 0L, 0L, null);
 
@@ -319,7 +337,7 @@ class OrderServiceTest {
 	void updateRecomputesPriceKeepsDoorCodeAndIgnoresSelfOverlap() {
 		RentalOrder order = existingOrder();
 		String doorCode = order.getDoorCodeEncrypted();
-		when(orderRepository.findOverlapping(anyLong(), any(), any())).thenReturn(List.of(order));
+		when(orderRepository.findOverlapping(anyLong(), any(), any(), any())).thenReturn(List.of(order));
 		var request = new OrderUpsertRequest(10L, RentalType.HOURLY, LocalDate.of(2026, 10, 7), LocalTime.of(15, 0), 4,
 				"Nguyễn Văn B", "0900000000", null, 2, OrderSource.ZALO, null, CheckInMode.SELF, " ", 50000L,
 				PaymentMethod.CASH, 0L, null);

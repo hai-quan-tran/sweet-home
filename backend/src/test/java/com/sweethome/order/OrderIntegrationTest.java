@@ -289,6 +289,51 @@ class OrderIntegrationTest {
 	}
 
 	@Test
+	void roomWithGuestNotCheckedOutIsBusyUntilOneHourFromNow() throws Exception {
+		// Đơn khách tự check-in 07/10 đã qua giờ trả → Chờ xác nhận trả, khách vẫn trong phòng
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload()))
+				.andExpect(status().isOk());
+		// Đơn đang ở phòng khác cùng giá, phòng đó có khách kế tiếp lúc 19:00 → gia hạn phải chuyển phòng
+		long otherRoomId = postRoom("RO2-" + System.nanoTime());
+		String otherRoomStaffOrder = orderPayload().replace("\"roomId\":" + roomId, "\"roomId\":" + otherRoomId)
+				.replace("\"SELF\"", "\"STAFF\"");
+		MvcResult staying = mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(otherRoomStaffOrder))
+				.andExpect(status().isOk())
+				.andReturn();
+		long stayingId = ((Number) JsonPath.read(staying.getResponse().getContentAsString(), "$.id")).longValue();
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(otherRoomStaffOrder.replace("\"15:00\"", "\"19:00\"")))
+				.andExpect(status().isOk());
+		mvc.perform(post("/orders/" + stayingId + "/check-in").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf)))
+				.andExpect(status().isOk());
+		lifecycleService.advanceStatuses();
+
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content(orderPayload().replace("2026-10-07", "2026-10-08")))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.endsWith("chưa trả phòng")));
+		mvc.perform(post("/orders/" + stayingId + "/extend/preview").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON).content("{\"type\":\"HOUR\",\"quantity\":2,\"collectNow\":false}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.available").value(false))
+				.andExpect(jsonPath("$.moveOptions[?(@.roomId == %d)]".formatted(roomId)).isEmpty());
+		// Đặt cho giờ sau mốc bây giờ + 1 tiếng vẫn được
+		mvc.perform(post("/orders").cookie(new MockCookie("access_token", staffAccessToken))
+						.header("X-XSRF-TOKEN", staffCsrf).cookie(new MockCookie("XSRF-TOKEN", staffCsrf))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(orderPayload().replace("2026-10-07", java.time.LocalDate.now().plusDays(2).toString())))
+				.andExpect(status().isOk());
+	}
+
+	@Test
 	void movingOrderToAnotherTimeFreesTheOldSlot() throws Exception {
 		MvcResult created = mvc.perform(post("/orders").cookie(new MockCookie("access_token", managerAccessToken))
 						.header("X-XSRF-TOKEN", managerCsrf).cookie(new MockCookie("XSRF-TOKEN", managerCsrf))

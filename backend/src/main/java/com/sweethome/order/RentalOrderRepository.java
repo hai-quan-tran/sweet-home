@@ -16,18 +16,22 @@ public interface RentalOrderRepository extends JpaRepository<RentalOrder, Long> 
 
 	/**
 	 * Các đơn (chưa huỷ) có chặng ở phòng cho trước chồng lấn khung giờ cho trước, dùng kiểm tra
-	 * trùng lịch trước khi tạo/sửa đơn.
+	 * trùng lịch trước khi tạo/sửa đơn và tìm phòng chuyển khách khi gia hạn. Chặng hiện tại của đơn
+	 * Quá giờ / Chờ xác nhận trả (khách chưa trả phòng) được coi là kéo dài tới {@code busyUntil}.
 	 *
 	 * @param roomId     id phòng
 	 * @param checkInAt  giờ bắt đầu khung giờ đang xét
 	 * @param checkOutAt giờ kết thúc khung giờ đang xét
+	 * @param busyUntil  mốc phòng còn khách chưa trả được coi là bận tới (bây giờ + 1 tiếng)
 	 * @return danh sách đơn chồng lấn
 	 */
 	@Query("select o from RentalOrder o where o.status <> com.sweethome.order.OrderStatus.CANCELLED "
-			+ "and exists (select s from OrderStay s where s.order = o and s.room.id = :roomId "
-			+ "and s.startAt < :checkOutAt and s.endAt > :checkInAt) order by o.checkInAt asc")
+			+ "and exists (select s from OrderStay s where s.order = o and s.room.id = :roomId and s.startAt < :checkOutAt "
+			+ "and (s.endAt > :checkInAt or (o.status in (com.sweethome.order.OrderStatus.OVERSTAY, "
+			+ "com.sweethome.order.OrderStatus.PENDING_CHECKOUT) and s.endAt = o.checkOutAt and :busyUntil > :checkInAt))) "
+			+ "order by o.checkInAt asc")
 	List<RentalOrder> findOverlapping(@Param("roomId") Long roomId, @Param("checkInAt") LocalDateTime checkInAt,
-			@Param("checkOutAt") LocalDateTime checkOutAt);
+			@Param("checkOutAt") LocalDateTime checkOutAt, @Param("busyUntil") LocalDateTime busyUntil);
 
 	/**
 	 * Các chặng (của đơn chưa huỷ) giao với khoảng thời gian cho trước, nạp sẵn đơn — dùng cho lịch

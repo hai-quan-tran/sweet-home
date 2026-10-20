@@ -166,7 +166,7 @@ class OrderExtensionServiceTest {
 		closed.setAcceptingBookings(false);
 		Room busy = otherRoom(15L, "206");
 		when(roomRepository.findAll()).thenReturn(List.of(room, busy, pricier, dirty, closed, free));
-		when(orderRepository.findOverlapping(eq(15L), any(), any())).thenReturn(List.of(new RentalOrder()));
+		when(orderRepository.findOverlapping(eq(15L), any(), any(), eq(LocalDateTime.of(2026, 10, 8, 13, 30)))).thenReturn(List.of(new RentalOrder()));
 		RentalOrder later = order(3L, "Khách sau", CHECK_OUT.plusDays(1).plusHours(7), CHECK_OUT.plusDays(2));
 		when(orderRepository.findStaysStartingFrom(eq(11L), eq(1L), eq(CHECK_OUT), any())).thenReturn(later.getStays());
 

@@ -1,5 +1,6 @@
 package com.sweethome.order;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -58,11 +59,12 @@ public class OrderService {
 	private final CryptoService cryptoService;
 	private final ActivityLogService activityLog;
 	private final ScheduleService scheduleService;
+	private final Clock clock;
 
 	public OrderService(RentalOrderRepository orderRepository, RoomRepository roomRepository,
 			PricingSettingsRepository pricingSettingsRepository, SurchargeRepository surchargeRepository,
 			SurchargeCalculator surchargeCalculator, CryptoService cryptoService, ActivityLogService activityLog,
-			ScheduleService scheduleService) {
+			ScheduleService scheduleService, Clock clock) {
 		this.orderRepository = orderRepository;
 		this.roomRepository = roomRepository;
 		this.pricingSettingsRepository = pricingSettingsRepository;
@@ -71,6 +73,7 @@ public class OrderService {
 		this.cryptoService = cryptoService;
 		this.activityLog = activityLog;
 		this.scheduleService = scheduleService;
+		this.clock = clock;
 	}
 
 	/**
@@ -229,12 +232,18 @@ public class OrderService {
 		return OrderDto.from(orderRepository.save(order));
 	}
 
-	/** Thông báo trùng lịch nếu phòng đã có đơn khác (bỏ qua {@code excludeOrderId}) trong khung giờ; null nếu trống. */
+	/**
+	 * Thông báo trùng lịch nếu phòng đã có đơn khác (bỏ qua {@code excludeOrderId}) trong khung giờ; null nếu trống.
+	 * Phòng còn khách Quá giờ / Chờ xác nhận trả coi là bận tới bây giờ + 1 tiếng.
+	 */
 	private String conflictMessage(Room room, Schedule schedule, Long excludeOrderId) {
-		return orderRepository.findOverlapping(room.getId(), schedule.checkInAt(), schedule.checkOutAt()).stream()
+		LocalDateTime busyUntil = LocalDateTime.now(clock).plus(OrderExtensionService.GAP_BEFORE_NEXT);
+		return orderRepository.findOverlapping(room.getId(), schedule.checkInAt(), schedule.checkOutAt(), busyUntil).stream()
 				.filter(o -> !o.getId().equals(excludeOrderId))
 				.findFirst()
-				.map(o -> "Phòng đã có đơn %s trong khung giờ này".formatted(OrderDto.codeOf(o.getId())))
+				.map(o -> (o.getStatus() == OrderStatus.OVERSTAY || o.getStatus() == OrderStatus.PENDING_CHECKOUT
+						? "Phòng còn khách đơn %s chưa trả phòng" : "Phòng đã có đơn %s trong khung giờ này")
+						.formatted(OrderDto.codeOf(o.getId())))
 				.orElse(null);
 	}
 

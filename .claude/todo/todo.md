@@ -44,6 +44,7 @@
 - [x] GĐ 10: hoàn thiện
 - [x] Lên kế hoạch tài liệu: xem `docs-plan.md`
 - [x] GĐ 11: detail design (Excel, mỗi màn/dialog 1 file) — 11.1 công cụ + Tổng thể, 11.2–11.5 các màn
+- [ ] GĐ 13: sửa lỗi phát hiện khi làm tài liệu — xem `fix-plan.md` (làm trước GĐ 12)
 - [ ] GĐ 12: hướng dẫn sử dụng (Word + PDF) — 12.1 công việc hằng ngày, 12.2 phần Quản lý & hỏi đáp
 
 ## Lỗi phát hiện khi làm tài liệu GĐ 11 (chờ người dùng quyết định sửa)
