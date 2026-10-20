@@ -63,6 +63,19 @@ async function drawMarks(page, items) {
 }
 
 /**
+ * Vùng cắt ảnh quanh một phần tử (toạ độ trang, chừa lề cho số đánh dấu); không có selector thì chụp cả trang.
+ * @param {import('playwright-core').Page} page trang đang chụp
+ * @param {string} [selector] phần tử cần cắt
+ */
+async function clipOf(page, selector) {
+  if (!selector) return undefined;
+  const box = await page.locator(selector).first().boundingBox();
+  const { sx, sy } = await page.evaluate(() => ({ sx: scrollX, sy: scrollY }));
+  const pad = 16;
+  return { x: Math.max(0, box.x + sx - pad), y: Math.max(0, box.y + sy - pad), width: box.width + 2 * pad, height: box.height + 2 * pad };
+}
+
+/**
  * Đăng nhập qua giao diện, trả về context đã có cookie đăng nhập.
  * @param {import('playwright-core').Browser} browser trình duyệt
  * @param {{username: string, password: string}} [login] tài khoản; bỏ trống = chưa đăng nhập
@@ -71,6 +84,7 @@ async function drawMarks(page, items) {
 async function newContext(browser, login, viewport = VIEWPORT) {
   const context = await browser.newContext({
     viewport, locale: 'vi-VN', timezoneId: 'Asia/Ho_Chi_Minh', colorScheme: 'light',
+    permissions: ['clipboard-read', 'clipboard-write'], // nút Sao chép tin nhắn
   });
   if (login) {
     const page = await context.newPage();
@@ -136,7 +150,7 @@ async function main() {
         await drawMarks(page, items);
         const dir = join(SHOTS_DIR, design.file);
         mkdirSync(dir, { recursive: true });
-        await page.screenshot({ path: join(dir, shot.id + '.png'), fullPage: shot.fullPage ?? true });
+        await page.screenshot({ path: join(dir, shot.id + '.png'), fullPage: shot.fullPage ?? true, clip: await clipOf(page, shot.clip) });
         console.log(`  ✓ ${design.file} / ${shot.id} (${items.length} mục)`);
       } finally {
         await page.close();

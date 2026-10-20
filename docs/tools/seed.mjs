@@ -202,6 +202,11 @@ export async function seed({ photo }) {
     actualCheckInAt: ldt(addHours(H, -6)), actualCheckOutAt: ldt(addHours(H, -3)), manualSurchargeIds: [sc.birthday], paymentMethod: 'TRANSFER',
   });
 
+  // Phòng 301 (giá riêng hạng Gia đình, không phòng nào cùng giá): đang ở + đơn kế tiếp → gia hạn không chuyển phòng được
+  await create('staying301', base('301', addHours(H, -1), 'STAFF', guest('Đinh Quốc Bảo', '0977 456 123'), { guestCount: 3 }));
+  await api.post(`/orders/${order.staying301}/check-in`);
+  await create('next301', base('301', addHours(H, 3), 'STAFF', guest('Mạc Thu Trang', '0965 321 654'), { guestCount: 4 }));
+
   // Sắp tới: đơn khách tự check-in trong 2 giờ tới (do nhân viên tạo), đơn kế tiếp phòng 101, đơn ngày mai
   const staff = new Api();
   await staff.login('nv_ha', pw.ha);

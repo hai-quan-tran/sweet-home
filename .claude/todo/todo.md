@@ -45,3 +45,10 @@
 - [x] Lên kế hoạch tài liệu: xem `docs-plan.md`
 - [ ] GĐ 11: detail design (Excel, mỗi màn/dialog 1 file) — 11.1 công cụ + Tổng thể, 11.2–11.5 các màn
 - [ ] GĐ 12: hướng dẫn sử dụng (Word + PDF) — 12.1 công việc hằng ngày, 12.2 phần Quản lý & hỏi đáp
+
+## Lỗi phát hiện khi làm tài liệu GĐ 11 (chờ người dùng quyết định sửa)
+- [ ] Gia hạn chuyển phòng: danh sách phòng chuyển được (`OrderExtensionService.moveOptions`) chỉ xét trùng khung giờ hẹn
+  của chặng → phòng còn khách Quá giờ / Chờ xác nhận trả (chặng đã hết giờ hẹn nhưng chưa trả) vẫn hiện "đã dọn · trống".
+- [ ] Màn Đơn thuê: số trên tab "Tất cả" lấy `total` của tab đang chọn (đang ở tab Đã đặt thì "Tất cả" = số đơn Đã đặt).
+- [ ] Chi tiết đơn, form Trả phòng ở 1440px: ô "Giờ trả thực tế" (datetime-local) tràn ra ngoài khung chi tiết.
+- [ ] Màn Tạo/Sửa đơn: thiếu Họ tên / SĐT bấm Lưu không báo gì (ô không tô đỏ, không có thông báo).

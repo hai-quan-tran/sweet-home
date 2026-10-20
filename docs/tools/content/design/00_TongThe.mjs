@@ -365,7 +365,7 @@ const API = [
   ['POST', '/shifts/copy-week', 'Chỉ Quản lý', 'Sao chép ca tuần trước sang tuần bắt đầu weekStart (thứ Hai)', '16'],
   ['GET', '/settings/homestay', 'Mọi vai trò', 'Thông tin homestay', '07, 17'],
   ['PUT', '/settings/homestay', 'Chỉ Quản lý', 'Sửa thông tin homestay', '17'],
-  ['GET', '/message-templates', 'Mọi vai trò', 'Danh sách mẫu tin nhắn', '07, 08, 17'],
+  ['GET', '/message-templates', 'Mọi vai trò', 'Danh sách mẫu tin nhắn', '07, 17'],
   ['POST', '/message-templates', 'Chỉ Quản lý', 'Thêm mẫu', '17'],
   ['PUT', '/message-templates/{id}', 'Chỉ Quản lý', 'Sửa mẫu', '17'],
   ['DELETE', '/message-templates/{id}', 'Chỉ Quản lý', 'Xoá mẫu', '17'],
