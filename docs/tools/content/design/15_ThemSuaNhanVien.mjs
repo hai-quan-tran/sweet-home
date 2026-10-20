@@ -1,5 +1,5 @@
 // Nội dung file 15_ThemSuaNhanVien.xlsx: màn Thêm / Sửa nhân viên.
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const SIDE = 'aside.card';
 
@@ -16,7 +16,7 @@ export default {
     'frontend/src/app/pages/staff/staff-form-page.{ts,html,scss}, staff-permissions.ts',
     'backend/.../staff/AccountController.java (POST /accounts, PUT /accounts/{id}), AccountManagementService, AccountUpsertRequest; auth/PasswordPolicy',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Ô lỗi viền đỏ + hộp lỗi "Vui lòng nhập đủ các ô bắt buộc" khi lưu; giới hạn độ dài ô chữ (CCCD tối đa 20 ký tự).'),
   shots: [
     {
       id: 'add',
@@ -34,7 +34,7 @@ export default {
     {
       id: 'invalid',
       caption: 'Tên đăng nhập, mật khẩu sai quy tắc',
-      note: 'Bấm Tạo tài khoản khi form chưa hợp lệ: dòng gợi ý dưới ô chuyển màu đỏ, không gửi.',
+      note: 'Bấm Tạo tài khoản khi form chưa hợp lệ: ô lỗi viền đỏ, dòng gợi ý dưới ô chuyển màu đỏ, đầu form hiện hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)." (ngoài vùng ảnh), không gửi.',
       clip: '.card:has(h2:has-text("Tài khoản đăng nhập"))',
       go: async (page, ctx) => {
         await ctx.open(page, '/nhan-vien/them');
@@ -64,11 +64,11 @@ export default {
   ],
   items: [
     { sel: '.ph', label: 'Đường dẫn + tiêu đề', kind: 'Chữ', code: 'isEdit()', note: '"Nhân viên › Thêm nhân viên / Sửa nhân viên".' },
-    { sel: '#fn', label: 'Họ tên', kind: 'Ô nhập chữ', code: 'form.controls.fullName', dataType: 'string', required: 'Có', rule: 'Tối đa 100 ký tự (backend); bỏ khoảng trắng đầu cuối.' },
-    { sel: '#ph', label: 'Số điện thoại', kind: 'Ô nhập (tel)', code: 'form.controls.phone', dataType: 'string', required: 'Có', rule: 'Tối đa 20 ký tự (backend).' },
+    { sel: '#fn', label: 'Họ tên', kind: 'Ô nhập chữ', code: 'form.controls.fullName', dataType: 'string', required: 'Có', rule: 'Tối đa 100 ký tự (frontend maxlength + backend); bỏ khoảng trắng đầu cuối.' },
+    { sel: '#ph', label: 'Số điện thoại', kind: 'Ô nhập (tel)', code: 'form.controls.phone', dataType: 'string', required: 'Có', rule: 'Tối đa 20 ký tự (frontend maxlength + backend).' },
     {
       sel: '.field:has(#cc)', label: 'CCCD', kind: 'Ô nhập + gợi ý', code: 'form.controls.idNumber', dataType: 'string', required: 'Không',
-      rule: 'Chỉ chữ số và khoảng trắng (frontend + backend "Chỉ gồm chữ số"). Bỏ khoảng trắng rồi mã hoá AES; chỉ hiện 4 số cuối.',
+      rule: 'Chỉ chữ số và khoảng trắng (frontend + backend "Chỉ gồm chữ số"), tối đa 20 ký tự. Bỏ khoảng trắng rồi mã hoá AES; chỉ hiện 4 số cuối.',
       default: 'Placeholder "12 số"', note: 'Sửa: placeholder "•••• 1234", để trống = giữ số đã lưu.',
     },
     { sel: '#sd', label: 'Ngày bắt đầu làm', kind: 'Ô ngày', code: 'form.controls.startDate', dataType: 'date', required: 'Không', note: 'Lịch làm không xếp ca trước ngày này.' },
@@ -127,7 +127,7 @@ export default {
     { h: '2. Lưu' },
     {
       list: [
-        'Form không hợp lệ: đánh dấu đã chạm (gợi ý tên đăng nhập / mật khẩu chuyển đỏ), không gửi.',
+        'Form không hợp lệ: đánh dấu đã chạm (ô lỗi viền đỏ, gợi ý tên đăng nhập / mật khẩu chuyển đỏ), hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", con trỏ tới ô lỗi đầu tiên, không gửi.',
         'Thêm: POST /api/accounts — tên đăng nhập trùng → 409; kiểm tra quy tắc mật khẩu; lưu hash BCrypt, mustChangePassword theo ô chọn. Nhật ký ACCOUNT_CREATED "Thêm tài khoản {họ tên} ({tên đăng nhập}), vai trò {…}".',
         'Sửa: PUT /api/accounts/{id} (bỏ qua username) — sửa chính mình mà đổi vai trò khác Quản lý hoặc khoá → 400. Có mật khẩu mới: đặt hash mới, mustChangePassword theo ô chọn, xoá đếm sai / khoá tạm đăng nhập. Có mật khẩu mới hoặc khoá tài khoản → thu hồi mọi refresh token (đăng xuất mọi thiết bị).',
         'Nhật ký ACCOUNT_UPDATED "Sửa tài khoản {họ tên} ({tên đăng nhập})[: mở khoá | khoá tài khoản, đổi vai trò sang …, đặt lại mật khẩu]".',
@@ -143,6 +143,7 @@ export default {
           ['Mật khẩu sai quy tắc', 400, 'Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số'],
           ['Tự khoá / tự đổi vai trò', 400, 'Không thể tự khoá hoặc tự đổi vai trò của chính mình'],
           ['Tên đăng nhập sai định dạng, CCCD có chữ, quá dài (gọi thẳng API)', 400, 'Dữ liệu không hợp lệ (errors: "3–50 ký tự: chữ không dấu, số, dấu chấm, gạch", "Chỉ gồm chữ số", "Tối đa 100 ký tự"…)'],
+          ['Thiếu ô bắt buộc / sai quy tắc', 'frontend', 'Vui lòng nhập đủ các ô bắt buộc (viền đỏ).'],
           ['Tài khoản không tồn tại', 404, 'Không tìm thấy tài khoản'],
           ['Lỗi khác', '—', 'Không lưu được tài khoản, thử lại sau.'],
         ],

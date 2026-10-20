@@ -1,5 +1,5 @@
 // Nội dung file 10_Phong.xlsx: màn Phòng & bảng giá (tab Phòng, Bảng giá, Phụ thu).
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const CARD = '.rc:has-text("201 · ")';
 
@@ -30,7 +30,7 @@ export default {
     'frontend/src/app/core/room.service.ts, surcharge.service.ts',
     'backend/.../room/RoomController.java, PricingController.java (GET /room-types/overview), surcharge/SurchargeController.java',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Thẻ phòng: nhãn giá "{N} giờ đầu" đổi theo số giờ tối thiểu (trước đây cố định "2 giờ đầu").'),
   shots: [
     { id: 'rooms', caption: 'Tab Phòng (Quản lý)', go: open() },
     { id: 'pricing', caption: 'Tab Bảng giá', fullPage: false, go: open('Bảng giá') },
@@ -52,7 +52,7 @@ export default {
     { sel: `${CARD} .mode`, label: 'Hình thức check-in mặc định', kind: 'Chữ + icon', code: 'checkInLabel(room)', note: '"Mặc định: khách tự check-in" (icon chìa khoá) / "Mặc định: nhân viên check-in" (icon người).' },
     {
       sel: `${CARD} .prices`, label: 'Giá áp dụng', kind: 'Chữ (tiền)', code: 'effectiveTwoHourPrice, effectiveExtraHourPrice, effectiveOvernightPrice, effectiveDailyPrice',
-      dataType: 'tiền', note: 'Giá thật áp dụng (theo hạng hoặc giá riêng của phòng): "2 giờ đầu" + "+{giá}/giờ", "Qua đêm", "Theo ngày". Nhãn "2 giờ đầu" cố định, không đổi theo số giờ tối thiểu.',
+      dataType: 'tiền', note: 'Giá thật áp dụng (theo hạng hoặc giá riêng của phòng): "{số giờ tối thiểu} giờ đầu" + "+{giá}/giờ", "Qua đêm", "Theo ngày". Nhãn giờ đầu đổi theo số giờ tối thiểu của bảng giá (minHours()).',
     },
     {
       sel: `${CARD} .rc-f .btn-t:has-text("Đã dọn")`, label: 'Đã dọn', kind: 'Nút chữ', code: 'markCleaned(room)',

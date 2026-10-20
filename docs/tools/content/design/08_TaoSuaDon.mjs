@@ -1,5 +1,5 @@
 // Nội dung file 08_TaoSuaDon.xlsx: màn Tạo đơn / Sửa đơn thuê.
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 import { addDays, ymd } from '../../lib/time.mjs';
 
 /**
@@ -44,7 +44,7 @@ export default {
     'frontend/src/app/core/order.service.ts (preview, create, update), room.service.ts',
     'backend/.../order/OrderController.java (POST /orders/preview, POST /orders, PUT /orders/{id}), OrderService (preview, create, update, fill, computeSchedule), OrderUpsertRequest',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Phòng còn khách Quá giờ / Chờ xác nhận trả coi là bận tới bây giờ + 1 tiếng (ảnh 3); ô bắt buộc thiếu tô đỏ + hộp lỗi khi lưu (ảnh 6); giới hạn độ dài ô chữ.'),
   shots: [
     {
       id: 'create',
@@ -66,6 +66,15 @@ export default {
       },
     },
     {
+      id: 'occupied',
+      caption: 'Phòng còn khách quá giờ chưa trả',
+      note: 'Phòng 102 có đơn Quá giờ: giờ hẹn trả đã qua nhưng phòng vẫn bận tới bây giờ + 1 tiếng.',
+      fullPage: false,
+      go: async (page, ctx) => {
+        await openCreate(page, ctx, `?roomId=${ctx.room['102']}&date=${ymd(ctx.now)}&time=${String(ctx.now.getHours()).padStart(2, '0')}:00`);
+      },
+    },
+    {
       id: 'daily',
       caption: 'Thuê theo ngày, vượt số khách tối đa',
       go: async (page, ctx) => {
@@ -84,6 +93,15 @@ export default {
         await openCreate(page, ctx, `?roomId=${ctx.room['104']}`);
         await fillGuest(page);
         await settle(page);
+        await page.click('.sum-a .btn-p');
+        await page.locator('.ph + .err').waitFor();
+      },
+    },
+    {
+      id: 'missingGuest',
+      caption: 'Lưu đơn khi chưa nhập họ tên, số điện thoại',
+      go: async (page, ctx) => {
+        await openCreate(page, ctx, `?roomId=${ctx.room['104']}`);
         await page.click('.sum-a .btn-p');
         await page.locator('.ph + .err').waitFor();
       },
@@ -134,7 +152,7 @@ export default {
     },
     {
       sel: '.avail', label: 'Tình trạng phòng', kind: 'Thông báo', code: 'preview().available · conflictMessage',
-      note: 'Xanh "Phòng trống trong khung giờ này." / đỏ "Phòng đã có đơn {mã} trong khung giờ này" (ảnh 2).',
+      note: 'Xanh "Phòng trống trong khung giờ này." / đỏ "Phòng đã có đơn {mã} trong khung giờ này" (ảnh 2) hoặc "Phòng còn khách đơn {mã} chưa trả phòng" (ảnh 3).',
     },
     {
       sel: 'fieldset.types.two', label: 'Nhận & trả phòng', kind: 'Nhóm nút chọn (radio)', code: 'form.controls.checkInMode', dataType: 'SELF | STAFF',
@@ -142,14 +160,14 @@ export default {
     },
     {
       sel: '.field:has(#code) .iw', label: 'Mã cửa cho đơn này', kind: 'Ô nhập mật khẩu + nút mắt', code: 'form.controls.doorCode · showDoorCode', dataType: 'string',
-      required: 'Có (khách tự check-in)', rule: 'Lưu mã hoá AES. Sửa đơn: để trống = giữ mã cũ (placeholder "Để trống để giữ mã cũ").', default: '(trống)',
+      required: 'Có (khách tự check-in)', rule: 'Tối đa 20 ký tự. Lưu mã hoá AES. Sửa đơn: để trống = giữ mã cũ (placeholder "Để trống để giữ mã cũ").', default: '(trống)',
       note: 'Chỉ hiện khi Khách tự check-in. Nút mắt hiện/ẩn mã đang gõ.',
     },
-    { sel: '#phone', label: 'Số điện thoại', kind: 'Ô nhập (tel)', code: 'form.controls.guestPhone', dataType: 'string', required: 'Có', rule: 'Không để trống (backend tối đa 20 ký tự theo cột DB).' },
-    { sel: '#name', label: 'Họ tên', kind: 'Ô nhập chữ', code: 'form.controls.guestName', dataType: 'string', required: 'Có', rule: 'Không để trống.' },
+    { sel: '#phone', label: 'Số điện thoại', kind: 'Ô nhập (tel)', code: 'form.controls.guestPhone', dataType: 'string', required: 'Có', rule: 'Không để trống. Tối đa 20 ký tự.' },
+    { sel: '#name', label: 'Họ tên', kind: 'Ô nhập chữ', code: 'form.controls.guestName', dataType: 'string', required: 'Có', rule: 'Không để trống. Tối đa 100 ký tự.' },
     {
       sel: '#idn', label: 'CCCD / Hộ chiếu', kind: 'Ô nhập', code: 'form.controls.guestIdNumber', dataType: 'string', required: 'Không',
-      rule: 'Bỏ khoảng trắng rồi mã hoá AES; lưu thêm 4 ký tự cuối để hiển thị che. Sửa đơn: để trống = giữ.', default: '(trống)',
+      rule: 'Tối đa 20 ký tự. Bỏ khoảng trắng rồi mã hoá AES; lưu thêm 4 ký tự cuối để hiển thị che. Sửa đơn: để trống = giữ.', default: '(trống)',
     },
     {
       sel: '.field:has(#g) .stepper', label: 'Số khách', kind: 'Ô số + nút −/+', code: 'form.controls.guestCount · stepGuestCount()', dataType: 'số nguyên',
@@ -184,11 +202,23 @@ export default {
     },
     { sel: '.sum-a .btn-t', label: 'Huỷ', kind: 'Link', code: 'routerLink="/don-thue"', note: 'Không lưu, về Đơn thuê (sửa đơn: mở lại đơn đó).' },
     { shot: 'conflict', sel: '.avail.bad', label: 'Báo trùng lịch', kind: 'Thông báo (đỏ)', code: 'preview().conflictMessage', note: '"Phòng đã có đơn SH-xxxx trong khung giờ này" — kiểm tra theo chặng của các đơn chưa huỷ ở phòng đó.' },
+    {
+      shot: 'occupied', sel: '.avail.bad', label: 'Báo phòng còn khách', kind: 'Thông báo (đỏ)', code: 'preview().conflictMessage',
+      note: '"Phòng còn khách đơn SH-xxxx chưa trả phòng": chặng hiện tại của đơn Quá giờ / Chờ xác nhận trả coi là kéo dài tới bây giờ + 1 tiếng. Đặt giờ nhận sau mốc đó thì vẫn trống.',
+    },
     { shot: 'daily', sel: '.field:has(#days) .stepper', label: 'Số ngày thuê', kind: 'Ô số + nút −/+', code: 'form.controls.quantity', dataType: 'số nguyên', required: 'Có', rule: '≥ 1.', default: '1', note: 'Chỉ khi Theo ngày.' },
     { shot: 'daily', sel: '.sum-b .li:has-text("Vượt")', label: 'Phụ thu vượt số khách', kind: 'Dòng tiền', code: "surcharges[] (EXTRA_GUEST)", note: 'Số khách 6 > tối đa 4 của phòng → 2 khách × mức phụ thu.' },
     {
       shot: 'missingCode', sel: '.ph + .err', label: 'Hộp báo lỗi', kind: 'Thông báo lỗi', code: 'errorMessage',
       note: 'Lỗi frontend ("Phải nhập mã cửa khi khách tự check-in.") hoặc detail lỗi từ server khi lưu (xem sheet 4).',
+    },
+    {
+      shot: 'missingGuest', sel: '.ph + .err', label: 'Hộp lỗi ô bắt buộc', kind: 'Thông báo lỗi', code: 'rejectInvalid() (core/form-errors.ts)',
+      note: '"Vui lòng nhập đủ các ô bắt buộc (viền đỏ)." Không gửi request.',
+    },
+    {
+      shot: 'missingGuest', sel: '#name', label: 'Ô bắt buộc chưa nhập', kind: 'Ô nhập (viền đỏ)', code: '.inp.ng-invalid.ng-touched (styles.scss)',
+      note: 'Ô bắt buộc trống / không hợp lệ đã chạm (hoặc đã bấm Lưu) có viền đỏ (ở ảnh: Số điện thoại, Họ tên, Tiền cọc); bấm Lưu thì con trỏ nhảy tới ô lỗi đầu tiên.',
     },
     { shot: 'edit', sel: '.ph h1', label: 'Tiêu đề Sửa đơn', kind: 'Chữ', code: "'Sửa đơn ' + editing().code", note: 'Đơn không còn Đã đặt: hộp lỗi "Chỉ sửa được đơn ở trạng thái Đã đặt." (vẫn mở form, lưu sẽ bị từ chối).' },
     { shot: 'edit', sel: '#idn', label: 'CCCD khi sửa', kind: 'Ô nhập', code: 'placeholder', note: 'Placeholder "•••••••• 1234 (để trống để giữ)".' },
@@ -221,7 +251,7 @@ export default {
       table: {
         cols: [{ h: 'Loại thuê', w: 4 }, { h: 'Giờ nhận → trả', w: 13 }, { h: 'Tiền phòng', w: 15 }],
         rows: [
-          ['Theo giờ', 'Ngày + giờ nhận → + số giờ (≥ số giờ tối thiểu)', 'Giá 2 giờ đầu + (số giờ − số giờ tối thiểu) × giá mỗi giờ thêm'],
+          ['Theo giờ', 'Ngày + giờ nhận → + số giờ (≥ số giờ tối thiểu)', 'Giá "{số giờ tối thiểu} giờ đầu" + (số giờ − số giờ tối thiểu) × giá mỗi giờ thêm'],
           ['Qua đêm', 'Ngày nhận, giờ nhận qua đêm → hôm sau, giờ trả qua đêm (luôn 1 đêm)', 'Giá qua đêm'],
           ['Theo ngày', 'Ngày nhận, giờ nhận theo ngày → + số ngày, giờ trả theo ngày', 'Giá ngày × số ngày'],
         ],
@@ -233,7 +263,7 @@ export default {
     { h: '3. Lưu' },
     {
       list: [
-        'Frontend chặn: form thiếu ô bắt buộc (không tô đỏ ô, chỉ không gửi), lỗi tiền cọc, khách tự check-in mà chưa có mã cửa (tạo mới, hoặc sửa đơn chưa có mã) → hộp lỗi.',
+        'Frontend chặn: form thiếu ô bắt buộc → tô đỏ ô, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)."; lỗi tiền cọc (dưới ô); khách tự check-in mà chưa có mã cửa (tạo mới, hoặc sửa đơn chưa có mã) → hộp lỗi.',
         'Tạo: POST /api/orders; Sửa: PUT /api/orders/{id}. Thành công → /don-thue?id={id} (Lưu & sao chép: thêm action=copy).',
         'Backend tạo: phòng phải đang nhận đặt; tính lại như xem trước; trùng lịch → 409; cọc > tổng → 400; mã hoá CCCD, mã cửa; tạo 1 chặng; trạng thái Đã đặt. Nhật ký ORDER_CREATED "Tạo đơn".',
         'Backend sửa: chỉ đơn Đã đặt; Nhân viên đổi cọc / hình thức cọc → 403; đổi sang phòng khác đang tắt nhận đặt → 400; tính lại theo bảng giá hiện hành, bỏ qua chính đơn khi kiểm tra trùng; tổng mới < đã thu → 400. Nhật ký ORDER_UPDATED "Sửa đơn".',
@@ -246,6 +276,9 @@ export default {
         rows: [
           ['Khách tự check-in, chưa nhập mã cửa', '400 / frontend', 'Phải nhập mã cửa khi khách tự check-in'],
           ['Trùng lịch', 409, 'Phòng đã có đơn {mã} trong khung giờ này'],
+          ['Giờ nhận trước bây giờ + 1 tiếng, phòng còn khách Quá giờ / Chờ xác nhận trả', 409, 'Phòng còn khách đơn {mã} chưa trả phòng'],
+          ['Thiếu ô bắt buộc', 'frontend', 'Vui lòng nhập đủ các ô bắt buộc (viền đỏ).'],
+          ['Ô chữ quá dài (gọi thẳng API)', 400, 'Dữ liệu không hợp lệ — errors.{trường}: "Tối đa N ký tự"'],
           ['Tiền cọc vượt tổng', '400 / dưới ô', 'Tiền cọc không được vượt tổng tiền'],
           ['Tiền cọc ≤ 0', '400 / dưới ô', 'Phải lớn hơn 0 / Bắt buộc nhập tiền cọc lớn hơn 0'],
           ['Theo giờ thiếu giờ nhận', 400, 'Phải nhập giờ nhận phòng cho đơn theo giờ'],

@@ -1,5 +1,5 @@
 // Nội dung file 11_ThemSuaPhong.xlsx: màn Thêm / Sửa phòng.
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const PRICE_CARD = '.card:has(h2:has-text("Giá thuê"))';
 const MODE_CARD = '.card:has(h2:has-text("Nhận"))';
@@ -27,7 +27,7 @@ export default {
     'frontend/src/app/core/room.service.ts',
     'backend/.../room/RoomController.java (POST/PUT /rooms, POST/DELETE /rooms/{id}/photos), RoomService, RoomPhotoStorageService, RoomUpsertRequest',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Nhãn giá "{N} giờ đầu" theo số giờ tối thiểu; ô bắt buộc thiếu tô đỏ + hộp lỗi khi lưu; giới hạn độ dài ô chữ (frontend + backend 400 thay vì 500).'),
   shots: [
     {
       id: 'add',
@@ -98,7 +98,7 @@ export default {
       sel: `${PRICE_CARD} fieldset`, label: 'Cách tính giá', kind: 'Nhóm nút chọn (radio)', code: 'form.controls.pricingMode', dataType: 'ROOM_TYPE | OWN', required: 'Có',
       default: 'Theo bảng giá hạng', note: '"Theo bảng giá hạng {tên}" — đổi giá hạng thì phòng đổi theo; "Giá riêng cho phòng này" — tự nhập 4 mức (ảnh 3).',
     },
-    { sel: `${PRICE_CARD} .prices4`, label: 'Giá của hạng đang chọn', kind: 'Chữ (tiền)', code: 'selectedRoomType()', note: 'Chỉ đọc: 2 giờ đầu, Mỗi giờ thêm, Qua đêm, Theo ngày của hạng.' },
+    { sel: `${PRICE_CARD} .prices4`, label: 'Giá của hạng đang chọn', kind: 'Chữ (tiền)', code: 'selectedRoomType()', note: 'Chỉ đọc: "{số giờ tối thiểu} giờ đầu", Mỗi giờ thêm, Qua đêm, Theo ngày của hạng (nhãn giờ đầu lấy minHours từ GET /room-types/overview, cả ở ô Giá riêng).' },
     {
       sel: `${MODE_CARD} fieldset`, label: 'Hình thức mặc định cho đơn của phòng này', kind: 'Nhóm nút chọn (radio)', code: 'form.controls.defaultCheckInMode',
       dataType: 'SELF | STAFF', required: 'Có', default: 'Khách tự check-in / check-out', note: 'Là giá trị chọn sẵn khi tạo đơn cho phòng (sửa được từng đơn).',
@@ -132,7 +132,7 @@ export default {
     { h: '2. Lưu phòng' },
     {
       list: [
-        'Frontend: form thiếu ô bắt buộc (Số phòng, Tên, Hạng, Số khách ≥ 1) → không gửi (không tô đỏ ô). Giá riêng thiếu mức nào → hộp lỗi.',
+        'Frontend: form thiếu ô bắt buộc (Số phòng, Tên, Hạng, Số khách ≥ 1) → tô đỏ ô, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", không gửi. Giá riêng thiếu mức nào → hộp lỗi. Ô chữ giới hạn số ký tự theo cột DB (maxlength).',
         'Thêm: POST /api/rooms; thành công thì nếu có ảnh chờ → POST /api/rooms/{id}/photos (multipart "files"), rồi về /phong.',
         'Sửa: PUT /api/rooms/{id} → về /phong. Ảnh thêm/xoá đã lưu ngay khi thao tác.',
         'Backend: số phòng trùng → 409; hạng không tồn tại → 404, hạng đã ẩn → 400; giá riêng thiếu mức → 400. Giá theo hạng thì các cột own_* vẫn lưu nhưng không dùng.',
@@ -151,10 +151,11 @@ export default {
           ['Hạng phòng không tồn tại', 404, 'Hạng phòng không tồn tại'],
           ['File không phải JPG/PNG/WebP', 400, 'Chỉ nhận file ảnh JPG, PNG hoặc WebP'],
           ['Nhân viên gọi API', 403, 'Không có quyền thực hiện'],
+          ['Thiếu ô bắt buộc', 'frontend', 'Vui lòng nhập đủ các ô bắt buộc (viền đỏ).'],
+          ['Ô chữ quá dài (gọi thẳng API)', 400, 'Dữ liệu không hợp lệ — errors.{trường}: "Tối đa N ký tự"'],
           ['Lỗi khác', '—', 'Không lưu được phòng, thử lại sau.'],
         ],
       },
     },
-    { note: 'Lưu ý: frontend không giới hạn độ dài các ô chữ; nhập quá độ dài cột DB sẽ lỗi hệ thống (500).' },
   ],
 };

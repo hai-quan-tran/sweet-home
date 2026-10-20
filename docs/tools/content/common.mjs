@@ -6,6 +6,13 @@ export const AUTHOR = 'hai-quan';
 /** Lịch sử cập nhật ban đầu của mọi file. */
 export const FIRST_VERSION = [{ version: '1.0', date: '2026-10-20', author: AUTHOR, content: 'Tạo mới.' }];
 
+/**
+ * Lịch sử của file có cập nhật ở GĐ 13 (sửa lỗi phát hiện khi làm tài liệu): bản 1.0 + dòng 1.1.
+ *
+ * @param {string} content nội dung thay đổi của bản 1.1
+ */
+export const fixVersion = (content) => [...FIRST_VERSION, { version: '1.1', date: '2026-10-20', author: AUTHOR, content }];
+
 /** Nhãn vai trò. */
 export const ROLES = {
   all: 'Quản lý, Nhân viên',

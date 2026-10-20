@@ -1,5 +1,5 @@
 // Nội dung file 06_DonThue.xlsx: màn Đơn thuê (danh sách, lọc, tìm kiếm).
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 /** Mở màn Đơn thuê, chờ bảng có dữ liệu. */
 const open = async (page, ctx, query = '') => {
@@ -25,7 +25,7 @@ export default {
     'frontend/src/app/core/order.service.ts (list), order-labels.ts',
     'backend/.../order/OrderController.java (GET /orders), OrderService.list, RentalOrderRepository.search / countByStatus',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Số trên tab "Tất cả" luôn là tổng đơn mọi trạng thái (trước đây lấy total của tab đang chọn).'),
   shots: [
     { id: 'list', caption: 'Danh sách đơn (tab Tất cả)', go: (page, ctx) => open(page, ctx) },
     {
@@ -54,7 +54,7 @@ export default {
     {
       sel: '.tabs', label: 'Tab trạng thái + số đếm', kind: 'Nhóm tab', code: 'STATUS_TABS · statusFilter · setStatus()',
       dataType: 'OrderStatus | null', default: 'Tất cả',
-      note: 'Tất cả · Đã đặt · Đang ở · Quá giờ · Chờ xác nhận · Đã trả · Đã huỷ. Số đếm theo bộ lọc phòng + ô tìm kiếm hiện tại (không theo tab); riêng tab Tất cả hiện tổng kết quả của tab đang chọn (sheet 4). Đổi tab về trang 1.',
+      note: 'Tất cả · Đã đặt · Đang ở · Quá giờ · Chờ xác nhận · Đã trả · Đã huỷ. Số đếm theo bộ lọc phòng + ô tìm kiếm hiện tại (không theo tab); tab Tất cả = tổng số của mọi trạng thái (sheet 4). Đổi tab về trang 1.',
     },
     {
       sel: '.search', label: 'Ô tìm kiếm', kind: 'Ô nhập (search)', code: 'search · onSearch()', dataType: 'string', required: 'Không',
@@ -122,7 +122,7 @@ export default {
       },
     },
     {
-      p: 'Kết quả: items (OrderDto, sắp giờ nhận giảm dần), total (tổng số đơn khớp bộ lọc + tab), countByStatus (số đơn theo từng trạng thái, áp bộ lọc phòng + tìm kiếm, không áp tab). Số trên các tab trạng thái lấy từ countByStatus; số trên tab "Tất cả" lấy từ total — khi đang ở tab khác, số này bằng số đơn của tab đang chọn chứ không phải tổng mọi trạng thái (hành vi hiện tại, đã báo lại để xem xét sửa).',
+      p: 'Kết quả: items (OrderDto, sắp giờ nhận giảm dần), total (tổng số đơn khớp bộ lọc + tab), countByStatus (số đơn theo từng trạng thái, áp bộ lọc phòng + tìm kiếm, không áp tab). Số trên các tab trạng thái lấy từ countByStatus; số trên tab "Tất cả" = tổng các giá trị countByStatus (allCount), không phụ thuộc tab đang chọn. total chỉ dùng tính số trang.',
     },
     { h: '3. Hành động' },
     {

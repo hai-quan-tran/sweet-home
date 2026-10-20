@@ -1,6 +1,6 @@
 # Kế hoạch sửa lỗi phát hiện khi làm tài liệu GĐ 11 (GĐ 13)
 
-Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hướng dẫn sử dụng) để ảnh hướng dẫn chụp từ app đã sửa.
+Trạng thái: xong (20/10/2026). Làm trước GĐ 12 (hướng dẫn sử dụng) để ảnh hướng dẫn chụp từ app đã sửa.
 
 ## Đã chốt với người dùng
 - Lỗi 1 sửa ở cả gia hạn chuyển phòng lẫn tạo/sửa đơn; đơn Chờ xác nhận trả (khách tự check-in) coi là còn khách.
@@ -37,7 +37,7 @@ Trạng thái: đã duyệt (20/10/2026), đang làm. Làm trước GĐ 12 (hư�
 - Frontend thêm `maxlength` tương ứng cho các ô chữ.
 ### [x] 13.5 Xem trước mẫu tin nhắn ở Cài đặt (frontend + test)
 - Khung "Xem trước" dưới phần chèn biến, cập nhật khi gõ; dùng lại `renderMessageTemplate`.
-### 13.6 Cập nhật tài liệu
+### [x] 13.6 Cập nhật tài liệu
 - `.claude/architecture` (business-rules, project-structure); chạy lại công cụ detail design cho các file bị ảnh hưởng
   (00, 06, 07, 08, 09, 10, 11, 12, 13, 15, 16, 17), thêm dòng lịch sử phiên bản 1.1, bỏ các ghi chú "đã báo lại".
 - Đánh dấu xong các mục ở `todo.md` mục "Lỗi phát hiện khi làm tài liệu GĐ 11".

@@ -1,5 +1,5 @@
 // Nội dung file 07_ChiTietDon.xlsx: chi tiết đơn (component dùng chung ở màn Đơn thuê và Lịch đặt phòng).
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const DETAIL = 'app-order-detail';
 const MONEY = '.sec:has(h3:text-is("Tiền"))';
@@ -34,7 +34,7 @@ export default {
     'frontend/src/app/core/order.service.ts, message-template.ts (ghép tin nhắn), settings.service.ts, room.service.ts',
     'backend/.../order/OrderController.java, OrderService (get, getDoorCode), OrderLifecycleService (checkIn, checkout, cancel), OrderPaymentService',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Form Trả phòng / thu tiền: hai ô trên một hàng tự xuống dòng khi hẹp, ô ngày giờ không còn tràn khung.'),
   shots: [
     { id: 'booked', caption: 'Đơn Đã đặt (khách tự check-in, Quản lý xem)', clip: DETAIL, go: openOrder('upcoming') },
     { id: 'staying', caption: 'Đơn Đang ở có khoản thu thêm', clip: DETAIL, go: openOrder('staying') },
@@ -177,6 +177,7 @@ export default {
     {
       shot: 'checkout', sel: `${CHECKOUT} .pf-row label >> nth=0`, label: 'Giờ nhận thực tế', kind: 'Ô ngày giờ (datetime-local)', code: 'checkoutIn', dataType: 'ngày giờ',
       required: 'Có', default: 'Giờ nhận thực tế đã ghi, chưa có thì giờ hẹn nhận',
+      note: 'Hai ô ngày giờ (và hai ô Số tiền / Hình thức ở form thu tiền) nằm cùng hàng khi khung đủ rộng (mỗi ô ≥ 210px), hẹp thì xuống dòng — không tràn khung chi tiết.',
     },
     {
       shot: 'checkout', sel: `${CHECKOUT} .pf-row label >> nth=1`, label: 'Giờ trả thực tế', kind: 'Ô ngày giờ (datetime-local)', code: 'checkoutOut', dataType: 'ngày giờ',

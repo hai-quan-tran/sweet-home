@@ -525,6 +525,8 @@
   (`seed.mjs`, mốc giờ theo lúc chạy, chờ tác vụ nền chuyển Quá giờ / Chờ xác nhận trả) → chụp ảnh, vẽ khung + số đỏ bằng lớp
   phủ DOM → luôn khôi phục DB từ bản sao lưu (đúng cả AUTO_INCREMENT) và xoá ảnh phòng mẫu. `diagrams.mjs` vẽ Mermaid bằng
   Chromium; `build-design.mjs` sinh Excel (exceljs) trên lưới 32 cột, tự tính chiều cao dòng có xuống dòng.
+- Lịch sử cập nhật mỗi file: `FIRST_VERSION` (1.0) hoặc `fixVersion('…')` (thêm dòng 1.1 — các file sửa ở GĐ 13) trong
+  `content/common.mjs`; sửa tài liệu lần sau thì thêm dòng phiên bản mới tương tự. Chạy lại một phần: `--only=08_,17_`.
 - Danh sách mục của mỗi màn khai báo một lần trong `content/design/NN_*.mjs` → cùng số cho ảnh và bảng. Cấu trúc DB ở file
   Tổng thể đọc thật từ `information_schema` (lúc capture), bảng/cột chưa có mô tả thì build báo lỗi.
 - Kiểm tra bản in: xuất PDF bằng Excel (PowerShell COM `ExportAsFixedFormat`); máy không có poppler nên xem trang PDF bằng

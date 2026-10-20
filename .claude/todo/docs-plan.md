@@ -1,6 +1,6 @@
 # Kế hoạch tài liệu: Detail design + Hướng dẫn sử dụng
 
-Trạng thái: đã chốt với người dùng (16/10/2026). GĐ 11 xong (20/10/2026). Tiếp theo: GĐ 12 (hướng dẫn sử dụng).
+Trạng thái: đã chốt với người dùng (16/10/2026). GĐ 11 xong (20/10/2026); detail design cập nhật bản 1.1 sau GĐ 13 sửa lỗi (xem fix-plan.md). Tiếp theo: GĐ 12 (hướng dẫn sử dụng).
 
 ## Context
 App đã xong GĐ 0–10. Tài liệu hiện có chỉ là ghi chú kỹ thuật ngắn trong `.claude/architecture/` (viết cho người code).

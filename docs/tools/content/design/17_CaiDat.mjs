@@ -1,5 +1,5 @@
 // Nội dung file 17_CaiDat.xlsx: màn Cài đặt (mẫu tin nhắn, thông tin homestay).
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const EDITOR = '.tpl > section.card:nth-of-type(2)';
 
@@ -14,7 +14,7 @@ export default {
   title: 'Cài đặt',
   kind: 'Màn hình (2 tab)',
   route: '/cai-dat',
-  summary: 'Tab Mẫu tin nhắn: danh sách mẫu, thêm/sửa/xoá mẫu, chọn mẫu tự chọn sẵn cho từng hình thức check-in, chèn biến vào nội dung. Tab Thông tin homestay: tên, hotline, địa chỉ, link bản đồ, wifi — dùng cho biến trong tin nhắn. Nhân viên chỉ xem.',
+  summary: 'Tab Mẫu tin nhắn: danh sách mẫu, thêm/sửa/xoá mẫu, chọn mẫu tự chọn sẵn cho từng hình thức check-in, chèn biến vào nội dung, xem trước với đơn mẫu (che mã cửa). Tab Thông tin homestay: tên, hotline, địa chỉ, link bản đồ, wifi — dùng cho biến trong tin nhắn. Nhân viên chỉ xem.',
   access: ['Menu trái → Cài đặt.'],
   roles: `${ROLES.all}. Chỉ Quản lý sửa (Nhân viên: mọi ô bị khoá, không có nút).`,
   related: ['07_ChiTietDon (sao chép tin nhắn, danh sách biến)', '08_TaoSuaDon (Lưu & sao chép tin nhắn)', '00_TongThe (bảng message_template, homestay_info)'],
@@ -23,7 +23,7 @@ export default {
     'frontend/src/app/core/settings.service.ts, message-template.ts',
     'backend/.../settings/MessageTemplateController.java, MessageTemplateService, HomestayController.java, HomestayService',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Thêm khung "Xem trước với đơn mẫu" (che mã cửa); ô thiếu viền đỏ + hộp lỗi khi lưu; giới hạn độ dài ô chữ.'),
   shots: [
     { id: 'templates', caption: 'Tab Mẫu tin nhắn (Quản lý)', go: open },
     {
@@ -60,6 +60,10 @@ export default {
       note: 'Bấm để chèn {biến} vào vị trí con trỏ trong Nội dung. Nút "Mã cửa" tô màu cảnh báo (nhạy cảm): mẫu có mã cửa, mỗi lần sao chép được ghi nhật ký. Danh sách biến: xem sheet 4.',
     },
     {
+      sel: `${EDITOR} .preview`, label: 'Xem trước với đơn mẫu SH-1036', kind: 'Khung chữ (chỉ đọc)', code: 'previewParts() · buildSampleMessageContext()',
+      note: 'Nội dung đang gõ ghép với một đơn mẫu cố định (Phạm Quốc Bảo, phòng 101 · Mộc, qua đêm…) + thông tin homestay đã lưu; cập nhật ngay khi gõ, giữ xuống dòng. {ma_cua} hiện "●●●●●● (hiện khi sao chép)" màu nhạt. Ẩn khi nội dung trống. Không gọi API đơn, không ghi nhật ký; Nhân viên cũng thấy.',
+    },
+    {
       sel: `${EDITOR} .cf`, label: 'Xoá mẫu · Huỷ · Lưu mẫu', kind: 'Nhóm nút', code: 'deleteTemplate() · newTemplate() · saveTemplate()',
       note: 'Chỉ Quản lý. "Xoá mẫu" (khi đang sửa mẫu có sẵn) xoá ngay, không hỏi lại — xoá cứng, đơn không bị ảnh hưởng. "Huỷ" xoá trắng form. Lưu: thêm (POST) hoặc sửa (PUT), xong chọn lại mẫu vừa lưu.',
     },
@@ -87,10 +91,11 @@ export default {
     { h: '2. Mẫu tin nhắn' },
     {
       list: [
-        'Lưu: form thiếu tên / nội dung → không gửi. POST /api/message-templates hoặc PUT /api/message-templates/{id} { name, body, defaultForCheckInMode }.',
+        'Lưu: form thiếu tên / nội dung → ô viền đỏ, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", không gửi. POST /api/message-templates hoặc PUT /api/message-templates/{id} { name, body, defaultForCheckInMode }.',
         'Backend: chọn mặc định cho một hình thức → mẫu khác đang mặc định cho hình thức đó tự về NULL (mỗi hình thức tối đa 1 mẫu).',
         'Xoá: DELETE /api/message-templates/{id} (xoá cứng vì đơn không tham chiếu mẫu — chỉ ghép nội dung lúc sao chép).',
-        'Không ghi nhật ký thao tác (cấu hình). Lỗi: 404 "Mẫu tin nhắn không tồn tại"; 400 "Dữ liệu không hợp lệ" (thiếu tên/nội dung khi gọi thẳng API).',
+        'Không ghi nhật ký thao tác (cấu hình). Lỗi: 404 "Mẫu tin nhắn không tồn tại"; 400 "Dữ liệu không hợp lệ" (thiếu tên/nội dung, tên > 100 hoặc nội dung > 2000 ký tự khi gọi thẳng API — errors.{trường} "Tối đa N ký tự").',
+        'Xem trước (frontend): renderMessageTemplate(nội dung, buildSampleMessageContext(homestay đã lưu, ký tự đánh dấu)) rồi tách theo ký tự đánh dấu của {ma_cua} để chèn chữ che vào giữa — mã cửa thật không bao giờ được lấy ở màn này.',
       ],
     },
     { h: '3. Biến dùng trong nội dung' },
@@ -114,12 +119,9 @@ export default {
     { h: '4. Thông tin homestay' },
     {
       list: [
-        'Lưu: thiếu tên / hotline / địa chỉ → không gửi. PUT /api/settings/homestay { name, hotline, address, mapLink, wifiName, wifiPassword } (ô trống tuỳ chọn gửi null).',
+        'Lưu: thiếu tên / hotline / địa chỉ → ô viền đỏ, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", không gửi. PUT /api/settings/homestay { name, hotline, address, mapLink, wifiName, wifiPassword } (ô trống tuỳ chọn gửi null).',
         'Không ghi nhật ký thao tác. Lỗi khác: "Không lưu được thông tin, thử lại sau."',
       ],
-    },
-    {
-      note: 'Khác thiết kế ban đầu (screens.md, business-rules.md): màn chưa có phần "xem trước" nội dung mẫu (che mã cửa) — đã báo lại để xem xét.',
     },
   ],
 };

@@ -1,5 +1,5 @@
 // Nội dung file 09_GiaHan.xlsx: dialog Gia hạn / Chuyển phòng.
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const DIALOG = '.p-dialog';
 const VIEWPORT = { width: 1440, height: 1200 };
@@ -35,7 +35,7 @@ export default {
     'frontend/src/app/core/order.service.ts (previewExtend, extend)',
     'backend/.../order/OrderController.java (POST /orders/{id}/extend/preview, /extend), OrderExtensionService, ExtendRequest, ExtendPreviewResponse',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Phòng còn khách Quá giờ / Chờ xác nhận trả không còn nằm trong danh sách phòng chuyển được.'),
   shots: [
     {
       id: 'available', caption: 'Gia hạn tại phòng (giữ được phòng)', viewport: VIEWPORT, fullPage: false, clip: DIALOG,
@@ -121,12 +121,12 @@ export default {
           ['Đơn kế tiếp', 'Chặng sớm nhất của đơn khác (chưa huỷ) ở phòng hiện tại, bắt đầu từ giờ trả hiện tại.'],
           ['Giờ trả tối đa', 'Giờ nhận đơn kế tiếp − 1 tiếng; maxExtraHours = số giờ nguyên từ giờ trả hiện tại tới đó.'],
           ['Giữ được phòng (available)', 'Không có đơn kế tiếp, hoặc giờ trả mới ≤ giờ trả tối đa.'],
-          ['Phòng chuyển được', 'Khi không giữ được phòng: phòng khác, đủ 4 mức giá hiện hành bằng phòng đang ở, đang nhận đặt, không Chờ dọn, không có chặng (đơn chưa huỷ) giao [giờ trả hiện tại, giờ trả mới + 1 tiếng); sắp theo số phòng; kèm giờ nhận đơn kế tiếp của phòng đó (freeUntil).'],
+          ['Phòng chuyển được', 'Khi không giữ được phòng: phòng khác, đủ 4 mức giá hiện hành bằng phòng đang ở, đang nhận đặt, không Chờ dọn, không có chặng (đơn chưa huỷ) giao [giờ trả hiện tại, giờ trả mới + 1 tiếng), không còn khách Quá giờ / Chờ xác nhận trả; sắp theo số phòng; kèm giờ nhận đơn kế tiếp của phòng đó (freeUntil).'],
         ],
       },
     },
     {
-      note: 'Lưu ý (hành vi hiện tại): kiểm tra "trống" theo khung giờ hẹn của các chặng. Phòng còn khách Quá giờ / Chờ xác nhận trả (chặng đã hết giờ hẹn nhưng chưa trả phòng) vẫn có thể nằm trong danh sách phòng chuyển được — đã báo lại để xem xét.',
+      note: 'Phòng còn khách chưa trả: chặng hiện tại của đơn Quá giờ / Chờ xác nhận trả (đã hết giờ hẹn nhưng chưa trả phòng) coi là kéo dài tới bây giờ + 1 tiếng, nên phòng đó không nằm trong danh sách phòng chuyển được (RentalOrderRepository.findOverlapping, tham số busyUntil).',
     },
     { h: '3. Xác nhận — POST /api/orders/{id}/extend' },
     {

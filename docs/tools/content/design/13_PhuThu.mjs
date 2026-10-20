@@ -1,5 +1,5 @@
 // Nội dung file 13_PhuThu.xlsx: dialog Thêm / Sửa phụ thu (5 trường hợp "Áp dụng khi").
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const DIALOG = '.p-dialog';
 const VIEWPORT = { width: 1440, height: 1100 };
@@ -37,7 +37,7 @@ export default {
     'frontend/src/app/pages/rooms/surcharge-dialog.{ts,html,scss}',
     'backend/.../surcharge/SurchargeController.java, SurchargeService, SurchargeUpsertRequest, SurchargeCalculator',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Sửa chữ hướng dẫn loại "Thêm tay vào đơn" (chọn khi trả phòng); ô thiếu tô đỏ + hộp lỗi khi lưu; giới hạn độ dài tên.'),
   shots: [
     {
       id: 'add', caption: 'Thêm phụ thu (mặc định "Ngày trong tuần"), lưu khi chưa chọn ngày', viewport: VIEWPORT, fullPage: false, clip: DIALOG,
@@ -106,7 +106,7 @@ export default {
     {
       shot: 'manual', sel: `${DIALOG} .money:has(#s-amount)`, label: 'Mức thu (đ/lần)', kind: 'Ô nhập số + đơn vị', code: 'form.controls.amount', dataType: 'số nguyên (VND)',
       required: 'Có', rule: '> 0.',
-      note: 'Không tự cộng. Thực tế chọn ở form Trả phòng (mục "Thêm phụ thu" — file 07); chữ hướng dẫn trong dialog ghi "Khi tạo hoặc sửa đơn" là chưa khớp (đã báo lại).',
+      note: 'Không tự cộng. Chữ hướng dẫn: "Khi trả phòng, nhân viên đánh dấu phụ thu này ở mục "Thêm phụ thu" để cộng vào." (form Trả phòng — file 07).',
     },
   ],
   logic: [
@@ -137,7 +137,7 @@ export default {
     { h: '3. Lưu, ẩn' },
     {
       list: [
-        'Frontend kiểm tra: tên bắt buộc, khoảng ngày đủ 3 ô (không gửi, không tô đỏ); ≥ 1 ngày (Ngày trong tuần), ≥ 1 khoảng (Khoảng ngày), ≥ 1 hạng → hộp lỗi.',
+        'Frontend kiểm tra: tên bắt buộc, khoảng ngày đủ 3 ô → tô đỏ ô, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ)."; ≥ 1 ngày (Ngày trong tuần), ≥ 1 khoảng (Khoảng ngày), ≥ 1 hạng → hộp lỗi. Tên phụ thu, tên dịp tối đa 100 ký tự (maxlength).',
         'Gửi { name, whenType, amount (null với Quá giờ), graceMinutes (chỉ Quá giờ, mặc định 15), weekdays, dateRanges, roomTypeIds }. Backend xoá các trường không thuộc loại đang chọn.',
         'Backend: mức thu ≤ 0 → 400; hạng đã ẩn → 400; đã có phụ thu Quá giờ / Vượt khách khác đang dùng → 409.',
         'Xoá phụ thu = ẩn (active = 0), không xoá cứng; khôi phục ở tab Phụ thu. Không ghi nhật ký thao tác (cấu hình).',
@@ -156,6 +156,8 @@ export default {
           ['Hạng phòng đã ẩn', 400, 'Hạng phòng đã ẩn, không áp dụng được: {tên}'],
           ['Trùng phụ thu Quá giờ / Vượt khách đang dùng', 409, 'Đã có phụ thu đang hoạt động cho điều kiện này'],
           ['Phụ thu không tồn tại', 404, 'Phụ thu không tồn tại'],
+          ['Thiếu tên / ô khoảng ngày', 'frontend', 'Vui lòng nhập đủ các ô bắt buộc (viền đỏ).'],
+          ['Tên quá 100 ký tự (gọi thẳng API)', 400, 'Dữ liệu không hợp lệ — errors.name / errors["dateRanges[i].name"]: "Tối đa 100 ký tự"'],
           ['Lỗi khác', '—', 'Không lưu được phụ thu, thử lại sau. / Không ẩn được phụ thu, thử lại sau.'],
         ],
       },

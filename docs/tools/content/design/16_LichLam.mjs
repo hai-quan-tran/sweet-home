@@ -1,5 +1,5 @@
 // Nội dung file 16_LichLam.xlsx: màn Lịch làm (xếp ca, ca mẫu, độ phủ ca).
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 /** Mở Lịch làm tuần này, chờ bảng ca. */
 const open = async (page, ctx) => {
@@ -21,7 +21,7 @@ export default {
     'frontend/src/app/core/schedule.service.ts, account.service.ts',
     'backend/.../schedule/ScheduleController.java, ScheduleService (ca, ca mẫu, sao chép tuần, coverage, canSeeDoorCode)',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Form ca / ca mẫu: ô thiếu viền đỏ + hộp lỗi "Vui lòng nhập đủ các ô bắt buộc" khi lưu.'),
   shots: [
     { id: 'week', caption: 'Lịch làm tuần này (Quản lý)', go: open },
     {
@@ -155,6 +155,6 @@ export default {
         ],
       },
     },
-    { note: 'Lỗi hiện trong form đang mở (ca / ca mẫu) hoặc hộp đỏ phía trên bảng. Không ghi nhật ký thao tác (cấu hình), vẫn có created/updated by.' },
+    { note: 'Lỗi hiện trong form đang mở (ca / ca mẫu) hoặc hộp đỏ phía trên bảng. Bấm Lưu khi thiếu ô bắt buộc (giờ bắt đầu / kết thúc, tên ca): ô viền đỏ + "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", không gửi. Không ghi nhật ký thao tác (cấu hình), vẫn có created/updated by.' },
   ],
 };

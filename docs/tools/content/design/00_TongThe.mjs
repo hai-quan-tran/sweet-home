@@ -1,5 +1,5 @@
 // Nội dung file 00_TongThe.xlsx: kiến trúc, ERD, bảng/cột DB, tác vụ nền, bảo mật, trạng thái đơn, danh sách API.
-import { DESIGN_FILES, FIRST_VERSION } from '../common.mjs';
+import { DESIGN_FILES, fixVersion } from '../common.mjs';
 
 const AUDIT = {
   created_at: 'Thời điểm tạo (JPA Auditing tự ghi)',
@@ -393,7 +393,7 @@ export default {
     'Từng bảng DB: cột, kiểu, null, mặc định, khoá, ý nghĩa.',
     'Quy ước API & lỗi, bảo mật, tác vụ nền, trạng thái đơn, nhật ký thao tác, danh sách API.',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Quy tắc phòng còn khách Quá giờ / Chờ xác nhận trả khi kiểm tra trùng lịch; ô chữ giới hạn độ dài theo cột DB (lỗi 400 "Tối đa N ký tự").'),
   extraInfo: [
     { h: 'Danh sách file detail design' },
     { table: { cols: [{ h: 'File', w: 8 }, { h: 'Nội dung', w: 24 }], rows: DESIGN_FILES.map(([f, d]) => [f + '.xlsx', d]) } },
@@ -577,7 +577,7 @@ export default {
           ['app.routes.ts', 'Route tiếng Việt không dấu; guard: authGuard (đăng nhập + bắt đổi mật khẩu), managerGuard (chỉ Quản lý), guestGuard (màn Đăng nhập)'],
           ['layout/', 'Khung ứng dụng (Shell): menu trái, thanh trên, chuông thông báo, nút dark mode, đăng xuất'],
           ['pages/', 'Mỗi màn một thư mục: login, change-password, dashboard, calendar, orders (danh sách, chi tiết, tạo/sửa, gia hạn), rooms (phòng, bảng giá, phụ thu), staff, schedule, settings'],
-          ['core/', 'Service gọi API (*.service.ts), kiểu dữ liệu (*.models.ts), interceptor, guard, hàm thuần dùng chung (định dạng tiền/giờ, nhãn trạng thái, ghép tin nhắn, thông báo)'],
+          ['core/', 'Service gọi API (*.service.ts), kiểu dữ liệu (*.models.ts), interceptor, guard, hàm thuần dùng chung (định dạng tiền/giờ, nhãn trạng thái, ghép tin nhắn, thông báo, chặn lưu form thiếu ô — form-errors.ts)'],
           ['theme/', 'Preset PrimeNG Aura: primary xanh dương, light blue-600 / dark blue-400'],
           ['styles.scss', 'Style dùng chung: nút .btn-p/.btn-s, .card, .tag (.t-*), ô nhập .inp/.sel, biến màu dark mode'],
         ],
@@ -595,7 +595,7 @@ export default {
       list: [
         'Mọi API dưới /api (dev: http://localhost:8090/api; frontend dev chuyển /api qua proxy.conf.json). Dữ liệu JSON; ngày YYYY-MM-DD, giờ HH:mm:ss, ngày giờ YYYY-MM-DDTHH:mm:ss theo giờ Việt Nam.',
         'Tiền là số nguyên VND (long). Phần trăm phụ thu là số nguyên.',
-        'Lỗi trả dạng ProblemDetail (RFC 9457): { status, detail }. Lỗi nhập liệu (400) có thêm "errors": { tên trường: thông báo } — vd "Bắt buộc nhập", "Phải lớn hơn 0".',
+        'Lỗi trả dạng ProblemDetail (RFC 9457): { status, detail }. Lỗi nhập liệu (400) có thêm "errors": { tên trường: thông báo } — vd "Bắt buộc nhập", "Phải lớn hơn 0", "Tối đa N ký tự" (mọi ô chữ có @Size khớp độ dài cột DB; frontend đặt maxlength cùng số).',
         'Mã lỗi: 400 dữ liệu/nghiệp vụ không hợp lệ · 401 chưa đăng nhập/phiên hết hạn ("Chưa đăng nhập hoặc phiên đã hết hạn") · 403 không có quyền ("Không có quyền thực hiện") · 404 không tồn tại · 409 xung đột (trùng lịch, gia hạn đụng đơn sau) · 429 đang bị khoá tạm đăng nhập · 500 lỗi hệ thống (không trả chi tiết).',
         'Frontend hiện "detail" của lỗi cho người dùng; lỗi theo trường hiện dưới ô nhập tương ứng.',
       ],
@@ -643,6 +643,9 @@ export default {
           ['Thu / sửa / xoá tiền', 'Mọi trạng thái trừ Đã trả, Đã huỷ', 'POST|PUT|DELETE /orders/{id}/payments', 'Cập nhật Đã thu / Còn phải thu; tổng đã thu không vượt tổng tiền'],
         ],
       },
+    },
+    {
+      note: 'Kiểm tra trùng lịch (tạo/sửa đơn, xem trước, phòng chuyển khi gia hạn — RentalOrderRepository.findOverlapping): theo chặng của các đơn chưa huỷ; riêng chặng hiện tại của đơn Quá giờ / Chờ xác nhận trả (khách chưa trả phòng) coi là kéo dài tới bây giờ + 1 tiếng → "Phòng còn khách đơn {mã} chưa trả phòng".',
     },
     { h: '5. Nhật ký thao tác (activity_log.action)' },
     {

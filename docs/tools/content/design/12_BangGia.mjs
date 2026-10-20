@@ -1,5 +1,5 @@
 // Nội dung file 12_BangGia.xlsx: dialog Sửa bảng giá.
-import { FIRST_VERSION, ROLES } from '../common.mjs';
+import { ROLES, fixVersion } from '../common.mjs';
 
 const DIALOG = '.p-dialog';
 const VIEWPORT = { width: 1440, height: 1100 };
@@ -25,7 +25,7 @@ export default {
     'frontend/src/app/pages/rooms/pricing-dialog.{ts,html,scss}',
     'backend/.../room/PricingController.java (GET/PUT /room-types/overview), PricingService, PricingOverviewUpdateRequest, RoomTypeUpsertItem, PricingSettingsDto',
   ],
-  history: FIRST_VERSION,
+  history: fixVersion('Tên cột "{N} giờ đầu" đổi ngay theo số giờ tối thiểu đang nhập; ô thiếu tô đỏ + hộp lỗi khi lưu; giới hạn độ dài tên hạng.'),
   shots: [
     { id: 'main', caption: 'Dialog Sửa bảng giá', viewport: VIEWPORT, fullPage: false, clip: DIALOG, go: openDialog },
     {
@@ -50,8 +50,8 @@ export default {
       note: 'Dưới ô: các số phòng đang dùng hạng.',
     },
     {
-      sel: `${DIALOG} .ptbl tbody tr >> nth=0 >> td >> nth=1`, label: '2 giờ đầu', kind: 'Ô nhập số (đ)', code: 'rows[i].twoHourPrice', dataType: 'số nguyên (VND)',
-      required: 'Có', rule: '≥ 0.', note: 'Giá cho số giờ tối thiểu đầu tiên.',
+      sel: `${DIALOG} .ptbl tbody tr >> nth=0 >> td >> nth=1`, label: '{N} giờ đầu', kind: 'Ô nhập số (đ)', code: 'rows[i].twoHourPrice', dataType: 'số nguyên (VND)',
+      required: 'Có', rule: '≥ 0.', note: 'Giá cho số giờ tối thiểu đầu tiên. Tên cột "{N} giờ đầu" đổi ngay khi sửa ô số giờ tối thiểu (minHours()).',
     },
     { sel: `${DIALOG} .ptbl tbody tr >> nth=0 >> td >> nth=2`, label: 'Mỗi giờ thêm', kind: 'Ô nhập số (đ)', code: 'rows[i].extraHourPrice', dataType: 'số nguyên (VND)', required: 'Có', rule: '≥ 0.', note: 'Cũng là mức phụ thu quá giờ và phí gia hạn theo giờ.' },
     { sel: `${DIALOG} .ptbl tbody tr >> nth=0 >> td >> nth=3`, label: 'Qua đêm', kind: 'Ô nhập số (đ)', code: 'rows[i].overnightPrice', dataType: 'số nguyên (VND)', required: 'Có', rule: '≥ 0.' },
@@ -66,7 +66,7 @@ export default {
       sel: `${DIALOG} .hidden-list`, label: 'Hạng phòng đã ẩn · Khôi phục', kind: 'Danh sách + nút chữ', code: 'hiddenTypes · restoreType(t)',
       note: 'Chỉ hiện khi có hạng đã ẩn. Khôi phục: đưa hạng về bảng phía trên (lưu mới áp dụng).',
     },
-    { sel: `${DIALOG} #minh`, label: 'Theo giờ: số giờ tối thiểu', kind: 'Ô nhập số', code: 'settingsForm.minHours', dataType: 'số nguyên', required: 'Có', rule: '≥ 1.', note: 'Đơn theo giờ phải thuê ≥ số giờ này; tên cột "2 giờ đầu" ở tab Bảng giá đổi theo số này.' },
+    { sel: `${DIALOG} #minh`, label: 'Theo giờ: số giờ tối thiểu', kind: 'Ô nhập số', code: 'settingsForm.minHours', dataType: 'số nguyên', required: 'Có', rule: '≥ 1.', note: 'Đơn theo giờ phải thuê ≥ số giờ này. Gợi ý dưới ô: "Cột giá "… giờ đầu" đổi theo số này" — tên cột giá giờ đầu trong dialog, tab Bảng giá, thẻ phòng, màn Thêm/Sửa phòng đều theo số này.' },
     {
       sel: `${DIALOG} .field:has-text("Qua đêm") .g2`, label: 'Qua đêm: giờ nhận → giờ trả hôm sau', kind: 'Ô giờ × 2', code: 'settingsForm.overnightCheckIn, overnightCheckOut',
       dataType: 'time (HH:mm)', required: 'Có', note: 'Đơn qua đêm luôn nhận lúc giờ nhận ngày đã chọn, trả lúc giờ trả hôm sau.',
@@ -85,7 +85,7 @@ export default {
     { h: '2. Lưu — PUT /api/room-types/overview' },
     {
       list: [
-        'Frontend: ô trống / giá âm / số giờ tối thiểu < 1 → không gửi (không tô đỏ ô).',
+        'Frontend: ô trống / giá âm / số giờ tối thiểu < 1 → tô đỏ ô, hộp lỗi "Vui lòng nhập đủ các ô bắt buộc (viền đỏ).", không gửi. Tên hạng tối đa 100 ký tự (maxlength).',
         'Gửi { roomTypes: [{ id (null = hạng mới), name, twoHourPrice, extraHourPrice, overnightPrice, dailyPrice }], settings: { minHours, overnightCheckIn, overnightCheckOut, dailyCheckIn, dailyCheckOut } }.',
         'Backend: tên trùng trong danh sách → 400. Mỗi dòng: id null → tạo hạng mới; có id → sửa và đặt active = 1 (khôi phục nếu đang ẩn).',
         'Hạng đang dùng mà không có trong danh sách gửi lên → ẩn (active = 0); còn phòng dùng hạng đó → 409, không lưu gì (cùng transaction).',
@@ -102,6 +102,8 @@ export default {
           ['Tên hạng trùng', 400, 'Tên hạng phòng bị trùng trong danh sách'],
           ['Ẩn hết mọi hạng (danh sách rỗng)', 400, 'Dữ liệu không hợp lệ (errors.roomTypes: "Phải có ít nhất một hạng phòng")'],
           ['Hạng không tồn tại', 404, 'Hạng phòng không tồn tại'],
+          ['Thiếu ô / giá âm / số giờ tối thiểu < 1', 'frontend', 'Vui lòng nhập đủ các ô bắt buộc (viền đỏ).'],
+          ['Tên hạng quá 100 ký tự (gọi thẳng API)', 400, 'Dữ liệu không hợp lệ — errors["roomTypes[i].name"]: "Tối đa 100 ký tự"'],
           ['Nhân viên gọi API', 403, 'Không có quyền thực hiện'],
           ['Lỗi khác', '—', 'Không lưu được bảng giá, thử lại sau.'],
         ],
